@@ -6,10 +6,10 @@ import { FaGithub, FaLinkedin, FaInstagram } from "react-icons/fa";
 export default function RusticPanel() {
   const characters = [
     {
-      arrow: "/Devpage/arrow.png",
+      arrow: "/DevPage/arrow.png",
       name: "Jeet Mane",
-      description: "/Devpage/jeet_des.png",
-      image: "/Devpage/jeet_mane.png",
+      description: "/DevPage/jeet_des.png",
+      image: "/DevPage/jeet_mane.png",
       social: {
         github: "https://github.com/jeetmanee",
         linkedin: "https://linkedin.com/in/jeet-mane",
@@ -17,10 +17,10 @@ export default function RusticPanel() {
       }
     },
     {
-      arrow: "/Devpage/arrow.png",
+      arrow: "/DevPage/arrow.png",
       name: "Rohit S.",
-      description: "/Devpage/rohit_des.png",
-      image: "/Devpage/rohit.png",
+      description: "/DevPage/rohit_des.png",
+      image: "/DevPage/rohit.png",
       social: {
         github: "https://github.com/SwiftByte6",
         linkedin: "https://www.linkedin.com/in/rohit-soneji-9483a5344",
@@ -28,10 +28,10 @@ export default function RusticPanel() {
       }
     },
     {
-      arrow: "/Devpage/arrow.png",
+      arrow: "/DevPage/arrow.png",
       name: "Jai Chavan",
-      description: "/Devpage/jai_des.png",
-      image: "/Devpage/jai_chavan.png",
+      description: "/DevPage/jai_des.png",
+      image: "/DevPage/jai_chavan.png",
       social: {
         github: "https://github.com/JaiChavan040906",
         linkedin: "http://www.linkedin.com/in/jaichvn",
@@ -39,10 +39,10 @@ export default function RusticPanel() {
       }
     },
     {
-      arrow: "/Devpage/arrow.png",
+      arrow: "/DevPage/arrow.png",
       name: "Atharva S.",
-      description: "/Devpage/jeet_des.png",
-      image: "/Devpage/jeet_mane.png",
+      description: "/DevPage/jeet_des.png",
+      image: "/DevPage/jeet_mane.png",
       social: {
         github: "https://github.com/UnstableBlob",
         linkedin: "https://www.linkedin.com/in/atharva-sheramkar",
@@ -50,10 +50,10 @@ export default function RusticPanel() {
       }
     },
     {
-      arrow: "/Devpage/arrow.png",
+      arrow: "/DevPage/arrow.png",
       name: "Maitrey B.",
-      description: "/Devpage/jeet_des.png",
-      image: "/Devpage/jeet_mane.png",
+      description: "/DevPage/jeet_des.png",
+      image: "/DevPage/jeet_mane.png",
       social: {
         github: "https://github.com/Maitrey-Bharambe",
         linkedin: "https://www.linkedin.com/in/maitrey-bharambe-677088331/",
@@ -61,10 +61,10 @@ export default function RusticPanel() {
       }
     },
     {
-      arrow: "/Devpage/arrow.png",
+      arrow: "/DevPage/arrow.png",
       name: "Madhav P.",
-      description: "/Devpage/madhav_des.png",
-      image: "/Devpage/madhav_palav.png",
+      description: "/DevPage/madhav_des.png",
+      image: "/DevPage/madhav_palav.png",
       social: {
         github: "https://github.com/SirG4",
         linkedin: "https://linkedin.com/in/madhav-palav",
