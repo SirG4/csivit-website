@@ -169,7 +169,7 @@ onUpdate: (self) => {
                   // Poster image side
                   <div className={styles.posterImageContent}>
                     <img 
-                      src={`/Events/Icons/poster${pairNumber}.jpg`} 
+                      src={`/Team/Icons/poster${pairNumber}.jpg`} 
                       alt={`Event ${pairNumber}`}
                       className={styles.posterImg}
                     />
