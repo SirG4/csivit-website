@@ -15,13 +15,38 @@ const Page = () => {
   const [selectedDomain, setSelectedDomain] = useState(0);
   const [memberSelected, setMemberSelected] = useState(0);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [showSocial,setShowSocial]=useState(false)
+  const [showSocial, setShowSocial] = useState(false)
   const scrollRef = useRef(null);
   const isDown = useRef(false);
   const startX = useRef(0);
   const scrollLeft = useRef(0);
 
-  const router=useRouter()
+  const router = useRouter()
+
+  const [screen, setScreen] = useState('mobile');
+
+  useEffect(() => {
+    const updateScreen = () => {
+      const width = window.innerWidth;
+      if (width >= 1440) {
+        setScreen('desk');
+      } else if (width >= 1024) {
+        setScreen('lap');
+      } else if (width >= 768) {
+        setScreen('tablet');
+      } else {
+        setScreen('mobile');
+      }
+    };
+
+    updateScreen(); // initial check
+
+    window.addEventListener('resize', updateScreen);
+
+    return () => {
+      window.removeEventListener('resize', updateScreen);
+    };
+  }, []);
 
 
   // Handle scroll progress
@@ -98,46 +123,46 @@ const Page = () => {
     domains?.[selectedDomain]?.members?.[memberSelected]?.image;
 
   return (
-    <div>
-      <div className="min-h-screen relative bg-[url('/Team/TeamBg.png')] bg-no-repeat bg-cover bg-center opacity-100">
-      <div className="absolute inset-0 bg-black/40"></div>
+    <div className="overflow-hidden">
+      <div className="h-screen relative bg-[url('/Team/TeamBg.png')] bg-no-repeat bg-cover bg-center opacity-100 w-screen overflow-hidden">
+        <div className="absolute inset-0 bg-black/40"></div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/70"></div>
 
         {/* LEFT IMAGE: now dynamic based on selected member */}
-        <div className="absolute left-1/2 bottom-0 h-[90vh] transform -translate-x-1/2 pointer-events-none">
+        <div className="absolute w-auto right-0 lg:right-auto lg:left-1/2 bottom-0 h-[70vh] lg:h-[90vh] lg:transform lg:-translate-x-1/2 pointer-events-none flex justify-end lg:justify-center">
           <Image
             // key ensures Next/Image replaces the image node when the source changes
             key={currentMemberImage}
             alt={'The Best Technician Ever'}
-            src={currentMemberImage}
+            src={'/Team/jeet.png'}
             width={420}
             height={840}
-            className="h-full w-auto object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.9)] transition-all duration-500 ease-out"
+            className="h-full w-auto lg:w-auto lg:object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.9)] transition-all duration-500 ease-out"
           />
         </div>
 
         <BackButton />
 
         {/* Main content */}
-        <div className="absolute inset-0 pt-26 px-20 text-white z-10">
+        <div className="absolute inset-0 pt-[22%] lg:pt-26 px-2 lg:px-20 text-white z-10">
           {/* Title */}
-          <div className="text-2xl hidden md:block relative z-2 text-center mb-8 font-tungsten-bold w-[200px] md:w-[450px] md:text-[4rem] font-semibold border  bg-cover bg-center px-8 max-w-5xl py-4">
-          
-            <div className='bg-black/30 inset-0 absolute z-0 '/>
+          <div className={`text-[2rem] hidden lg:block relative z-2 text-center mb-8 font-tungsten-bold ${screen=='lap'?"border-red-500 w-[180px] ":"w-[200px]"} ${screen=='desk'?"border-yellow-500 ":""} border lg:w-[450px] lg:text-[3rem] xl:text-[4rem] font-semibold bg-cover bg-center px-8 max-w-5xl py-4`}>
+
+            <div className='bg-black/30 inset-0 absolute z-0 ' />
             TEAM
           </div>
 
-          <div className="flex justify-between">
+          <div className="flex   justify-between">
             {/* Left section */}
-            <div className="text-center space-y-8 animate-fade-in-left">
+            <div className="text-center  space-y-8 animate-fade-in-left">
 
               {/* Scrollable row with grab scroll */}
-              <div className="relative w-[78%] md:w-[71%]">
+              <div className={`relative w-[52%] ${screen=='lap'?"w-[30%]":"lg:w-[71%]"}`}>
                 <div
                   ref={scrollRef}
                   className="overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing select-none"
                 >
-                  <div className="flex gap-3 w-max py-2">
+                  <div className="flex lg:gap-3 gap-x-5 pl-0 lg:pl-3 w-max py-2">
                     {domains.map((item, i) => (
                       <div
                         onClick={() => {
@@ -145,7 +170,7 @@ const Page = () => {
                           setMemberSelected(0)
                         }}
                         key={i}
-                        className={`md:w-[80px] md:h-[70px] bg-white/40 border-2 backdrop-blur-3xl shadow-lg border-white flex items-center justify-center cursor-pointer transition-all duration-300 ease-out hover:scale-110 hover:bg-white/60 hover:shadow-xl hover:-translate-y-1 ${selectedDomain === i ? 'scale-110 bg-white/60 shadow-xl ring-2 ring-white/50' : ''
+                        className={`lg:w-[80px] lg:h-[70px] ${screen=='lap'?"w-5 p-1 h-5":""} bg-white/40 border-2 backdrop-blur-3xl shadow-lg border-white flex items-center justify-center cursor-pointer transition-all duration-300 ease-out hover:scale-110 hover:bg-white/60 hover:shadow-xl hover:-translate-y-1 ${selectedDomain === i ? 'scale-110 bg-white/60 shadow-xl ring-2 ring-white/50' : ''
                           }`}
                       >
                         <Image
@@ -153,7 +178,7 @@ const Page = () => {
                           width={50}
                           height={50}
                           alt={item.description}
-                          className="transition-transform w-[80px] md:w-[40px] pointer-events-none duration-300 hover:rotate-12 mx-auto"
+                          className={`transition-transform w-[50px] lg:w-[40px] ${screen=='lap'?"w-[40px]":""} pointer-events-none duration-300 hover:rotate-12 mx-auto`}
                         />
                       </div>
                     ))}
@@ -171,36 +196,46 @@ const Page = () => {
 
               </div>
               {/*Mobile side section*/}
-              <div className=" absolute max-w-[270px] text-left left-0 flex flex-col justify-start md:hidden transition-all duration-500 ease-out">
-                <h2 className="-mb-3 mr-10 left-0 line-clamp-1 transition-all text-xl duration-300 hover:text-orange-300">
+              <div className="absolute left-0 -z-10 lg:z-0 max-w-[270px] text-left flex flex-col justify-start lg:hidden transition-all duration-500 ease-out">
+                <h2 className="-mb-3 text-left  mr-0 left-0 line-clamp-1 transition-all text-xl duration-300 hover:text-orange-300">
                   {domains[selectedDomain].name}
                 </h2>
-                <h1 className="font-tungsten-bold mr-10 text-[3rem] transition-all duration-500 ease-out hover:text-orange-300 hover:scale-105 transform">
+                <h1 className="font-tungsten-bold    text-[3rem] transition-all duration-500 ease-out hover:text-orange-300 hover:scale-105 transform">
                   {domains[selectedDomain].members[memberSelected].name}
                 </h1>
-                <p>
+                <p className='z-0 md:block '>
                   {domains[selectedDomain].members[memberSelected].description}
                 </p>
               </div>
 
               {/* Member cards */}
-              <div className="hidden mt-10 md:grid grid-cols-3 max-w-[450px] gap-7 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+              <div className={`hidden mt-10 lg:grid grid-cols-3 ${screen=='lap'?"max-w-[320px]":"max-w-[450px]"} gap-7 animate-fade-in-up`} style={{ animationDelay: '100ms' }}>
                 {domains[selectedDomain].members.map((_, i) => (
                   <div
                     onClick={() => setMemberSelected(i)}
                     key={i}
-                    className={`bg-white/30 flex justify-center items-center w-[130px] h-[130px] border-2 backdrop-blur-3xl shadow-lg border-white p-2 cursor-pointer transform transition-all duration-300 ease-out hover:scale-105 hover:bg-white/50 hover:shadow-xl hover:-translate-y-1 ${memberSelected === i ? 'scale-105 bg-white/50 shadow-xl ring-2 ring-white/50' : ''
+                    className={`bg-white/30 flex justify-center items-center ${screen=='lap'?"w-[100px] h-[100px]":"w-[130px] h-[130px] "} border-2 backdrop-blur-3xl shadow-lg border-white p-2 cursor-pointer transform transition-all duration-300 ease-out hover:scale-105 hover:bg-white/50 hover:shadow-xl hover:-translate-y-1 ${memberSelected === i ? 'scale-105 bg-white/50 shadow-xl ring-2 ring-white/50' : ''
                       } animate-fade-in-scale`}
                     style={{ animationDelay: `${1200 + i * 100}ms` }}
                   >
-                    <FiUser className='text-3xl transition-all duration-300 hover:scale-125' />
+                    {/* <FiUser className='text-3xl transition-all duration-300 hover:scale-125' /> */}
+
+                    <Image
+                      // key ensures Next/Image replaces the image node when the source changes
+                      key={currentMemberImage}
+                      alt={'The Best Technician Ever'}
+                      src={'/Team/jeet.png'}
+                      width={420}
+                      height={840}
+                      className="h-full w-screen md:w-auto md:object-contain  drop-shadow-[0_35px_35px_rgba(0,0,0,0.9)] transition-all duration-500 ease-out"
+                    />
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Right section */}
-            <div className="hidden md:block w-[430px] mr-10 animate-fade-in-right">
+            <div className={`hidden lg:block ${screen=='lap'?"-mr-10 w-[390px]":"mr-10 w-[430px]"} animate-fade-in-right`}>
               <div className="transition-all duration-500 ease-out">
                 <div className="-mb-7 text-2xl">
                   {domains[selectedDomain].name}
@@ -248,14 +283,14 @@ const Page = () => {
         </div>
 
         {/* Bottom position card */}
-        <div className='absolute hidden md:flex bottom-5 w-full  items-center justify-center font-tungsten-bold text-white px-4 py-2 text-center animate-fade-in-up' style={{ animationDelay: '2400ms' }}>
+        <div className='absolute hidden lg:flex bottom-5 w-full items-center justify-center font-tungsten-bold text-white px-4 py-2 text-center animate-fade-in-up' style={{ animationDelay: '2400ms' }}>
           <div className='bg-gradient-to-b from-[#D13844] to-[#FF7777] text-[3rem]  px-12 rounded shadow-2xl drop-shadow-2xl transition-all duration-500 ease-out hover:scale-105 hover:from-[#FF4455] hover:to-[#FF8888] transform hover:-translate-y-1'>
             {domains[selectedDomain].members[memberSelected].position}
           </div>
         </div>
 
         {/* Floating mobile social button */}
-        <div className="fixed md:hidden top-[20%] right-5 z-50">
+        <div className="fixed lg:hidden top-[2%] right-5 z-50">
           <button
             onClick={() => setShowSocial(!showSocial)}
             className="w-14 h-14 rounded-full bg-black/66 shadow-lg flex items-center justify-center text-white text-2xl"
@@ -286,19 +321,64 @@ const Page = () => {
         </div>
 
         <div
-          className="fixed w-full md:hidden bottom-4 left-1/2 -translate-x-1/2 z-50 grid grid-cols-6 gap-[5px] px-2"
+          className="fixed lg:hidden bottom-4 left-0 z-50 h-[230px] overflow-y-auto no-scrollbar cursor-grab active:cursor-grabbing select-none px-2"
+          ref={(el) => {
+            if (!el) return;
+            let isDownY = false;
+            let startY = 0;
+            let scrollTopStart = 0;
+            
+            el.onmousedown = (e) => {
+              isDownY = true;
+              el.classList.add('cursor-grabbing');
+              startY = e.pageY - el.offsetTop;
+              scrollTopStart = el.scrollTop;
+            };
+            el.onmouseleave = () => {
+              isDownY = false;
+              el.classList.remove('cursor-grabbing');
+            };
+            el.onmouseup = () => {
+              isDownY = false;
+              el.classList.remove('cursor-grabbing');
+            };
+            el.onmousemove = (e) => {
+              if (!isDownY) return;
+              e.preventDefault();
+              const y = e.pageY - el.offsetTop;
+              const walk = (y - startY) * 1.5;
+              el.scrollTop = scrollTopStart - walk;
+            };
+            // Touch support
+            let touchStartY = 0;
+            el.ontouchstart = (e) => (touchStartY = e.touches[0].pageY);
+            el.ontouchmove = (e) => {
+              const touchMoveY = e.touches[0].pageY;
+              el.scrollTop -= (touchMoveY - touchStartY) * 1.2;
+              touchStartY = touchMoveY;
+            };
+          }}
         >
-          {domains[selectedDomain].members.map((_, i) => (
-            <div
-              onClick={() => setMemberSelected(i)}
-              key={i}
-              className={`bg-white/30 flex justify-center   items-center w-[50px] h-[50px] border-2 backdrop-blur-3xl shadow-lg border-white p-2 cursor-pointer transform transition-all duration-300 ease-out hover:scale-105 hover:bg-white/50 hover:shadow-xl hover:-translate-y-2 hover:rotate-3 ${memberSelected === i ? 'scale-105 bg-white/50 shadow-xl ring-2 ring-white/50' : ''
-                } animate-fade-in-scale`}
-              style={{ animationDelay: `${1200 + i * 100}ms` }}
-            >
-              <FiUser className='text-3xl transition-all duration-300 hover:scale-125' />
-            </div>
-          ))}
+          <div className="flex flex-col gap-[15px]">
+            {domains[selectedDomain].members.map((_, i) => (
+              <div
+                onClick={() => setMemberSelected(i)}
+                key={i}
+                className={`bg-white/30 flex justify-center items-center w-[50px] h-[50px] flex-shrink-0 border-2 backdrop-blur-3xl shadow-lg border-white cursor-pointer transform transition-all duration-300 ease-out hover:scale-105 hover:bg-white/50 hover:shadow-xl ${memberSelected === i ? 'scale-105 bg-white/50 shadow-xl ring-2 ring-white/50' : ''
+                  } animate-fade-in-scale`}
+                style={{ animationDelay: `${1200 + i * 100}ms` }}
+              >
+                <Image
+                  key={i}
+                  alt={'Team Member'}
+                  src={'/Team/jeet.png'}
+                  width={420}
+                  height={840}
+                  className="h-full w-auto object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.9)] transition-all duration-500 ease-out"
+                />
+              </div>
+            ))}
+          </div>
         </div>
 
       </div>
