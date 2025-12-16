@@ -12,7 +12,7 @@ const Background = () => {
   }, [])
 
   return (
-    <div className="w-full h-screen bg-[url('/Devpage/devPageBG.png')] bg-no-repeat bg-cover bg-center opacity-100">
+    <div className="w-full h-screen bg-[url('/DevPage/devPageBG.png')] bg-no-repeat bg-cover bg-center opacity-100">
         <div className="absolute inset-0 bg-black/50"></div>
     </div>
   )
