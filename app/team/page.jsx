@@ -27,8 +27,9 @@ const Page = () => {
 
   useEffect(() => {
     const updateScreen = () => {
-      const width = window.innerWidth;
-      if (width >= 1440) {
+      // Use visualViewport for zoom-aware width detection
+      const width = window.visualViewport?.width || window.innerWidth;
+      if (width >= 1280) {
         setScreen('desk');
       } else if (width >= 1024) {
         setScreen('lap');
@@ -42,9 +43,11 @@ const Page = () => {
     updateScreen(); // initial check
 
     window.addEventListener('resize', updateScreen);
+    window.visualViewport?.addEventListener('resize', updateScreen);
 
     return () => {
       window.removeEventListener('resize', updateScreen);
+      window.visualViewport?.removeEventListener('resize', updateScreen);
     };
   }, []);
 
@@ -144,10 +147,9 @@ const Page = () => {
         <BackButton />
 
         {/* Main content */}
-        <div className="absolute inset-0 pt-[22%] lg:pt-26 px-2 lg:px-20 text-white z-10">
+        <div className="absolute inset-0 pt-[22%] lg:pt-[clamp(4rem,8vh,6.5rem)] px-2 lg:px-[clamp(2rem,5vw,5rem)] text-white z-10">
           {/* Title */}
-          <div className={`text-[2rem] hidden lg:block relative z-2 text-center mb-8 font-tungsten-bold ${screen=='lap'?"border-red-500 w-[180px] ":"w-[200px]"} ${screen=='desk'?"border-yellow-500 ":""} border lg:w-[450px] lg:text-[3rem] xl:text-[4rem] font-semibold bg-cover bg-center px-8 max-w-5xl py-4`}>
-
+          <div className="text-[clamp(2rem,3.5vw,4rem)] hidden lg:block relative z-2 text-center mb-[clamp(0.75rem,2vh,2rem)] font-tungsten-bold w-[clamp(180px,25vw,450px)] border font-semibold bg-cover bg-center px-[clamp(1rem,2vw,2rem)] py-[clamp(0.5rem,1vh,1rem)]">
             <div className='bg-black/30 inset-0 absolute z-0 ' />
             TEAM
           </div>
@@ -157,12 +159,12 @@ const Page = () => {
             <div className="text-center  space-y-8 animate-fade-in-left">
 
               {/* Scrollable row with grab scroll */}
-              <div className={`relative w-[52%] ${screen=='lap'?"w-[30%]":"lg:w-[71%]"}`}>
+              <div className="relative w-[clamp(220px,35vw,500px)]">
                 <div
                   ref={scrollRef}
                   className="overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing select-none"
                 >
-                  <div className="flex lg:gap-3 gap-x-5 pl-0 lg:pl-3 w-max py-2">
+                  <div className="flex gap-[clamp(0.4rem,0.8vw,0.75rem)] pl-[clamp(0,0.5vw,0.75rem)] w-max py-2">
                     {domains.map((item, i) => (
                       <div
                         onClick={() => {
@@ -170,7 +172,7 @@ const Page = () => {
                           setMemberSelected(0)
                         }}
                         key={i}
-                        className={`lg:w-[80px] lg:h-[70px] ${screen=='lap'?"w-5 p-1 h-5":""} bg-white/40 border-2 backdrop-blur-3xl shadow-lg border-white flex items-center justify-center cursor-pointer transition-all duration-300 ease-out hover:scale-110 hover:bg-white/60 hover:shadow-xl hover:-translate-y-1 ${selectedDomain === i ? 'scale-110 bg-white/60 shadow-xl ring-2 ring-white/50' : ''
+                        className={`w-[clamp(50px,5vw,80px)] h-[clamp(45px,4.5vw,70px)] bg-white/40 border-2 backdrop-blur-3xl shadow-lg border-white flex items-center justify-center cursor-pointer transition-all duration-300 ease-out hover:scale-110 hover:bg-white/60 hover:shadow-xl hover:-translate-y-1 ${selectedDomain === i ? 'scale-110 bg-white/60 shadow-xl ring-2 ring-white/50' : ''
                           }`}
                       >
                         <Image
@@ -178,7 +180,7 @@ const Page = () => {
                           width={50}
                           height={50}
                           alt={item.description}
-                          className={`transition-transform w-[50px] lg:w-[40px] ${screen=='lap'?"w-[40px]":""} pointer-events-none duration-300 hover:rotate-12 mx-auto`}
+                          className="transition-transform border border-white w-[clamp(28px,3vw,40px)] pointer-events-none duration-300 hover:rotate-12 mx-auto"
                         />
                       </div>
                     ))}
@@ -208,74 +210,95 @@ const Page = () => {
                 </p>
               </div>
 
-              {/* Member cards */}
-              <div className={`hidden mt-10 lg:grid grid-cols-3 ${screen=='lap'?"max-w-[320px]":"max-w-[450px]"} gap-7 animate-fade-in-up`} style={{ animationDelay: '100ms' }}>
-                {domains[selectedDomain].members.map((_, i) => (
-                  <div
-                    onClick={() => setMemberSelected(i)}
-                    key={i}
-                    className={`bg-white/30 flex justify-center items-center ${screen=='lap'?"w-[100px] h-[100px]":"w-[130px] h-[130px] "} border-2 backdrop-blur-3xl shadow-lg border-white p-2 cursor-pointer transform transition-all duration-300 ease-out hover:scale-105 hover:bg-white/50 hover:shadow-xl hover:-translate-y-1 ${memberSelected === i ? 'scale-105 bg-white/50 shadow-xl ring-2 ring-white/50' : ''
-                      } animate-fade-in-scale`}
-                    style={{ animationDelay: `${1200 + i * 100}ms` }}
-                  >
-                    {/* <FiUser className='text-3xl transition-all duration-300 hover:scale-125' /> */}
+   {/* Member cards */}
+<div
+  className="
+    hidden lg:grid
+    grid-cols-3
+    gap-[clamp(0.75rem,1.5vw,1rem)]
+    mt-[clamp(1.5rem,4vh,3rem)]
+    max-w-[clamp(280px,32vw,380px)]
+    animate-fade-in-up
+  "
+  style={{ animationDelay: '100ms' }}
+>
+  {domains[selectedDomain].members.map((_, i) => (
+    <div
+      key={i}
+      onClick={() => setMemberSelected(i)}
+      className={`
+        flex items-center justify-center
+        w-[clamp(75px,7vw,110px)]
+        h-[clamp(75px,7vw,110px)]
+        bg-white/30 border-2 border-white
+        backdrop-blur-3xl shadow-lg
+        cursor-pointer transition-all duration-300 ease-out
+        hover:scale-105 hover:bg-white/50 hover:-translate-y-1
+        ${memberSelected === i ? 'scale-105 bg-white/50 ring-2 ring-white/50' : ''}
+        animate-fade-in-scale
+      `}
+      style={{ animationDelay: `${1200 + i * 100}ms` }}
+    >
+      <Image
+        src="/Team/jeet.png"
+        alt="Team Member"
+        width={120}
+        height={160}
+        className="
+          h-full w-auto
+          object-contain
+          drop-shadow-[0_20px_20px_rgba(0,0,0,0.8)]
+          transition-all duration-300
+        "
+      />
+    </div>
+  ))}
+</div>
 
-                    <Image
-                      // key ensures Next/Image replaces the image node when the source changes
-                      key={currentMemberImage}
-                      alt={'The Best Technician Ever'}
-                      src={'/Team/jeet.png'}
-                      width={420}
-                      height={840}
-                      className="h-full w-screen md:w-auto md:object-contain  drop-shadow-[0_35px_35px_rgba(0,0,0,0.9)] transition-all duration-500 ease-out"
-                    />
-                  </div>
-                ))}
-              </div>
             </div>
 
             {/* Right section */}
-            <div className={`hidden lg:block ${screen=='lap'?"-mr-10 w-[390px]":"mr-10 w-[430px]"} animate-fade-in-right`}>
+            <div className="hidden lg:block w-[clamp(300px,30vw,450px)] mr-[clamp(0.5rem,1.5vw,1rem)] animate-fade-in-right">
               <div className="transition-all duration-500 ease-out">
-                <div className="-mb-7 text-2xl">
+                <div className="-mb-[clamp(0.75rem,1.2vw,1.5rem)] text-[clamp(1.1rem,1.8vw,1.6rem)]">
                   {domains[selectedDomain].name}
                 </div>
-                <div className="font-tungsten-bold text-[6rem]">
+                <div className="font-tungsten-bold text-[clamp(2.8rem,5vw,5.5rem)]">
                   {domains[selectedDomain].members[memberSelected].name}
                 </div>
               </div>
 
               {/* Social icons */}
-              <div className="flex gap-6 mb-8 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+              <div className="flex gap-[clamp(0.5rem,1.5vw,1rem)] mb-[clamp(0.75rem,2vh,2rem)] animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                 {[
-                  { label: "Info", icon: <HiInformationCircle size={40} />, link: "https://example.com/info" },
-                  { label: "Github", icon: <FaGithub size={40} />, link: "https://github.com/jeetm" },
-                  { label: "Linkedin", icon: <FaLinkedin size={40} />, link: "https://linkedin.com/in/jeetm" },
-                  { label: "Instagram", icon: <RiInstagramFill size={40} />, link: "https://instagram.com/jeetm" },
+                  { label: "Info", icon: <HiInformationCircle className="w-[clamp(22px,2.5vw,40px)] h-[clamp(22px,2.5vw,40px)]" />, link: "https://example.com/info" },
+                  { label: "Github", icon: <FaGithub className="w-[clamp(22px,2.5vw,40px)] h-[clamp(22px,2.5vw,40px)]" />, link: "https://github.com/jeetm" },
+                  { label: "Linkedin", icon: <FaLinkedin className="w-[clamp(22px,2.5vw,40px)] h-[clamp(22px,2.5vw,40px)]" />, link: "https://linkedin.com/in/jeetm" },
+                  { label: "Instagram", icon: <RiInstagramFill className="w-[clamp(22px,2.5vw,40px)] h-[clamp(22px,2.5vw,40px)]" />, link: "https://instagram.com/jeetm" },
                 ].map((item, i) => (
                   <a
                     key={i}
                     href={item.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-[70px] space-y-2 group animate-fade-in-scale"
+                    className="w-[clamp(50px,4.5vw,70px)] space-y-2 group animate-fade-in-scale"
                     style={{ animationDelay: `${1600 + i * 150}ms` }}
                   >
-                    <div className="flex items-center justify-center bg-white/30 w-[60px] h-[60px] rounded border-2 backdrop-blur-3xl shadow-lg border-white p-2 transition-all duration-300 group-hover:bg-white/50 group-hover:scale-110 group-hover:-translate-y-2 group-hover:shadow-2xl">
+                    <div className="flex items-center justify-center bg-white/30 w-[clamp(40px,4vw,60px)] h-[clamp(40px,4vw,60px)] rounded border-2 backdrop-blur-3xl shadow-lg border-white p-2 transition-all duration-300 group-hover:bg-white/50 group-hover:scale-110 group-hover:-translate-y-2 group-hover:shadow-2xl">
                       <div className="transition-all duration-300 group-hover:scale-95">
                         {item.icon}
                       </div>
                     </div>
-                    <p className="inline-block px-3 py-1 bg-white/20 rounded text-center text-sm font-semibold leading-tight transition-all duration-300 group-hover:bg-white/40 group-hover:scale-105">
+                    <p className="inline-block px-[clamp(0.4rem,0.6vw,0.75rem)] py-1 bg-white/20 rounded text-center text-[clamp(0.6rem,0.85vw,0.875rem)] font-semibold leading-tight transition-all duration-300 group-hover:bg-white/40 group-hover:scale-105">
                       {item.label}
                     </p>
                   </a>
                 ))}
               </div>
 
-              <div className="w-full h-1 rounded-4xl bg-white mb-4 transition-all duration-500 hover:h-2 hover:bg-orange-300 animate-fade-in-left" style={{ animationDelay: '2000ms' }} />
+              <div className="w-full h-1 rounded-4xl bg-white mb-[clamp(0.5rem,1vh,1rem)] transition-all duration-500 hover:h-2 hover:bg-orange-300 animate-fade-in-left" style={{ animationDelay: '2000ms' }} />
 
-              <p className="text-lg animate-fade-in-up" style={{ animationDelay: '2200ms' }}>
+              <p className="text-[clamp(0.85rem,1.1vw,1.125rem)] animate-fade-in-up" style={{ animationDelay: '2200ms' }}>
                 {domains[selectedDomain].members[memberSelected].description}
               </p>
             </div>
@@ -283,8 +306,8 @@ const Page = () => {
         </div>
 
         {/* Bottom position card */}
-        <div className='absolute hidden lg:flex bottom-5 w-full items-center justify-center font-tungsten-bold text-white px-4 py-2 text-center animate-fade-in-up' style={{ animationDelay: '2400ms' }}>
-          <div className='bg-gradient-to-b from-[#D13844] to-[#FF7777] text-[3rem]  px-12 rounded shadow-2xl drop-shadow-2xl transition-all duration-500 ease-out hover:scale-105 hover:from-[#FF4455] hover:to-[#FF8888] transform hover:-translate-y-1'>
+        <div className='absolute hidden lg:flex bottom-[clamp(0.5rem,2vh,1.25rem)] w-full items-center justify-center font-tungsten-bold text-white px-4 py-2 text-center animate-fade-in-up' style={{ animationDelay: '2400ms' }}>
+          <div className='bg-gradient-to-b from-[#D13844] to-[#FF7777] text-[clamp(1.5rem,3.5vw,3rem)] px-[clamp(2rem,4vw,3rem)] rounded shadow-2xl drop-shadow-2xl transition-all duration-500 ease-out hover:scale-105 hover:from-[#FF4455] hover:to-[#FF8888] transform hover:-translate-y-1'>
             {domains[selectedDomain].members[memberSelected].position}
           </div>
         </div>
