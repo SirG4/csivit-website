@@ -11,9 +11,10 @@ import { FaGithub, FaGoogle } from "react-icons/fa";
 const page = () => {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  // Default to signup state
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -31,22 +32,57 @@ const page = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccess(false);
+
+    // Validate passwords match
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const result = await signIn("credentials", {
+      // Register user
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Signup failed");
+      }
+
+      setSuccess(true);
+
+      // Auto-login after successful signup
+      const signInResult = await signIn("credentials", {
         redirect: false,
         email: formData.email,
         password: formData.password,
       });
 
-      if (result?.error) {
-        setError(result.error);
+      if (signInResult?.error) {
+        setError("Account created but login failed. Please login manually.");
       } else {
         router.push("/profile");
       }
     } catch (err) {
-      setError("An error occurred during login");
+      setError(err.message || "An error occurred during signup");
     } finally {
       setLoading(false);
     }
@@ -70,11 +106,11 @@ const page = () => {
 
         {/* Main content */}
         <div className="relative z-10 min-h-screen flex items-center justify-center p-6">
-          {/* Login Card */}
+          {/* Signup Card */}
           <div className="w-full max-w-2xl mt-10">
-            {/* Login Form Card */}
-            <div className="bg-black/40 relative py-18 backdrop-blur-md border border-white/20 rounded-2xl p-8 shadow-2xl animate-fade-in-up">
-              <div className="md:w-[400px] md:h-[200px] w-[300px] h-[150px] absolute top-1/2 left-1/2 -translate-x-1/2 md:-translate-y-[195%] -translate-y-[245%]">
+            {/* Signup Form Card */}
+            <div className="bg-black/40 relative pt-32 md:pt-24 pb-8 backdrop-blur-md border border-white/20 rounded-2xl p-8 shadow-2xl animate-fade-in-up">
+              <div className="md:w-[400px] md:h-[200px] w-[300px] h-[150px] absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
                 <Image
                   src="/Login/csivit.png"
                   alt="CSI-VIT Logo"
@@ -82,20 +118,48 @@ const page = () => {
                   className="object-contain"
                 />
               </div>
-              {/* Toggle Buttons */}
 
-              <h1 className="minercraft text-center  text-2xl m-2 shadow-2xl text-transparent bg-clip-text bg-gradient-to-b from-[#A9A9A9] to-[#848383]">
+              <h1 className="minercraft text-center text-2xl mb-6 shadow-2xl text-transparent bg-clip-text bg-gradient-to-b from-[#A9A9A9] to-[#848383]">
                 ENGINEERING IDEAS IN REALITY
               </h1>
+
               {/* Error Message */}
               {error && (
                 <div className="bg-red-500/20 border border-red-500 text-red-200 px-4 py-3 rounded-lg text-sm">
                   {error}
                 </div>
               )}
+
+              {/* Success Message */}
+              {success && (
+                <div className="bg-green-500/20 border border-green-500 text-green-200 px-4 py-3 rounded-lg text-sm">
+                  Account created successfully! Redirecting...
+                </div>
+              )}
+
               {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Name Field (Sign Up only) */}
+                {/* Name Field */}
+                <div
+                  className="animate-fade-in-left"
+                  style={{ animationDelay: "100ms" }}
+                >
+                  <div className="relative">
+                    <FiUser
+                      size={22}
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                    />
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      placeholder="Enter your name"
+                      className="w-full pl-10 pr-4 py-3 bg-black/70 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300"
+                      required
+                    />
+                  </div>
+                </div>
 
                 {/* Email Field */}
                 <div
@@ -122,7 +186,7 @@ const page = () => {
                 {/* Password Field */}
                 <div
                   className="animate-fade-in-left"
-                  style={{ animationDelay: "400ms" }}
+                  style={{ animationDelay: "300ms" }}
                 >
                   <div className="relative">
                     <FiLock
@@ -148,43 +212,43 @@ const page = () => {
                   </div>
                 </div>
 
-                {/* Remember Me & Forgot Password (Login only) */}
-                {isLogin && (
-                  <div
-                    className="flex items-center justify-between animate-fade-in-up"
-                    style={{ animationDelay: "600ms" }}
-                  >
-                    <label className="flex items-center">
-                      <input
-                        type="checkbox"
-                        className="w-4 h-4 text-blue-600 bg-white/10 border-white/20 rounded focus:ring-blue-500 focus:ring-2"
-                      />
-                      <span className="ml-2 text-sm text-gray-300">
-                        Remember me
-                      </span>
-                    </label>
-                    <a
-                      href="#"
-                      className="text-sm text-blue-400 hover:text-blue-300 transition-colors duration-200"
+                {/* Confirm Password Field */}
+                <div
+                  className="animate-fade-in-left"
+                  style={{ animationDelay: "400ms" }}
+                >
+                  <div className="relative">
+                    <FiLock
+                      size={22}
+                      className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                    />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
+                      placeholder="Confirm your password"
+                      className="w-full pl-10 pr-12 py-3 bg-black/70 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors duration-200"
                     >
-                      Forgot password?
-                    </a>
+                      {showPassword ? <FiEyeOff /> : <FiEye />}
+                    </button>
                   </div>
-                )}
+                </div>
 
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="w-full overflow-hidden px-2 text-3xl pb-2 bg-[#0C6E3D] border-t-4 border-[#27CE40]  text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-300 transform hover:scale-105 animate-fade-in-up disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full overflow-hidden px-2 text-3xl pb-2 bg-[#0C6E3D] border-t-4 border-[#27CE40]  text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-transparent transition-all duration-300 transform hover:scale-105 animate-fade-in-up"
                   style={{ animationDelay: "800ms" }}
                 >
                   <div className="h-[100%] font-minercraft  py-1 w-full bg-[#008A44]">
-                    {loading
-                      ? "Signing In..."
-                      : isLogin
-                      ? "Sign In"
-                      : "Create Account"}
+                    Create Account
                   </div>
                 </button>
 
@@ -203,7 +267,7 @@ const page = () => {
                   </div>
                 </div>
 
-                {/* Social Login Buttons */}
+                {/* Social Buttons */}
                 <div
                   className="grid grid-cols-2 gap-4 animate-fade-in-up"
                   style={{ animationDelay: "1200ms" }}
@@ -235,12 +299,12 @@ const page = () => {
                   className="mt-4 text-center text-sm text-gray-300 animate-fade-in-up"
                   style={{ animationDelay: "1300ms" }}
                 >
-                  <span>Don't have an account? </span>
+                  <span>Already have an account? </span>
                   <Link
-                    href="/signup"
+                    href="/login"
                     className="text-blue-400 hover:text-blue-300 transition-colors"
                   >
-                    Create one
+                    Sign in
                   </Link>
                 </div>
               </form>
