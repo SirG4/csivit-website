@@ -89,8 +89,6 @@ const Page = () => {
       slider.classList.remove('cursor-grabbing');
     };
 
-    const DEFAULT_IMAGE = '/Team/jeet.png';
-
     const handleMouseMove = (e) => {
       if (!isDown.current) return;
       e.preventDefault();
@@ -137,7 +135,7 @@ const Page = () => {
             // key ensures Next/Image replaces the image node when the source changes
             key={currentMemberImage}
             alt={'The Best Technician Ever'}
-            src={'/Team/jeet.png'}
+            src={'/Team/jeetu.png'}
             width={420}
             height={840}
             className="h-full w-auto lg:w-auto lg:object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.9)] transition-all duration-500 ease-out"
@@ -147,9 +145,9 @@ const Page = () => {
         <BackButton />
 
         {/* Main content */}
-        <div className="absolute inset-0 pt-[22%] lg:pt-[clamp(4rem,8vh,6.5rem)] px-2 lg:px-[clamp(2rem,5vw,5rem)] text-white z-10">
+        <div className="absolute inset-0 pt-[22%] lg:pt-[clamp(4rem,10vh,6.5rem)] px-2 lg:px-[clamp(2rem,5vw,5rem)] text-white z-10">
           {/* Title */}
-          <div className="text-[clamp(2rem,3.5vw,4rem)] hidden lg:block relative z-2 text-center mb-[clamp(0.75rem,2vh,2rem)] font-tungsten-bold w-[clamp(180px,25vw,450px)] border font-semibold bg-cover bg-center px-[clamp(1rem,2vw,2rem)] py-[clamp(0.5rem,1vh,1rem)]">
+          <div className="text-[clamp(2rem,3.5vw,4rem)] hidden lg:block relative z-2 text-center mb-[clamp(0.75rem,2vh,2rem)]  mt-[clamp(0.75rem,4vh,2rem)] font-tungsten-bold w-[clamp(180px,25vw,450px)] border font-semibold bg-cover bg-center px-[clamp(1rem,2vw,2rem)] py-[clamp(0.5rem,1vh,1rem)]">
             <div className='bg-black/30 inset-0 absolute z-0 ' />
             TEAM
           </div>
@@ -159,7 +157,7 @@ const Page = () => {
             <div className="text-center  space-y-8 animate-fade-in-left">
 
               {/* Scrollable row with grab scroll */}
-              <div className="relative w-[clamp(220px,35vw,500px)]">
+              <div className="relative w-[clamp(220px,25vw,500px)]">
                 <div
                   ref={scrollRef}
                   className="overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing select-none"
@@ -172,7 +170,7 @@ const Page = () => {
                           setMemberSelected(0)
                         }}
                         key={i}
-                        className={`w-[clamp(50px,5vw,80px)] h-[clamp(45px,4.5vw,70px)] bg-white/40 border-2 backdrop-blur-3xl shadow-lg border-white flex items-center justify-center cursor-pointer transition-all duration-300 ease-out hover:scale-110 hover:bg-white/60 hover:shadow-xl hover:-translate-y-1 ${selectedDomain === i ? 'scale-110 bg-white/60 shadow-xl ring-2 ring-white/50' : ''
+                        className={`w-[clamp(50px,4vw,80px)] h-[clamp(45px,4.5vw,70px)] bg-white/40 border-2 backdrop-blur-3xl shadow-lg border-white flex items-center justify-center cursor-pointer transition-all duration-300 ease-out hover:scale-110 hover:bg-white/60 hover:shadow-xl hover:-translate-y-1 ${selectedDomain === i ? 'scale-105 bg-white/55 shadow-xl ring-2 ring-white/50' : ''
                           }`}
                       >
                         <Image
@@ -220,7 +218,7 @@ const Page = () => {
     max-w-[clamp(280px,32vw,380px)]
     animate-fade-in-up
   "
-  style={{ animationDelay: '100ms' }}
+  style={{ animationDelay: '10ms' }}
 >
   {domains[selectedDomain].members.map((_, i) => (
     <div
@@ -232,15 +230,15 @@ const Page = () => {
         h-[clamp(75px,7vw,110px)]
         bg-white/30 border-2 border-white
         backdrop-blur-3xl shadow-lg
-        cursor-pointer transition-all duration-300 ease-out
+        cursor-pointer transition-all duration-30 ease-out
         hover:scale-105 hover:bg-white/50 hover:-translate-y-1
         ${memberSelected === i ? 'scale-105 bg-white/50 ring-2 ring-white/50' : ''}
         animate-fade-in-scale
       `}
-      style={{ animationDelay: `${1200 + i * 100}ms` }}
+      style={{ animationDelay: `${5 + i * 100}ms` }}
     >
       <Image
-        src="/Team/jeet.png"
+        src="/Team/jeetu.png"
         alt="Team Member"
         width={120}
         height={160}
@@ -258,7 +256,7 @@ const Page = () => {
             </div>
 
             {/* Right section */}
-            <div className="hidden lg:block w-[clamp(300px,30vw,450px)] mr-[clamp(0.5rem,1.5vw,1rem)] animate-fade-in-right">
+            <div className="hidden lg:block w-[clamp(300px,25vw,450px)] mr-[clamp(0.5rem,1.5vw,1rem)] animate-fade-in-right">
               <div className="transition-all duration-500 ease-out">
                 <div className="-mb-[clamp(0.75rem,1.2vw,1.5rem)] text-[clamp(1.1rem,1.8vw,1.6rem)]">
                   {domains[selectedDomain].name}
@@ -394,7 +392,7 @@ const Page = () => {
                 <Image
                   key={i}
                   alt={'Team Member'}
-                  src={'/Team/jeet.png'}
+                  src={'/Team/jeetu.png'}
                   width={420}
                   height={840}
                   className="h-full w-auto object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.9)] transition-all duration-500 ease-out"
