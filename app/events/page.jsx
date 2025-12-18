@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import Navbar from '@/components/Home/Navbar'
+import BackButton from '@/components/BackButton/BackButton';
 import Image from "next/image";
 import EventsScrolling from "@/components/EventsScrolling";
 import Lenis from 'lenis'
@@ -48,7 +48,7 @@ const page = () => {
 
   return (
     <div>
-      <Navbar />
+      <BackButton />
       <div className="relative z-20 overflow-x-hidden">
         <EventsScrolling />
       </div>

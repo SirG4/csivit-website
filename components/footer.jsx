@@ -11,7 +11,14 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 
 export default function Footer() {
-  const quickLinks = ['Home', 'About Us', 'Team', 'Events', 'Developers', 'Profile/Login'];
+  const quickLinks = [
+    { name: 'Home', href: '/home' },
+    { name: 'About Us', href: '/home' },
+    { name: 'Team', href: '/team' },
+    { name: 'Events', href: '/events' },
+    { name: 'Developers', href: '/developer' },
+    { name: 'Profile/Login', href: '/login' }
+  ];
   const social = [
     { name: 'LinkedIn', href: '#', icon: linkedinSvg() },
     { name: 'GitHub', href: '#', icon: githubSvg() },
@@ -28,7 +35,7 @@ export default function Footer() {
   }
 
   return (
-    <footer className="relative overflow-hidden text-gray-200">
+    <footer className="relative overflow-hidden text-gray-200 bg-[#000010cc]">
       {/* Background gradient + subtle storm texture */}
       <div className="absolute inset-0 bg-gradient-to-t from-black via-[#03071A] to-[#041026] -z-10" />
       <div className="absolute inset-0 opacity-10 pointer-events-none bg-[url('/assets/storm-texture.png')] bg-cover bg-center -z-5" />
@@ -86,7 +93,7 @@ export default function Footer() {
               <h4 className="text-sm font-semibold text-[#9EE8FF] mb-4">Quick Links</h4>
               <ul className="text-sm text-gray-300 space-y-2">
                 {quickLinks.map((q) => (
-                  <li key={q}><a className="hover:text-white transition-colors" href="#">{q}</a></li>
+                  <li key={q.name}><a className="hover:text-white transition-colors" href={q.href}>{q.name}</a></li>
                 ))}
               </ul>
             </div>

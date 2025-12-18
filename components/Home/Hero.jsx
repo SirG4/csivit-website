@@ -13,7 +13,7 @@ const Hero = () => {
     ]
 
     return (
-        <div className="h-screen overflow-hidden relative w-full bg-[url('/Home/Hero/Background.png')]  flex justify-between items-center bg-cover bg-center bg-no-repeat ">
+        <div className="h-screen overflow-hidden relative w-full bg-[#eeffdf]  flex justify-between items-center bg-cover bg-center bg-no-repeat ">
             {/* Navbar */}
             <Navbar />
             {/* Full background white overlay */}

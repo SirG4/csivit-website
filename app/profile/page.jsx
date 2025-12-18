@@ -5,8 +5,7 @@ import Image from "next/image";
 import { ChevronDown } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import Navbar from "@/components/Home/Navbar";
-
+import BackButton from "@/components/BackButton/BackButton";
 export default function Page() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -34,7 +33,7 @@ export default function Page() {
 
   return (
     <div>
-      <Navbar />
+      <BackButton />
       <main className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white p-6 md:p-10">
         {/* Header Section */}
         <section className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white/10 backdrop-blur-lg p-4 rounded-2xl shadow-lg mt-20">
