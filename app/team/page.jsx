@@ -152,9 +152,9 @@ const Page = () => {
             TEAM
           </div>
 
-          <div className="flex justify-between">
+          <div className="flex flex-col lg:flex-row lg:justify-between">
             {/* Left section */}
-            <div className="text-center py-7 space-y-8 animate-fade-in-left">
+            <div className="text-left py-7 space-y-8 animate-fade-in-left lg:text-center">
 
               {/* Scrollable row with grab scroll */}
               <div className="relative w-[clamp(220px,25vw,500px)]">
@@ -170,7 +170,7 @@ const Page = () => {
                           setMemberSelected(0)
                         }}
                         key={i}
-                        className={`w-[clamp(50px,4vw,80px)] h-[clamp(45px,4.5vw,70px)] bg-white/40 border-2 backdrop-blur-3xl shadow-lg border-white flex items-center justify-center cursor-pointer transition-all duration-300 ease-out hover:scale-110 hover:bg-white/60 hover:shadow-xl hover:-translate-y-1 ${selectedDomain === i ? 'scale-105 bg-white/55 shadow-xl ring-2 ring-white/50' : ''
+                        className={`w-[clamp(50px,4vw,80px)] h-[clamp(45px,4.5vw,70px)] bg-white/40 border-2 backdrop-blur-3xl shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 ease-out hover:scale-110 hover:bg-white/60 hover:shadow-xl hover:-translate-y-1 ${selectedDomain === i ? 'scale-105 bg-white/55 shadow-xl ring-2 ring-white/50' : ''
                           }`}
                       >
                         <Image
@@ -178,7 +178,7 @@ const Page = () => {
                           width={50}
                           height={50}
                           alt={item.description}
-                          className="transition-transform border border-white w-[clamp(28px,3vw,40px)] pointer-events-none duration-300 hover:rotate-12 mx-auto"
+                          className="transition-transform border w-[clamp(35px,4vw,45px)] pointer-events-none duration-300 hover:rotate-12 mx-auto"
                         />
                       </div>
                     ))}
@@ -195,60 +195,64 @@ const Page = () => {
                 </div>
 
               </div>
-              {/*Mobile side section*/}
-              <div className="absolute -mr-50 px-15  right-0  lg:mr-0 lg:left-0 lg:right-auto -z-10 lg:z-0 max-w-[270px] text-right lg:text-left flex flex-col items-end lg:items-start justify-start lg:hidden transition-all duration-500 ease-out">
-                <h2 className="-mb-3 mr-0 line-clamp-1 transition-all text-base lg:text-xl duration-300 hover:text-orange-300">
+              {/* Mobile side section */}
+              <div className="
+                lg:hidden mt-6 ml-auto max-w-[270px] px-4 text-right flex flex-col items-end transition-all duration-500 ease-out">
+                <h2 className="-mb-3 line-clamp-1 text-base hover:text-orange-300 transition-all">
                   {domains[selectedDomain].name}
                 </h2>
-                <h1 className="font-tungsten-bold text-[3rem] transition-all duration-500 ease-out hover:text-orange-300 hover:scale-105 transform">
+
+                <h1 className="font-tungsten-bold text-[3rem] hover:text-orange-300 hover:scale-105 transition-all">
                   {domains[selectedDomain].members[memberSelected].name}
                 </h1>
-                <p className="z-0 text-sm lg:text-xl max-w-[180px] md:block">
+
+                <p className="text-sm max-w-[180px]">
                   {domains[selectedDomain].members[memberSelected].description}
                 </p>
               </div>
 
-   {/* Member cards */}
-<div
-  className="
-    hidden lg:grid
-    grid-cols-3
-    gap-[clamp(0.75rem,1.5vw,1rem)]
-    mt-[clamp(1.5rem,4vh,3rem)]
-    max-w-[clamp(280px,32vw,380px)]
-  "
->
-  {domains[selectedDomain].members.map((_, i) => (
-    <div
-      key={i}
-      onClick={() => setMemberSelected(i)}
-      className={`
-        flex items-center justify-center
-        w-[clamp(75px,7vw,110px)]
-        h-[clamp(75px,7vw,110px)]
-        bg-white/30 border-2 border-white
-        backdrop-blur-3xl shadow-lg
-        cursor-pointer transition-all  ease-out
-        hover:scale-105 hover:bg-white/50 hover:-translate-y-1
-        ${memberSelected === i ? 'scale-105 bg-white/50 ring-2 ring-white/50' : ''}
-        animate-fade-in-scale
-      `}
-      style={{ animationDelay: `${2 + i * 1}ms` }}
-    >
-      <Image
-        src="/Team/jeetu.png"
-        alt="Team Member"
-        width={120}
-        height={160}
-        className="
-          h-full w-auto
-          object-contain
-          drop-shadow-[0_20px_20px_rgba(0,0,0,0.8)]
-        "
-      />
-    </div>
-  ))}
-</div>
+
+              {/* Member cards */}
+              <div
+                className="
+                  hidden lg:grid
+                  grid-cols-3
+                  gap-[clamp(0.75rem,1.5vw,1rem)]
+                  mt-[clamp(1.5rem,4vh,3rem)]
+                  max-w-[clamp(280px,32vw,380px)]
+                "
+              >
+                {domains[selectedDomain].members.map((_, i) => (
+                  <div
+                    key={i}
+                    onClick={() => setMemberSelected(i)}
+                    className={`
+                      flex items-center justify-center
+                      w-[clamp(75px,7vw,110px)]
+                      h-[clamp(75px,7vw,110px)]
+                      bg-white/30 border-2 border-white
+                      backdrop-blur-3xl shadow-lg
+                      cursor-pointer transition-all  ease-out
+                      hover:scale-105 hover:bg-white/50 hover:-translate-y-1
+                      ${memberSelected === i ? 'scale-105 bg-white/50 ring-2 ring-white/50' : ''}
+                      animate-fade-in-scale
+                    `}
+                    style={{ animationDelay: `${2 + i * 1}ms` }}
+                  >
+                    <Image
+                      src="/Team/jeetu.png"
+                      alt="Team Member"
+                      width={120}
+                      height={160}
+                      className="
+                        h-full w-auto
+                        object-contain
+                        drop-shadow-[0_20px_20px_rgba(0,0,0,0.8)]
+                      "
+                    />
+                  </div>
+                ))}
+              </div>
 
             </div>
 
@@ -338,7 +342,7 @@ const Page = () => {
         </div>
 
         <div
-          className="fixed lg:hidden bottom-0 right-0 z-50 h-[230px] overflow-y-auto no-scrollbar cursor-grab active:cursor-grabbing select-none px-2"
+          className="fixed lg:hidden pb-3 bottom-0 right-0 z-50 h-[230px] overflow-y-auto no-scrollbar cursor-grab active:cursor-grabbing select-none px-2"
           ref={(el) => {
             if (!el) return;
             let isDownY = false;

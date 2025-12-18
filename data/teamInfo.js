@@ -28,7 +28,7 @@
       description: 'Leadership and management events',
       members: [
         {
-          name: 'Aarav Mehta',
+          name: 'Aarav M.',
           github: 'https://github.com/aaravmehta',
           linkedin: 'https://linkedin.com/in/aaravmehta',
           image: '/Team/Members/Executive/aarav.png',
@@ -130,7 +130,7 @@
           position: 'Head',
         },
         {
-          name: 'Minakshi S.',
+          name: 'Minakshi',
           github: 'https://github.com/sarakhan',
           linkedin: 'https://linkedin.com/in/sarakhan',
           image: '/Team/Members/Creatives/sara.png',
