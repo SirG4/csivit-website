@@ -1,5 +1,28 @@
  export const domains = [
     {
+      name: 'Convenors',
+      icon: '/Team/Icons/convenors.png',
+      description: 'Convenors',
+      members: [
+        {
+          name: 'Amit N.',
+          github: 'https://github.com/aaravmehta',
+          linkedin: 'https://linkedin.com/in/aaravmehta',
+          image: '/Team/Members/Convenrs/Nerurkar.png',
+          description: 'Responsible for leading core committees and decision making.',
+          position: 'Head',
+        },
+        {
+          name: 'Amit A.',
+          github: 'https://github.com/snehar',
+          linkedin: 'https://linkedin.com/in/snehar',
+          image: '/Team/Members/COnvenors/Aylani.png',
+          description: 'Coordinates between teams and ensures timely execution of plans.',
+          position: 'Co-Head',
+        }
+      ],
+    },
+    {
       name: 'Executive',
       icon: '/Team/Icons/executives.png',
       description: 'Leadership and management events',

@@ -6,7 +6,7 @@ import BackButton from '@/components/BackButton/BackButton.jsx'
 
 import { FiUser } from 'react-icons/fi'
 import { FaGithub, FaLinkedin, FaInstagram } from "react-icons/fa";
-import { HiInformationCircle } from "react-icons/hi"
+import { HiLink, HiInformationCircle } from "react-icons/hi"
 import { RiInstagramFill } from "react-icons/ri";
 import { useRouter } from 'next/navigation'
 
@@ -124,13 +124,13 @@ const Page = () => {
     domains?.[selectedDomain]?.members?.[memberSelected]?.image;
 
   return (
-    <div className="overflow-hidden">
+    <div className="relative w-screen h-screen overflow-hidden lg:overflow-visible">
       <div className="h-screen relative bg-[url('/Team/TeamBg.png')] bg-no-repeat bg-cover bg-center opacity-100 w-screen overflow-hidden">
         <div className="absolute inset-0 bg-black/40"></div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/70"></div>
 
         {/* LEFT IMAGE: now dynamic based on selected member */}
-        <div className="absolute w-auto right-0 lg:right-auto lg:left-1/2 bottom-0 h-[70vh] lg:h-[90vh] lg:transform lg:-translate-x-1/2 pointer-events-none flex justify-end lg:justify-center">
+        <div className="absolute bottom-0 w-auto right-0 lg:right-auto lg:left-1/2 h-[70vh] lg:h-[90vh] lg:transform lg:-translate-x-1/2 pointer-events-none flex justify-end lg:justify-center">
           <Image
             // key ensures Next/Image replaces the image node when the source changes
             key={currentMemberImage}
@@ -138,7 +138,7 @@ const Page = () => {
             src={'/Team/jeetu.png'}
             width={420}
             height={840}
-            className="h-full w-auto lg:w-auto lg:object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.9)] transition-all duration-500 ease-out"
+            className="h-full w-auto object-contain -translate-x-18 lg:-translate-x-4 drop-shadow-[0_35px_35px_rgba(0,0,0,0.9)] transition-all duration-500 ease-out"
           />
         </div>
 
@@ -152,9 +152,9 @@ const Page = () => {
             TEAM
           </div>
 
-          <div className="flex   justify-between">
+          <div className="flex justify-between">
             {/* Left section */}
-            <div className="text-center  space-y-8 animate-fade-in-left">
+            <div className="text-center py-7 space-y-8 animate-fade-in-left">
 
               {/* Scrollable row with grab scroll */}
               <div className="relative w-[clamp(220px,25vw,500px)]">
@@ -196,14 +196,14 @@ const Page = () => {
 
               </div>
               {/*Mobile side section*/}
-              <div className="absolute left-0 -z-10 lg:z-0 max-w-[270px] text-left flex flex-col justify-start lg:hidden transition-all duration-500 ease-out">
-                <h2 className="-mb-3 text-left  mr-0 left-0 line-clamp-1 transition-all text-xl duration-300 hover:text-orange-300">
+              <div className="absolute -mr-50 px-15  right-0  lg:mr-0 lg:left-0 lg:right-auto -z-10 lg:z-0 max-w-[270px] text-right lg:text-left flex flex-col items-end lg:items-start justify-start lg:hidden transition-all duration-500 ease-out">
+                <h2 className="-mb-3 mr-0 line-clamp-1 transition-all text-base lg:text-xl duration-300 hover:text-orange-300">
                   {domains[selectedDomain].name}
                 </h2>
-                <h1 className="font-tungsten-bold    text-[3rem] transition-all duration-500 ease-out hover:text-orange-300 hover:scale-105 transform">
+                <h1 className="font-tungsten-bold text-[3rem] transition-all duration-500 ease-out hover:text-orange-300 hover:scale-105 transform">
                   {domains[selectedDomain].members[memberSelected].name}
                 </h1>
-                <p className='z-0 md:block '>
+                <p className="z-0 text-sm lg:text-xl max-w-[180px] md:block">
                   {domains[selectedDomain].members[memberSelected].description}
                 </p>
               </div>
@@ -216,9 +216,7 @@ const Page = () => {
     gap-[clamp(0.75rem,1.5vw,1rem)]
     mt-[clamp(1.5rem,4vh,3rem)]
     max-w-[clamp(280px,32vw,380px)]
-    animate-fade-in-up
   "
-  style={{ animationDelay: '10ms' }}
 >
   {domains[selectedDomain].members.map((_, i) => (
     <div
@@ -230,12 +228,12 @@ const Page = () => {
         h-[clamp(75px,7vw,110px)]
         bg-white/30 border-2 border-white
         backdrop-blur-3xl shadow-lg
-        cursor-pointer transition-all duration-30 ease-out
+        cursor-pointer transition-all  ease-out
         hover:scale-105 hover:bg-white/50 hover:-translate-y-1
         ${memberSelected === i ? 'scale-105 bg-white/50 ring-2 ring-white/50' : ''}
         animate-fade-in-scale
       `}
-      style={{ animationDelay: `${5 + i * 100}ms` }}
+      style={{ animationDelay: `${2 + i * 1}ms` }}
     >
       <Image
         src="/Team/jeetu.png"
@@ -246,7 +244,6 @@ const Page = () => {
           h-full w-auto
           object-contain
           drop-shadow-[0_20px_20px_rgba(0,0,0,0.8)]
-          transition-all duration-300
         "
       />
     </div>
@@ -311,18 +308,17 @@ const Page = () => {
         </div>
 
         {/* Floating mobile social button */}
-        <div className="fixed lg:hidden top-[2%] right-5 z-50">
+        <div className="fixed lg:hidden top-[3%] right-7 z-50">
           <button
             onClick={() => setShowSocial(!showSocial)}
             className="w-14 h-14 rounded-full bg-black/66 shadow-lg flex items-center justify-center text-white text-2xl"
           >
-            <HiInformationCircle />
+            <HiLink />
           </button>
 
           {showSocial && (
             <div className="mt-2 flex flex-col gap-3 bg-white/30 backdrop-blur-xl p-2 rounded-lg shadow-lg animate-fade-in-up">
               {[
-                { label: "Info", icon: <HiInformationCircle size={25} />, link: "https://example.com/info" },
                 { label: "GitHub", icon: <FaGithub size={25} />, link: "https://github.com/jeetm" },
                 { label: "LinkedIn", icon: <FaLinkedin size={25} />, link: "https://linkedin.com/in/jeetm" },
                 { label: "Instagram", icon: <FaInstagram size={25} />, link: "https://instagram.com/jeetm" },
@@ -342,7 +338,7 @@ const Page = () => {
         </div>
 
         <div
-          className="fixed lg:hidden bottom-4 left-0 z-50 h-[230px] overflow-y-auto no-scrollbar cursor-grab active:cursor-grabbing select-none px-2"
+          className="fixed lg:hidden bottom-0 right-0 z-50 h-[230px] overflow-y-auto no-scrollbar cursor-grab active:cursor-grabbing select-none px-2"
           ref={(el) => {
             if (!el) return;
             let isDownY = false;
@@ -380,12 +376,12 @@ const Page = () => {
             };
           }}
         >
-          <div className="flex flex-col gap-[15px]">
+          <div className="flex flex-col gap-[10px]">
             {domains[selectedDomain].members.map((_, i) => (
               <div
                 onClick={() => setMemberSelected(i)}
                 key={i}
-                className={`bg-white/30 flex justify-center items-center w-[50px] h-[50px] flex-shrink-0 border-2 backdrop-blur-3xl shadow-lg border-white cursor-pointer transform transition-all duration-300 ease-out hover:scale-105 hover:bg-white/50 hover:shadow-xl ${memberSelected === i ? 'scale-105 bg-white/50 shadow-xl ring-2 ring-white/50' : ''
+                className={`bg-white/30 flex justify-center items-center w-[60px] h-[60px] flex-shrink-0 border-2 backdrop-blur-3xl shadow-lg border-white cursor-pointer transform transition-all duration-300 ease-out hover:scale-105 hover:bg-white/50 hover:shadow-xl ${memberSelected === i ? 'scale-105 bg-white/50 shadow-xl ring-2 ring-white/50' : ''
                   } animate-fade-in-scale`}
                 style={{ animationDelay: `${1200 + i * 100}ms` }}
               >
