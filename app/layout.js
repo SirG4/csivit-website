@@ -2,6 +2,7 @@ import { Geist, Geist_Mono, Orbitron } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { AuthProvider } from "./providers";
+import PageTransition from "@/components/PageTransition";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -87,7 +88,11 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${orbiton.variable} ${geistMono.variable} ${minercraft.variable}  ${tungsten.variable} antialiased`}
       >
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <PageTransition>
+            {children}
+          </PageTransition>
+          </AuthProvider>
       </body>
     </html>
   );

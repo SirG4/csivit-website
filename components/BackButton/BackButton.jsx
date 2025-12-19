@@ -1,34 +1,45 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import './BackButton.css';
 
+
+import { useRouter } from "next/navigation";
+import { gsap } from "gsap";
+
 const BackButton = () => {
-  const [isAnimating, setIsAnimating] = useState(false);
   const router = useRouter();
-
-  const handleClick = () => {
-    setIsAnimating(true);
-    // Wait for animation to complete before redirecting
-    setTimeout(() => {
-      router.push('/');
-    }, 0); // Match this duration with CSS animation duration
+  const handleBack = (e) => {
+    e.preventDefault();
+    const overlay = document.querySelector('.fade-overlay');
+    if (overlay) {
+      overlay.style.pointerEvents = 'all';
+      window.__FADE_TYPE__ = 'back';
+      gsap.to(overlay, {
+        opacity: 1,
+        duration: 0.5,
+        ease: 'power2.inOut',
+        onComplete: () => {
+          router.push('/home');
+        },
+      });
+    } else {
+      router.push('/home');
+    }
   };
-
   return (
     <>
-      <button 
-        className={`back-button ${isAnimating ? 'animating' : ''}`}
-        onClick={handleClick}
+      <a 
+        href="/home"
+        className="back-button"
         aria-label="Go back to home page"
+        onClick={handleBack}
       >
         <img 
           src="/BackButton.png" 
           alt="Back" 
           className="back-button-icon"
         />
-      </button>
+      </a>
     </>
   );
 };
