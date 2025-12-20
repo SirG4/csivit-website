@@ -137,7 +137,7 @@ const Page = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/70"></div>
 
         {/* LEFT IMAGE: now dynamic based on selected member */}
-        <div className="absolute bottom-0 w-auto right-0 lg:right-auto lg:left-1/2 h-[55vh] lg:h-[90vh] lg:transform lg:-translate-x-1/2 pointer-events-none flex justify-end lg:justify-center">
+        <div className="absolute bottom-0 w-auto right-0 lg:right-auto lg:left-1/2 h-[70vh] lg:h-[90vh] lg:transform lg:-translate-x-1/2 pointer-events-none flex justify-end lg:justify-center">
           <Image
             key={currentMemberImage} // Key ensures proper image change
             alt={currentMemberName}
