@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { FaGithub, FaLinkedin, FaInstagram } from "react-icons/fa";
 
 export default function RusticPanel() {
+  
+
   const characters = [
     {
       arrow: "/DevPage/arrow.png",
@@ -75,6 +77,19 @@ export default function RusticPanel() {
 
   // store the selected index instead of the whole object
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [ifmobile, setIfmobile] = useState(false);
+
+  // Check if screen is mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIfmobile(window.innerWidth < 1024);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // optional: preload arrow images (unnecessary in most cases, but harmless)
   useEffect(() => {
@@ -119,12 +134,12 @@ export default function RusticPanel() {
             />
             {/*  Box */}
             <div
-              className="
+              className={`
                 block lg:hidden
                 w-[65vw]
-                h-[25vh]
+                ${ifmobile ? 'h-[23vh]' : 'h-[25vh]'}
                 bg-transparent
-              "
+              `}
             />
           </div>
           </div>
