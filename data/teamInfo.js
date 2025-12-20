@@ -70,7 +70,7 @@
           name: 'Madhav P.',
           github: 'https://github.com/kunalsharma',
           linkedin: 'https://linkedin.com/in/kunalsharma',
-          image: '/Team/Members/Technical/kunal.png',
+          image: '/Team/Members/Technical/madhav.png',
           description: 'Heads technical events, hackathons, and coding contests.',
           position: 'Head',
         },

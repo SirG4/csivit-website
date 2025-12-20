@@ -10,7 +10,6 @@ import { HiLink, HiInformationCircle } from "react-icons/hi"
 import { RiInstagramFill } from "react-icons/ri";
 import { useRouter } from 'next/navigation'
 
-
 const Page = () => {
   const [selectedDomain, setSelectedDomain] = useState(0);
   const [memberSelected, setMemberSelected] = useState(0);
@@ -27,7 +26,6 @@ const Page = () => {
 
   useEffect(() => {
     const updateScreen = () => {
-      // Use visualViewport for zoom-aware width detection
       const width = window.visualViewport?.width || window.innerWidth;
       if (width >= 1280) {
         setScreen('desk');
@@ -40,8 +38,7 @@ const Page = () => {
       }
     };
 
-    updateScreen(); // initial check
-
+    updateScreen();
     window.addEventListener('resize', updateScreen);
     window.visualViewport?.addEventListener('resize', updateScreen);
 
@@ -50,7 +47,6 @@ const Page = () => {
       window.visualViewport?.removeEventListener('resize', updateScreen);
     };
   }, []);
-
 
   // Handle scroll progress
   useEffect(() => {
@@ -93,7 +89,7 @@ const Page = () => {
       if (!isDown.current) return;
       e.preventDefault();
       const x = e.pageX - slider.offsetLeft;
-      const walk = (x - startX.current) * 1.5; // scroll speed
+      const walk = (x - startX.current) * 1.5;
       slider.scrollLeft = scrollLeft.current - walk;
     };
 
@@ -119,9 +115,20 @@ const Page = () => {
     };
   }, []);
 
-  // --- NEW: compute the current member image path (fallback if not present) ---
-  const currentMemberImage =
-    domains?.[selectedDomain]?.members?.[memberSelected]?.image;
+  // Get current member info
+  const currentMember = domains?.[selectedDomain]?.members?.[memberSelected];
+  const currentMemberImage = currentMember?.image || '/Team/jeetu.png'; // Fallback to default image
+  const currentMemberName = currentMember?.name || '';
+  const currentMemberDescription = currentMember?.description || '';
+  const currentMemberPosition = currentMember?.position || '';
+
+  // Get social links from current member data (assuming they exist in your data structure)
+  const memberSocials = {
+    github: currentMember?.github || 'https://github.com',
+    linkedin: currentMember?.linkedin || 'https://linkedin.com',
+    instagram: currentMember?.instagram || 'https://instagram.com',
+    info: currentMember?.infoLink || 'https://example.com/info'
+  };
 
   return (
     <div className="relative w-screen h-screen overflow-hidden lg:overflow-visible">
@@ -130,15 +137,15 @@ const Page = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/70"></div>
 
         {/* LEFT IMAGE: now dynamic based on selected member */}
-        <div className="absolute bottom-0 w-auto right-0 lg:right-auto lg:left-1/2 h-[70vh] lg:h-[90vh] lg:transform lg:-translate-x-1/2 pointer-events-none flex justify-end lg:justify-center">
+        <div className="absolute bottom-0 w-auto right-0 lg:right-auto lg:left-1/2 h-[55vh] lg:h-[90vh] lg:transform lg:-translate-x-1/2 pointer-events-none flex justify-end lg:justify-center">
           <Image
-            // key ensures Next/Image replaces the image node when the source changes
-            key={currentMemberImage}
-            alt={'The Best Technician Ever'}
-            src={'/Team/jeetu.png'}
+            key={currentMemberImage} // Key ensures proper image change
+            alt={currentMemberName}
+            src={currentMemberImage}
             width={420}
             height={840}
             className="h-full w-auto object-contain -translate-x-18 lg:-translate-x-4 drop-shadow-[0_35px_35px_rgba(0,0,0,0.9)] transition-all duration-500 ease-out"
+            priority
           />
         </div>
 
@@ -185,7 +192,6 @@ const Page = () => {
                   </div>
                 </div>
 
-
                 {/* Progress Bar */}
                 <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 w-[100%] h-[5px] bg-[#2f2f2f]/80 rounded-full overflow-hidden shadow-md">
                   <div
@@ -193,8 +199,8 @@ const Page = () => {
                     style={{ width: `${scrollProgress}%` }}
                   />
                 </div>
-
               </div>
+
               {/* Mobile side section */}
               <div className="
                 lg:hidden mt-6 ml-auto max-w-[270px] px-4 text-right flex flex-col items-end transition-all duration-500 ease-out">
@@ -203,14 +209,13 @@ const Page = () => {
                 </h2>
 
                 <h1 className="font-tungsten-bold text-[3rem] hover:text-orange-300 hover:scale-105 transition-all">
-                  {domains[selectedDomain].members[memberSelected].name}
+                  {currentMemberName}
                 </h1>
 
                 <p className="text-sm max-w-[180px]">
-                  {domains[selectedDomain].members[memberSelected].description}
+                  {currentMemberDescription}
                 </p>
               </div>
-
 
               {/* Member cards */}
               <div
@@ -222,7 +227,7 @@ const Page = () => {
                   max-w-[clamp(280px,32vw,380px)]
                 "
               >
-                {domains[selectedDomain].members.map((_, i) => (
+                {domains[selectedDomain].members.map((member, i) => (
                   <div
                     key={i}
                     onClick={() => setMemberSelected(i)}
@@ -240,20 +245,19 @@ const Page = () => {
                     style={{ animationDelay: `${2 + i * 1}ms` }}
                   >
                     <Image
-                      src="/Team/jeetu.png"
-                      alt="Team Member"
+                      src={member.image || '/Team/jeetu.png'} // Use member's image
+                      alt={member.name}
                       width={120}
                       height={160}
                       className="
                         h-full w-auto
                         object-contain
-                        drop-shadow-[0_20px_20px_rgba(0,0,0,0.8)]
+                        drop-shadow-[0_20px_20px_rgba(0,0,0,0.8)] 
                       "
                     />
                   </div>
                 ))}
               </div>
-
             </div>
 
             {/* Right section */}
@@ -263,17 +267,17 @@ const Page = () => {
                   {domains[selectedDomain].name}
                 </div>
                 <div className="font-tungsten-bold text-[clamp(2.8rem,5vw,5.5rem)]">
-                  {domains[selectedDomain].members[memberSelected].name}
+                  {currentMemberName}
                 </div>
               </div>
 
               {/* Social icons */}
               <div className="flex gap-[clamp(0.5rem,1.5vw,1rem)] mb-[clamp(0.75rem,2vh,2rem)] animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                 {[
-                  { label: "Info", icon: <HiInformationCircle className="w-[clamp(22px,2.5vw,40px)] h-[clamp(22px,2.5vw,40px)]" />, link: "https://example.com/info" },
-                  { label: "Github", icon: <FaGithub className="w-[clamp(22px,2.5vw,40px)] h-[clamp(22px,2.5vw,40px)]" />, link: "https://github.com/jeetm" },
-                  { label: "Linkedin", icon: <FaLinkedin className="w-[clamp(22px,2.5vw,40px)] h-[clamp(22px,2.5vw,40px)]" />, link: "https://linkedin.com/in/jeetm" },
-                  { label: "Instagram", icon: <RiInstagramFill className="w-[clamp(22px,2.5vw,40px)] h-[clamp(22px,2.5vw,40px)]" />, link: "https://instagram.com/jeetm" },
+                  { label: "Info", icon: <HiInformationCircle className="w-[clamp(22px,2.5vw,40px)] h-[clamp(22px,2.5vw,40px)]" />, link: memberSocials.info },
+                  { label: "Github", icon: <FaGithub className="w-[clamp(22px,2.5vw,40px)] h-[clamp(22px,2.5vw,40px)]" />, link: memberSocials.github },
+                  { label: "Linkedin", icon: <FaLinkedin className="w-[clamp(22px,2.5vw,40px)] h-[clamp(22px,2.5vw,40px)]" />, link: memberSocials.linkedin },
+                  { label: "Instagram", icon: <RiInstagramFill className="w-[clamp(22px,2.5vw,40px)] h-[clamp(22px,2.5vw,40px)]" />, link: memberSocials.instagram },
                 ].map((item, i) => (
                   <a
                     key={i}
@@ -298,7 +302,7 @@ const Page = () => {
               <div className="w-full h-1 rounded-4xl bg-white mb-[clamp(0.5rem,1vh,1rem)] transition-all duration-500 hover:h-2 hover:bg-orange-300 animate-fade-in-left" style={{ animationDelay: '2000ms' }} />
 
               <p className="text-[clamp(0.85rem,1.1vw,1.125rem)] animate-fade-in-up" style={{ animationDelay: '2200ms' }}>
-                {domains[selectedDomain].members[memberSelected].description}
+                {currentMemberDescription}
               </p>
             </div>
           </div>
@@ -307,7 +311,7 @@ const Page = () => {
         {/* Bottom position card */}
         <div className='absolute hidden lg:flex bottom-[clamp(0.5rem,2vh,1.25rem)] w-full items-center justify-center font-tungsten-bold text-white px-4 py-2 text-center animate-fade-in-up' style={{ animationDelay: '2400ms' }}>
           <div className='bg-gradient-to-b from-[#D13844] to-[#FF7777] text-[clamp(1.5rem,3.5vw,3rem)] px-[clamp(2rem,4vw,3rem)] rounded shadow-2xl drop-shadow-2xl transition-all duration-500 ease-out hover:scale-105 hover:from-[#FF4455] hover:to-[#FF8888] transform hover:-translate-y-1'>
-            {domains[selectedDomain].members[memberSelected].position}
+            {currentMemberPosition}
           </div>
         </div>
 
@@ -323,9 +327,9 @@ const Page = () => {
           {showSocial && (
             <div className="mt-2 flex flex-col gap-3 bg-white/30 backdrop-blur-xl p-2 rounded-lg shadow-lg animate-fade-in-up">
               {[
-                { label: "GitHub", icon: <FaGithub size={25} />, link: "https://github.com/jeetm" },
-                { label: "LinkedIn", icon: <FaLinkedin size={25} />, link: "https://linkedin.com/in/jeetm" },
-                { label: "Instagram", icon: <FaInstagram size={25} />, link: "https://instagram.com/jeetm" },
+                { label: "GitHub", icon: <FaGithub size={25} />, link: memberSocials.github },
+                { label: "LinkedIn", icon: <FaLinkedin size={25} />, link: memberSocials.linkedin },
+                { label: "Instagram", icon: <FaInstagram size={25} />, link: memberSocials.instagram },
               ].map((item, i) => (
                 <a
                   key={i}
@@ -341,6 +345,7 @@ const Page = () => {
           )}
         </div>
 
+        {/* Mobile vertical member cards */}
         <div
           className="fixed lg:hidden pb-3 bottom-0 right-0 z-50 h-[230px] overflow-y-auto no-scrollbar cursor-grab active:cursor-grabbing select-none px-2"
           ref={(el) => {
@@ -381,7 +386,7 @@ const Page = () => {
           }}
         >
           <div className="flex flex-col gap-[10px]">
-            {domains[selectedDomain].members.map((_, i) => (
+            {domains[selectedDomain].members.map((member, i) => (
               <div
                 onClick={() => setMemberSelected(i)}
                 key={i}
@@ -390,21 +395,19 @@ const Page = () => {
                 style={{ animationDelay: `${1200 + i * 100}ms` }}
               >
                 <Image
-                  key={i}
-                  alt={'Team Member'}
-                  src={'/Team/jeetu.png'}
-                  width={420}
-                  height={840}
-                  className="h-full w-auto object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.9)] transition-all duration-500 ease-out"
+                  key={member.image}
+                  alt={member.name}
+                  src={member.image || '/Team/jeetu.png'} // Use member's image
+                  width={60}
+                  height={60}
+                  className="h-full w-auto object-contain drop-shadow-[0_10px_10px_rgba(0,0,0,0.9)] transition-all duration-500 ease-out"
                 />
               </div>
             ))}
           </div>
         </div>
-
       </div>
     </div>
-
   )
 }
 
