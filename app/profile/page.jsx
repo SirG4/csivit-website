@@ -88,7 +88,7 @@ export default function Page() {
             </div>
           </div>
 
-          {/* Right: CP Username + Report + Logout */}
+          {/* Level and Online Status */}
           <div className="flex flex-col md:flex-col gap-4">
             <div className=" pr-4 py-3">
               <div className="flex flex-row gap-2">
@@ -100,9 +100,8 @@ export default function Page() {
               </div>
             </div>
             <div className="flex flex-row gap-4">
-            <button
-              onClick={() => signOut({ callbackUrl: "/login" })}
-              className="flex items-center gap-2 bg-gray-600 transition px-3 py-2 text-xs font-medium"
+            <div
+              className="flex items-center bg-black/25 gap-2 transition px-4 py-2 text-xs font-medium"
             >
               {/* Glowing green dot */}
               <span className="relative flex h-2 w-2">
@@ -110,7 +109,7 @@ export default function Page() {
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500"></span>
               </span>           
               Currently Online
-            </button>
+            </div>
             <button
               onClick={() => signOut({ callbackUrl: "/login" })}
               className="bg-red-800 hover:bg-red-600 transition px-3 py-2 text-xs font-medium"
