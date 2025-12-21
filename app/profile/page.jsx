@@ -49,7 +49,7 @@ export default function Page() {
       </div>
 
       {/* Navbar - fixed and on top of background */}
-      <div className="fixed top-0 left-0 w-full h-24 bg-gray-900  z-40 shadow-xl shadow-black/70" />
+      <div className="fixed top-0 left-0 w-full h-29 bg-gray-900 z-49 shadow-xl shadow-black/70" />
         <BackButton />
         <div className="fixed top-0 left-0 w-full h-24 flex items-center justify-center z-50 pointer-events-none">
           <Image
@@ -57,12 +57,12 @@ export default function Page() {
             alt="Profile"
             width={140}
             height={40}
-            className="object-contain pointer-events-auto"
+            className="object-contain pt-5 pointer-events-auto"
           />
         </div>
 
       {/* Main Content - with gradient overlay on top of background image */}
-      <main className="relative z-10 min-h-screen lg:mx-50 text-white p-6 md:p-10 mt-22">
+      <main className="relative z-10 min-h-screen lg:mx-50 text-white p-6 md:p-10 mt-29">
         {/* Gradient overlay container */}
         <div className="absolute inset-0 bg-gradient-to-b from-gray-800/95 via-gray-800/90 to-gray-900/100 -z-10"></div>
         
