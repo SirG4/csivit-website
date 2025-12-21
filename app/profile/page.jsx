@@ -43,7 +43,6 @@ export default function Page() {
           bg-left md:bg-center
           md:bg-fixed
           "
-          priority={true}
       >
         {/* Overlay to darken the image */}
         <div className="absolute inset-0 bg-black/20"></div>
@@ -121,10 +120,10 @@ export default function Page() {
         </section>
 
         {/* Main Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-5 mt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-5 mt-6 items-start">
           {/* Left Column */}
           <section className="space-y-6 order-2 lg:order-1">
-            <div className="bg-black/25 backdrop-blur-sm shadow-lg">
+            <div className="bg-black/25 backdrop-blur-sm shadow-lg order-1 lg:order-2 h-fit self-start">
               <div className="text-xl bg-white/10 p-3 font-semibold ">Events Status</div>
 
               {/* Upcoming Events */}
@@ -311,19 +310,6 @@ export default function Page() {
                   className="snap-start"
                 />
               </div>
-            </div>
-
-            {/* Links / Accordions */}
-            <div className="divide-y divide-white/10">
-              {["CSI REWIND", "FLASHBACKS", "HIGHLIGHTS"].map((item) => (
-                <div
-                  key={item}
-                  className="flex items-center justify-between bg-white/10 px-4 py-3 hover:bg-white/20 transition cursor-pointer"
-                >
-                  <span>{item}</span>
-                  <ChevronDown className="w-5 h-5 opacity-70" />
-                </div>
-              ))}
             </div>
           </section>
         </div>
