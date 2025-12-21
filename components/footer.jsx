@@ -58,7 +58,7 @@ export default function Footer() {
         <div className="mt-12 flex justify-center"
         >
           <div className=" flex items-center justify-center">
-            <img src="/csi logo.png" alt="CSI-VIT Logo" className="max-h-32 object-contain" />
+            <img src="/csi_logo.png" alt="CSI-VIT Logo" className="max-h-32 object-contain" />
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

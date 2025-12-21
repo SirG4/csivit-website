@@ -33,7 +33,7 @@ export default function Page() {
   }
 
   return (
-    <div className="relative">
+    <div className="relative w-full overflow-x-hidden">
       {/* Background Image Layer */}
       <div 
         className="
@@ -49,12 +49,16 @@ export default function Page() {
       </div>
 
       {/* Navbar - fixed and on top of background */}
-      <div className="fixed top-0 left-0 w-full h-24 bg-gray-900 z-40 shadow-xl shadow-black/70" />
+      <div className="fixed top-0 left-0 w-full h-24 bg-gray-900  z-40 shadow-xl shadow-black/70" />
         <BackButton />
         <div className="fixed top-0 left-0 w-full h-24 flex items-center justify-center z-50 pointer-events-none">
-          <div className="text-white md:tracking-wider text-3xl font-bold pointer-events-auto">
-            Profile
-          </div>
+          <Image
+            src="/csi_logo.png"
+            alt="Profile"
+            width={140}
+            height={40}
+            className="object-contain pointer-events-auto"
+          />
         </div>
 
       {/* Main Content - with gradient overlay on top of background image */}
