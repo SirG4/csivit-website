@@ -1,23 +1,24 @@
-"use client"
+"use client";
 
-import { usePathname, useRouter } from "next/navigation"
-import { useEffect, useRef, useState } from "react"
-import { gsap } from "gsap"
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { gsap } from "gsap";
 import Image from "next/image";
-import team from "@/public/HomePage/valo_team 1.png";
-import events from "@/public/HomePage/assassins_events 1.png";
-import prof from "@/public/HomePage/minecraft_profile 1.png";
-import dev from "@/public/HomePage/roadrash_developers 1.png";
+
+import team from "@/public/Home/Poster/TeamLoader.png";
+import events from "@/public/Home/Poster/EventsLoader.png";
+import prof from "@/public/Home/Poster/ProfileLoader.jpeg";
+import dev from "@/public/Home/Poster/DevLoader.png";
 
 const PageTransition = ({ children }) => {
-  const router = useRouter()
-  const pathname = usePathname()
-  const overlayRef = useRef(null)
-  const isTransitioning = useRef(false)
-  const [isInitialLoad, setIsInitialLoad] = useState(true)
+  const router = useRouter();
+  const pathname = usePathname();
+  const overlayRef = useRef(null);
+  const isTransitioning = useRef(false);
+  const [GameName,setGameName]=useState('');
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [transitionImage, setTransitionImage] = useState(null);
 
-  // Map route to image
   const routeToImage = {
     "/team": team,
     "/events": events,
@@ -25,154 +26,190 @@ const PageTransition = ({ children }) => {
     "/developer": dev,
   };
 
+  const routeToGameName={
+    "/team":"Valorant",
+    "/events":"Assains Creed",
+    "/profile":"Minecraft",
+    "/developer":"Road rash",
+  };
+
+  /* ---------------- PATH CHANGE ---------------- */
   useEffect(() => {
-    // Skip fade animation on initial load to prevent navbar from being hidden
     if (isInitialLoad) {
-      if (overlayRef.current) {
-        overlayRef.current.style.opacity = "0"
-        overlayRef.current.style.pointerEvents = "none"
-      }
-      setIsInitialLoad(false)
-      return
+      overlayRef.current.style.opacity = "0";
+      overlayRef.current.style.pointerEvents = "none";
+      setIsInitialLoad(false);
+      window.__PREV_PATH__ = pathname;
+      return;
     }
 
-    // Reset transition state when pathname changes (navigation completed)
-    isTransitioning.current = false
+    isTransitioning.current = false;
 
-    // Determine animation type
-    const fadeType = window.__FADE_TYPE__ || 'default';
-    // Show image if coming from home and going to a mapped route
     const prevPath = window.__PREV_PATH__;
     const nextPath = pathname;
+
     if (prevPath === "/home" && routeToImage[nextPath]) {
       setTransitionImage(routeToImage[nextPath]);
-      // Fade in image, then fade out
-      if (overlayRef.current) {
-        overlayRef.current.style.display = "flex";
-        overlayRef.current.style.alignItems = "center";
-        overlayRef.current.style.justifyContent = "center";
-      }
-      gsap.fromTo(
-        overlayRef.current,
-        { opacity: 1 },
-        {
-          opacity: 1,
-          duration: 0.1,
-          onComplete: () => {
-            gsap.to(overlayRef.current, {
-              opacity: 1,
-              duration: 1.0,
-              onComplete: () => {
-                gsap.to(overlayRef.current, {
-                  opacity: 0,
-                  duration: 0.5,
-                  onComplete: () => {
-                    setTransitionImage(null);
-                    if (overlayRef.current) {
-                      overlayRef.current.style.pointerEvents = "none";
-                      overlayRef.current.style.display = "block";
-                    }
-                  },
-                });
-              },
-            });
-          },
-        }
-      );
+      setGameName(routeToGameName[nextPath]);
+
+      gsap.to(overlayRef.current, {
+        opacity: 1,
+        duration: 0.2,
+        onComplete: () => {
+          gsap.to(overlayRef.current, {
+            opacity: 1,
+            duration: 2.5,
+            onComplete: () => {
+              gsap.to(overlayRef.current, {
+                opacity: 0,
+                duration: 0.5,
+                onComplete: () => {
+                  setTransitionImage(null);
+                  overlayRef.current.style.pointerEvents = "none";
+                },
+              });
+            },
+          });
+        },
+      });
     } else {
-      if (fadeType === 'back') {
-        // Pure fade for back button
-        gsap.fromTo(
-          overlayRef.current,
-          { opacity: 1 },
-          {
-            opacity: 0,
-            duration: 0.7,
-            ease: "power2.inOut",
-            onComplete: () => {
-              if (overlayRef.current) {
-                overlayRef.current.style.pointerEvents = "none"
-              }
-              window.__FADE_TYPE__ = undefined;
-            },
-          }
-        );
-      } else {
-        // Slide/fade for normal navigation
-        gsap.fromTo(
-          overlayRef.current,
-          { opacity: 1, x: 0 },
-          {
-            opacity: 0,
-            x: 100,
-            duration: 0.4,
-            ease: "power2.out",
-            onComplete: () => {
-              if (overlayRef.current) {
-                overlayRef.current.style.pointerEvents = "none"
-                overlayRef.current.style.transform = '';
-              }
-            },
-          }
-        );
-      }
+      gsap.to(overlayRef.current, {
+        opacity: 0,
+        duration: 0.5,
+        ease: "power2.out",
+        onComplete: () => {
+          overlayRef.current.style.pointerEvents = "none";
+        },
+      });
     }
+
     window.__PREV_PATH__ = pathname;
-  }, [pathname, isInitialLoad])
+  }, [pathname, isInitialLoad]);
 
+  /* ---------------- LINK CLICK ---------------- */
   useEffect(() => {
-    const handleLinkClick = (e) => {
-      const link = e.currentTarget
-      const href = link.getAttribute("href")
-      if (!href || href.startsWith("#")) return
+    const handleClick = (e) => {
+      const href = e.currentTarget.getAttribute("href");
+      if (!href || href.startsWith("#")) return;
 
-      e.preventDefault()
-      const url = new URL(href, window.location.origin).pathname
-      if (url === pathname || isTransitioning.current) return
-        console.log(url,pathname)
-      isTransitioning.current = true
-      overlayRef.current.style.pointerEvents = "all"
+      const url = new URL(href, window.location.origin).pathname;
+      if (url === pathname || isTransitioning.current) return;
+
+      e.preventDefault();
+      isTransitioning.current = true;
+      overlayRef.current.style.pointerEvents = "all";
 
       gsap.to(overlayRef.current, {
         opacity: 1,
         duration: 0.35,
         ease: "power3.inOut",
-        onComplete: () => {
-          router.push(url)
-        },
-      })
-    }
+        onComplete: () => router.push(url),
+      });
+    };
 
-    const links = document.querySelectorAll('a[href^="/"]')
-    links.forEach((l) => l.addEventListener("click", handleLinkClick))
+    const links = document.querySelectorAll('a[href^="/"]');
+    links.forEach((l) => l.addEventListener("click", handleClick));
 
     return () =>
-      links.forEach((l) => l.removeEventListener("click", handleLinkClick))
-  }, [router, pathname])
+      links.forEach((l) => l.removeEventListener("click", handleClick));
+  }, [pathname, router]);
 
   return (
     <>
-      <div 
-        ref={overlayRef} 
-        className="fade-overlay" 
-        style={{ opacity: 0, pointerEvents: 'none', display: transitionImage ? 'flex' : 'block' }} 
-      >
-        {transitionImage && (
-          <Image src={transitionImage} alt="Transition" width={400} height={400} style={{ objectFit: 'contain', borderRadius: '2rem', boxShadow: '0 0 40px #0008' }} />
-        )}
-      </div>
       {children}
 
-      <style>{`
+      <div
+        ref={overlayRef}
+        className="fade-overlay"
+        style={{ opacity: 0, pointerEvents: "none" }}
+      >
+        {transitionImage && (
+          <>
+            <Image
+              src={transitionImage}
+              alt="Transition"
+              fill
+              priority
+              
+              className="object-contain md:object-cover"
+            />
+
+            <div className="transition-overlay-text">
+              <span className="inspired">Inspired by</span>
+              <span className="game-name">{GameName}</span>
+            </div>
+
+            <div className="progressbar-container">
+              <div className="progressbar">
+                <div className="progressbar-fill" />
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+
+      <style jsx global>{`
         .fade-overlay {
           position: fixed;
           inset: 0;
           background: #0f0f0f;
           z-index: 9999;
         }
+
+        .transition-overlay-text {
+          position: absolute;
+          top: 3vh;
+          right: 3vw;
+          color: #fff;
+          text-align: right;
+          font-family: Montserrat, sans-serif;
+          text-shadow: 0 2px 8px #000;
+          z-index: 2;
+        }
+
+        .transition-overlay-text .inspired {
+          font-size: 0.9rem;
+          opacity: 0.8;
+        }
+
+        .transition-overlay-text .game-name {
+          font-size: 1.4rem;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+        }
+
+        .progressbar-container {
+          position: absolute;
+          left: 50%;
+          bottom: 5vh;
+          transform: translateX(-50%);
+          width: 60vw;
+          max-width: 420px;
+          z-index: 2;
+        }
+
+        .progressbar {
+          height: 8px;
+          background: #222;
+          border-radius: 4px;
+          overflow: hidden;
+        }
+
+        .progressbar-fill {
+          height: 100%;
+          width: 0%;
+          background: linear-gradient(90deg, #3498db, #6dd5fa);
+          animation: fill 1.2s linear forwards;
+        }
+
+        @keyframes fill {
+          to {
+            width: 100%;
+          }
+        }
       `}</style>
     </>
-  )
-}
+  );
+};
 
-export default PageTransition
+export default PageTransition;

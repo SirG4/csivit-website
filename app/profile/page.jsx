@@ -35,37 +35,39 @@ export default function Page() {
   return (
     <div className="relative w-full overflow-x-hidden">
       {/* Background Image Layer */}
-      <div 
+      <div
         className="
-          fixed inset-0 z-0
-          bg-[url('/Profile/steamyBg.jpg')]
-          bg-cover bg-no-repeat
-          bg-left md:bg-center
-          md:bg-fixed
-          "
+    fixed inset-0 -z-10
+    bg-[url('/Profile/steamyBg.jpg')]
+    bg-cover bg-no-repeat
+    bg-left md:bg-center
+    md:bg-fixed
+    blur-md
+    scale-105
+  "
       >
         {/* Overlay to darken the image */}
-        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="absolute inset-0 bg-black/60 blur-"></div>
       </div>
 
       {/* Navbar - fixed and on top of background */}
       <div className="fixed top-0 left-0 w-full h-29 bg-gray-900 z-49 shadow-xl shadow-black/70" />
-        <BackButton />
-        <div className="fixed top-0 left-0 w-full h-24 flex items-center justify-center z-50 pointer-events-none">
-          <Image
-            src="/csi_logo.png"
-            alt="Profile"
-            width={140}
-            height={40}
-            className="object-contain pt-5 pointer-events-auto"
-          />
-        </div>
+      <BackButton />
+      <div className="fixed top-0 left-0 w-full h-24 flex items-center justify-center z-50 pointer-events-none">
+        <Image
+          src="/csi_logo.png"
+          alt="Profile"
+          width={140}
+          height={40}
+          className="object-contain pt-5 pointer-events-auto"
+        />
+      </div>
 
       {/* Main Content - with gradient overlay on top of background image */}
       <main className="relative z-10 min-h-screen lg:mx-50 text-white p-6 md:p-10 mt-29">
         {/* Gradient overlay container */}
         <div className="absolute inset-0 bg-gradient-to-b from-gray-800/95 via-gray-800/90 to-gray-900/100 -z-10"></div>
-        
+
         {/* Header Section */}
         <section className="flex flex-col  md:flex-row md:items-center md:justify-between gap-4  p-4">
           {/* Left: Profile */}
@@ -95,30 +97,30 @@ export default function Page() {
           <div className="flex flex-col md:flex-col gap-4">
             <div className=" pr-4 py-3">
               <div className="flex flex-row gap-2">
-              <p className="text-2xl opacity-70">Level</p>
-              <div className="w-9 h-9 flex items-center justify-center 
+                <p className="text-2xl opacity-70">Level</p>
+                <div className="w-9 h-9 flex items-center justify-center 
                       rounded-full border-1 border-green-500">
-                 <p className="text-lg font-semibold">67</p>
-               </div>
+                  <p className="text-lg font-semibold">67</p>
+                </div>
               </div>
             </div>
             <div className="flex flex-row gap-4">
-            <div
-              className="flex items-center bg-black/25 gap-2 transition px-4 py-2 text-xs font-medium"
-            >
-              {/* Glowing green dot */}
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping"></span>
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500"></span>
-              </span>           
-              Currently Online
-            </div>
-            <button
-              onClick={() => signOut({ callbackUrl: "/login" })}
-              className="bg-red-800 hover:bg-red-600 transition px-3 py-2 text-xs font-medium"
-            >
-              Sign Out
-            </button>
+              <div
+                className="flex items-center bg-black/25 gap-2 transition px-4 py-2 text-xs font-medium"
+              >
+                {/* Glowing green dot */}
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 animate-ping"></span>
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-green-500"></span>
+                </span>
+                Currently Online
+              </div>
+              <button
+                onClick={() => signOut({ callbackUrl: "/login" })}
+                className="bg-red-800 hover:bg-red-600 transition px-3 py-2 text-xs font-medium"
+              >
+                Sign Out
+              </button>
             </div>
           </div>
         </section>
@@ -187,7 +189,7 @@ export default function Page() {
                 <div className="bg-black/50 m-3 p-4 hover:bg-white/20 transition">
                   <div className="flex items-center gap-4">
                     <Image
-                    src="/Profile/steam_poster.jpg"
+                      src="/Profile/steam_poster.jpg"
                       alt="Past Event"
                       width={100}
                       height={100}
@@ -207,7 +209,7 @@ export default function Page() {
                 <div className="bg-black/50 m-3 p-4 hover:bg-white/20 transition">
                   <div className="flex items-center gap-4">
                     <Image
-                    src="/Profile/steam_poster.jpg"
+                      src="/Profile/steam_poster.jpg"
                       alt="Past Event"
                       width={100}
                       height={100}
@@ -227,7 +229,7 @@ export default function Page() {
                 <div className="bg-black/50 m-3 p-4 hover:bg-white/20 transition">
                   <div className="flex items-center gap-4">
                     <Image
-                    src="/Profile/steam_poster.jpg"
+                      src="/Profile/steam_poster.jpg"
                       alt="Past Event"
                       width={100}
                       height={100}
