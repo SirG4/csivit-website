@@ -43,6 +43,7 @@ export default function Page() {
           bg-left md:bg-center
           md:bg-fixed
           "
+          priority={true}
       >
         {/* Overlay to darken the image */}
         <div className="absolute inset-0 bg-black/20"></div>
@@ -130,7 +131,7 @@ export default function Page() {
               {/* Upcoming Events */}
               <div className="">
                 <div className="font-medium bg-black/30 p-3">Upcoming Events</div>
-                <div className="bg-white/10 p-4 hover:bg-white/20 transition">
+                <div className="bg-black/50 m-3 p-4 hover:bg-white/20 transition">
                   <div className="flex items-center gap-4">
                     <Image
                       src="/Profile/steam_poster.jpg"
@@ -153,7 +154,7 @@ export default function Page() {
                     </div>
                   </div>
                 </div>
-                <div className="bg-white/10 p-4 hover:bg-white/20 transition">
+                <div className="bg-black/50 m-3 p-4 hover:bg-white/20 transition">
                   <div className="flex items-center gap-4">
                     <Image
                       src="/Profile/steam_poster.jpg"
@@ -181,7 +182,7 @@ export default function Page() {
               {/* Past Events */}
               <div>
                 <h3 className="font-medium bg-black/30 p-3">Past Events</h3>
-                <div className="bg-white/10 p-4 hover:bg-white/20 transition">
+                <div className="bg-black/50 m-3 p-4 hover:bg-white/20 transition">
                   <div className="flex items-center gap-4">
                     <Image
                     src="/Profile/steam_poster.jpg"
@@ -201,7 +202,7 @@ export default function Page() {
                     </div>
                   </div>
                 </div>
-                <div className="bg-white/10 p-4 hover:bg-white/20 transition">
+                <div className="bg-black/50 m-3 p-4 hover:bg-white/20 transition">
                   <div className="flex items-center gap-4">
                     <Image
                     src="/Profile/steam_poster.jpg"
@@ -221,7 +222,7 @@ export default function Page() {
                     </div>
                   </div>
                 </div>
-                <div className="bg-white/10 p-4 hover:bg-white/20 transition">
+                <div className="bg-black/50 m-3 p-4 hover:bg-white/20 transition">
                   <div className="flex items-center gap-4">
                     <Image
                     src="/Profile/steam_poster.jpg"
