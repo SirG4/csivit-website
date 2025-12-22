@@ -1,14 +1,15 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Home/Navbar";
 import { FiUser, FiLock, FiEye, FiEyeOff, FiMail } from "react-icons/fi";
 import { FaGithub, FaGoogle } from "react-icons/fa";
 
 const page = () => {
+  const { status } = useSession();
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
@@ -51,6 +52,16 @@ const page = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.replace("/profile");
+    }
+  }, [status, router]);
+
+  if (status === "authenticated") {
+    return null;
+  }
 
   return (
     <div className="min-h-screen w-full relative overflow-hidden">
