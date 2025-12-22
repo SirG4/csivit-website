@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import Navbar from "@/components/Home/Navbar";
+import BackButton from "@/components/BackButton/BackButton";
 import { BrowserMultiFormatReader } from "@zxing/browser";
 
 export default function ScannerPage() {
@@ -126,7 +126,7 @@ export default function ScannerPage() {
         />
       </div>
 
-      <Navbar />
+      <BackButton />
 
       <main className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 pt-20 pb-10">
         {/* Tomb of the Mask Theme Container */}
