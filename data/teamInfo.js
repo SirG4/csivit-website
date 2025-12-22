@@ -1,11 +1,34 @@
  export const domains = [
     {
+      name: 'Convenors',
+      icon: '/Team/Icons/convenors.png',
+      description: 'Convenors',
+      members: [
+        {
+          name: 'Amit N.',
+          github: 'https://github.com/aaravmehta',
+          linkedin: 'https://linkedin.com/in/aaravmehta',
+          image: '/Team/Members/Convenrs/Nerurkar.png',
+          description: 'Responsible for leading core committees and decision making.',
+          position: 'Head',
+        },
+        {
+          name: 'Amit A.',
+          github: 'https://github.com/snehar',
+          linkedin: 'https://linkedin.com/in/snehar',
+          image: '/Team/Members/COnvenors/Aylani.png',
+          description: 'Coordinates between teams and ensures timely execution of plans.',
+          position: 'Co-Head',
+        }
+      ],
+    },
+    {
       name: 'Executive',
       icon: '/Team/Icons/executives.png',
       description: 'Leadership and management events',
       members: [
         {
-          name: 'Aarav Mehta',
+          name: 'Aarav M.',
           github: 'https://github.com/aaravmehta',
           linkedin: 'https://linkedin.com/in/aaravmehta',
           image: '/Team/Members/Executive/aarav.png',
@@ -47,7 +70,7 @@
           name: 'Madhav P.',
           github: 'https://github.com/kunalsharma',
           linkedin: 'https://linkedin.com/in/kunalsharma',
-          image: '/Team/Members/Technical/kunal.png',
+          image: '/Team/Members/Technical/madhav.png',
           description: 'Heads technical events, hackathons, and coding contests.',
           position: 'Head',
         },
@@ -107,7 +130,7 @@
           position: 'Head',
         },
         {
-          name: 'Minakshi S.',
+          name: 'Minakshi',
           github: 'https://github.com/sarakhan',
           linkedin: 'https://linkedin.com/in/sarakhan',
           image: '/Team/Members/Creatives/sara.png',

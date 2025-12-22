@@ -9,7 +9,6 @@
   cursor: pointer;
   z-index: 1000;
   transition: transform 0.2s ease;
-  filter: drop-shadow(1px 1px 1px #ffffff)
 }
 
 .back-button:hover:not(:disabled) {

@@ -6,10 +6,9 @@ import BackButton from '@/components/BackButton/BackButton.jsx'
 
 import { FiUser } from 'react-icons/fi'
 import { FaGithub, FaLinkedin, FaInstagram } from "react-icons/fa";
-import { HiInformationCircle } from "react-icons/hi"
+import { HiLink, HiInformationCircle } from "react-icons/hi"
 import { RiInstagramFill } from "react-icons/ri";
 import { useRouter } from 'next/navigation'
-
 
 const Page = () => {
   const [selectedDomain, setSelectedDomain] = useState(0);
@@ -27,7 +26,6 @@ const Page = () => {
 
   useEffect(() => {
     const updateScreen = () => {
-      // Use visualViewport for zoom-aware width detection
       const width = window.visualViewport?.width || window.innerWidth;
       if (width >= 1280) {
         setScreen('desk');
@@ -40,8 +38,7 @@ const Page = () => {
       }
     };
 
-    updateScreen(); // initial check
-
+    updateScreen();
     window.addEventListener('resize', updateScreen);
     window.visualViewport?.addEventListener('resize', updateScreen);
 
@@ -50,7 +47,6 @@ const Page = () => {
       window.visualViewport?.removeEventListener('resize', updateScreen);
     };
   }, []);
-
 
   // Handle scroll progress
   useEffect(() => {
@@ -89,13 +85,11 @@ const Page = () => {
       slider.classList.remove('cursor-grabbing');
     };
 
-    const DEFAULT_IMAGE = '/Team/jeet.png';
-
     const handleMouseMove = (e) => {
       if (!isDown.current) return;
       e.preventDefault();
       const x = e.pageX - slider.offsetLeft;
-      const walk = (x - startX.current) * 1.5; // scroll speed
+      const walk = (x - startX.current) * 1.5;
       slider.scrollLeft = scrollLeft.current - walk;
     };
 
@@ -121,45 +115,56 @@ const Page = () => {
     };
   }, []);
 
-  // --- NEW: compute the current member image path (fallback if not present) ---
-  const currentMemberImage =
-    domains?.[selectedDomain]?.members?.[memberSelected]?.image;
+  // Get current member info
+  const currentMember = domains?.[selectedDomain]?.members?.[memberSelected];
+  const currentMemberImage = currentMember?.image || '/Team/jeetu.png'; // Fallback to default image
+  const currentMemberName = currentMember?.name || '';
+  const currentMemberDescription = currentMember?.description || '';
+  const currentMemberPosition = currentMember?.position || '';
+
+  // Get social links from current member data (assuming they exist in your data structure)
+  const memberSocials = {
+    github: currentMember?.github || 'https://github.com',
+    linkedin: currentMember?.linkedin || 'https://linkedin.com',
+    instagram: currentMember?.instagram || 'https://instagram.com',
+    info: currentMember?.infoLink || 'https://example.com/info'
+  };
 
   return (
-    <div className="overflow-hidden">
+    <div className="relative w-screen h-screen overflow-hidden lg:overflow-visible">
       <div className="h-screen relative bg-[url('/Team/TeamBg.png')] bg-no-repeat bg-cover bg-center opacity-100 w-screen overflow-hidden">
         <div className="absolute inset-0 bg-black/40"></div>
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/70"></div>
 
         {/* LEFT IMAGE: now dynamic based on selected member */}
-        <div className="absolute w-auto right-0 lg:right-auto lg:left-1/2 bottom-0 h-[70vh] lg:h-[90vh] lg:transform lg:-translate-x-1/2 pointer-events-none flex justify-end lg:justify-center">
+        <div className="absolute bottom-0 w-auto right-0 lg:right-auto lg:left-1/2 h-[70vh] lg:h-[90vh] lg:transform lg:-translate-x-1/2 pointer-events-none flex justify-end lg:justify-center">
           <Image
-            // key ensures Next/Image replaces the image node when the source changes
-            key={currentMemberImage}
-            alt={'The Best Technician Ever'}
-            src={'/Team/jeet.png'}
+            key={currentMemberImage} // Key ensures proper image change
+            alt={currentMemberName}
+            src={currentMemberImage}
             width={420}
             height={840}
-            className="h-full w-auto lg:w-auto lg:object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.9)] transition-all duration-500 ease-out"
+            className="h-full w-auto object-contain -translate-x-18 lg:-translate-x-4 drop-shadow-[0_35px_35px_rgba(0,0,0,0.9)] transition-all duration-500 ease-out"
+            priority
           />
         </div>
 
         <BackButton />
 
         {/* Main content */}
-        <div className="absolute inset-0 pt-[22%] lg:pt-[clamp(4rem,8vh,6.5rem)] px-2 lg:px-[clamp(2rem,5vw,5rem)] text-white z-10">
+        <div className="absolute inset-0 pt-[22%] lg:pt-[clamp(4rem,10vh,6.5rem)] px-2 lg:px-[clamp(2rem,5vw,5rem)] text-white z-10">
           {/* Title */}
-          <div className="text-[clamp(2rem,3.5vw,4rem)] hidden lg:block relative z-2 text-center mb-[clamp(0.75rem,2vh,2rem)] font-tungsten-bold w-[clamp(180px,25vw,450px)] border font-semibold bg-cover bg-center px-[clamp(1rem,2vw,2rem)] py-[clamp(0.5rem,1vh,1rem)]">
+          <div className="text-[clamp(2rem,3.5vw,4rem)] hidden lg:block relative z-2 text-center mb-[clamp(0.75rem,2vh,2rem)]  mt-[clamp(0.75rem,4vh,2rem)] font-tungsten-bold w-[clamp(180px,25vw,450px)] border font-semibold bg-cover bg-center px-[clamp(1rem,2vw,2rem)] py-[clamp(0.5rem,1vh,1rem)]">
             <div className='bg-black/30 inset-0 absolute z-0 ' />
             TEAM
           </div>
 
-          <div className="flex   justify-between">
+          <div className="flex flex-col lg:flex-row lg:justify-between">
             {/* Left section */}
-            <div className="text-center  space-y-8 animate-fade-in-left">
+            <div className="text-left py-7 space-y-8 animate-fade-in-left lg:text-center">
 
               {/* Scrollable row with grab scroll */}
-              <div className="relative w-[clamp(220px,35vw,500px)]">
+              <div className="relative w-[clamp(220px,25vw,500px)]">
                 <div
                   ref={scrollRef}
                   className="overflow-x-auto no-scrollbar cursor-grab active:cursor-grabbing select-none"
@@ -172,7 +177,7 @@ const Page = () => {
                           setMemberSelected(0)
                         }}
                         key={i}
-                        className={`w-[clamp(50px,5vw,80px)] h-[clamp(45px,4.5vw,70px)] bg-white/40 border-2 backdrop-blur-3xl shadow-lg border-white flex items-center justify-center cursor-pointer transition-all duration-300 ease-out hover:scale-110 hover:bg-white/60 hover:shadow-xl hover:-translate-y-1 ${selectedDomain === i ? 'scale-110 bg-white/60 shadow-xl ring-2 ring-white/50' : ''
+                        className={`w-[clamp(50px,4vw,80px)] h-[clamp(45px,4.5vw,70px)] bg-white/40 border-2 backdrop-blur-3xl shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 ease-out hover:scale-110 hover:bg-white/60 hover:shadow-xl hover:-translate-y-1 ${selectedDomain === i ? 'scale-105 bg-white/55 shadow-xl ring-2 ring-white/50' : ''
                           }`}
                       >
                         <Image
@@ -180,13 +185,12 @@ const Page = () => {
                           width={50}
                           height={50}
                           alt={item.description}
-                          className="transition-transform border border-white w-[clamp(28px,3vw,40px)] pointer-events-none duration-300 hover:rotate-12 mx-auto"
+                          className="transition-transform border w-[clamp(35px,4vw,45px)] pointer-events-none duration-300 hover:rotate-12 mx-auto"
                         />
                       </div>
                     ))}
                   </div>
                 </div>
-
 
                 {/* Progress Bar */}
                 <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 w-[100%] h-[5px] bg-[#2f2f2f]/80 rounded-full overflow-hidden shadow-md">
@@ -195,86 +199,85 @@ const Page = () => {
                     style={{ width: `${scrollProgress}%` }}
                   />
                 </div>
-
               </div>
-              {/*Mobile side section*/}
-              <div className="absolute left-0 -z-10 lg:z-0 max-w-[270px] text-left flex flex-col justify-start lg:hidden transition-all duration-500 ease-out">
-                <h2 className="-mb-3 text-left  mr-0 left-0 line-clamp-1 transition-all text-xl duration-300 hover:text-orange-300">
+
+              {/* Mobile side section */}
+              <div className="
+                lg:hidden mt-6 ml-auto max-w-[270px] px-4 text-right flex flex-col items-end transition-all duration-500 ease-out">
+                <h2 className="-mb-3 line-clamp-1 text-base hover:text-orange-300 transition-all">
                   {domains[selectedDomain].name}
                 </h2>
-                <h1 className="font-tungsten-bold    text-[3rem] transition-all duration-500 ease-out hover:text-orange-300 hover:scale-105 transform">
-                  {domains[selectedDomain].members[memberSelected].name}
+
+                <h1 className="font-tungsten-bold text-[3rem] hover:text-orange-300 hover:scale-105 transition-all">
+                  {currentMemberName}
                 </h1>
-                <p className='z-0 md:block '>
-                  {domains[selectedDomain].members[memberSelected].description}
+
+                <p className="text-sm max-w-[180px]">
+                  {currentMemberDescription}
                 </p>
               </div>
 
-   {/* Member cards */}
-<div
-  className="
-    hidden lg:grid
-    grid-cols-3
-    gap-[clamp(0.75rem,1.5vw,1rem)]
-    mt-[clamp(1.5rem,4vh,3rem)]
-    max-w-[clamp(280px,32vw,380px)]
-    animate-fade-in-up
-  "
-  style={{ animationDelay: '100ms' }}
->
-  {domains[selectedDomain].members.map((_, i) => (
-    <div
-      key={i}
-      onClick={() => setMemberSelected(i)}
-      className={`
-        flex items-center justify-center
-        w-[clamp(75px,7vw,110px)]
-        h-[clamp(75px,7vw,110px)]
-        bg-white/30 border-2 border-white
-        backdrop-blur-3xl shadow-lg
-        cursor-pointer transition-all duration-300 ease-out
-        hover:scale-105 hover:bg-white/50 hover:-translate-y-1
-        ${memberSelected === i ? 'scale-105 bg-white/50 ring-2 ring-white/50' : ''}
-        animate-fade-in-scale
-      `}
-      style={{ animationDelay: `${1200 + i * 100}ms` }}
-    >
-      <Image
-        src="/Team/jeet.png"
-        alt="Team Member"
-        width={120}
-        height={160}
-        className="
-          h-full w-auto
-          object-contain
-          drop-shadow-[0_20px_20px_rgba(0,0,0,0.8)]
-          transition-all duration-300
-        "
-      />
-    </div>
-  ))}
-</div>
-
+              {/* Member cards */}
+              <div
+                className="
+                  hidden lg:grid
+                  grid-cols-3
+                  gap-[clamp(0.75rem,1.5vw,1rem)]
+                  mt-[clamp(1.5rem,4vh,3rem)]
+                  max-w-[clamp(280px,32vw,380px)]
+                "
+              >
+                {domains[selectedDomain].members.map((member, i) => (
+                  <div
+                    key={i}
+                    onClick={() => setMemberSelected(i)}
+                    className={`
+                      flex items-center justify-center
+                      w-[clamp(75px,7vw,110px)]
+                      h-[clamp(75px,7vw,110px)]
+                      bg-white/30 border-2 border-white
+                      backdrop-blur-3xl shadow-lg
+                      cursor-pointer transition-all  ease-out
+                      hover:scale-105 hover:bg-white/50 hover:-translate-y-1
+                      ${memberSelected === i ? 'scale-105 bg-white/50 ring-2 ring-white/50' : ''}
+                      animate-fade-in-scale
+                    `}
+                    style={{ animationDelay: `${2 + i * 1}ms` }}
+                  >
+                    <Image
+                      src={member.image || '/Team/jeetu.png'} // Use member's image
+                      alt={member.name}
+                      width={120}
+                      height={160}
+                      className="
+                        h-full w-auto
+                        object-contain
+                        drop-shadow-[0_20px_20px_rgba(0,0,0,0.8)] 
+                      "
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Right section */}
-            <div className="hidden lg:block w-[clamp(300px,30vw,450px)] mr-[clamp(0.5rem,1.5vw,1rem)] animate-fade-in-right">
+            <div className="hidden lg:block w-[clamp(300px,25vw,450px)] mr-[clamp(0.5rem,1.5vw,1rem)] animate-fade-in-right">
               <div className="transition-all duration-500 ease-out">
                 <div className="-mb-[clamp(0.75rem,1.2vw,1.5rem)] text-[clamp(1.1rem,1.8vw,1.6rem)]">
                   {domains[selectedDomain].name}
                 </div>
                 <div className="font-tungsten-bold text-[clamp(2.8rem,5vw,5.5rem)]">
-                  {domains[selectedDomain].members[memberSelected].name}
+                  {currentMemberName}
                 </div>
               </div>
 
               {/* Social icons */}
               <div className="flex gap-[clamp(0.5rem,1.5vw,1rem)] mb-[clamp(0.75rem,2vh,2rem)] animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                 {[
-                  { label: "Info", icon: <HiInformationCircle className="w-[clamp(22px,2.5vw,40px)] h-[clamp(22px,2.5vw,40px)]" />, link: "https://example.com/info" },
-                  { label: "Github", icon: <FaGithub className="w-[clamp(22px,2.5vw,40px)] h-[clamp(22px,2.5vw,40px)]" />, link: "https://github.com/jeetm" },
-                  { label: "Linkedin", icon: <FaLinkedin className="w-[clamp(22px,2.5vw,40px)] h-[clamp(22px,2.5vw,40px)]" />, link: "https://linkedin.com/in/jeetm" },
-                  { label: "Instagram", icon: <RiInstagramFill className="w-[clamp(22px,2.5vw,40px)] h-[clamp(22px,2.5vw,40px)]" />, link: "https://instagram.com/jeetm" },
+                  { label: "Info", icon: <HiInformationCircle className="w-[clamp(22px,2.5vw,40px)] h-[clamp(22px,2.5vw,40px)]" />, link: memberSocials.info },
+                  { label: "Github", icon: <FaGithub className="w-[clamp(22px,2.5vw,40px)] h-[clamp(22px,2.5vw,40px)]" />, link: memberSocials.github },
+                  { label: "Linkedin", icon: <FaLinkedin className="w-[clamp(22px,2.5vw,40px)] h-[clamp(22px,2.5vw,40px)]" />, link: memberSocials.linkedin },
+                  { label: "Instagram", icon: <RiInstagramFill className="w-[clamp(22px,2.5vw,40px)] h-[clamp(22px,2.5vw,40px)]" />, link: memberSocials.instagram },
                 ].map((item, i) => (
                   <a
                     key={i}
@@ -299,7 +302,7 @@ const Page = () => {
               <div className="w-full h-1 rounded-4xl bg-white mb-[clamp(0.5rem,1vh,1rem)] transition-all duration-500 hover:h-2 hover:bg-orange-300 animate-fade-in-left" style={{ animationDelay: '2000ms' }} />
 
               <p className="text-[clamp(0.85rem,1.1vw,1.125rem)] animate-fade-in-up" style={{ animationDelay: '2200ms' }}>
-                {domains[selectedDomain].members[memberSelected].description}
+                {currentMemberDescription}
               </p>
             </div>
           </div>
@@ -308,26 +311,25 @@ const Page = () => {
         {/* Bottom position card */}
         <div className='absolute hidden lg:flex bottom-[clamp(0.5rem,2vh,1.25rem)] w-full items-center justify-center font-tungsten-bold text-white px-4 py-2 text-center animate-fade-in-up' style={{ animationDelay: '2400ms' }}>
           <div className='bg-gradient-to-b from-[#D13844] to-[#FF7777] text-[clamp(1.5rem,3.5vw,3rem)] px-[clamp(2rem,4vw,3rem)] rounded shadow-2xl drop-shadow-2xl transition-all duration-500 ease-out hover:scale-105 hover:from-[#FF4455] hover:to-[#FF8888] transform hover:-translate-y-1'>
-            {domains[selectedDomain].members[memberSelected].position}
+            {currentMemberPosition}
           </div>
         </div>
 
         {/* Floating mobile social button */}
-        <div className="fixed lg:hidden top-[2%] right-5 z-50">
+        <div className="fixed lg:hidden top-[3%] right-7 z-50">
           <button
             onClick={() => setShowSocial(!showSocial)}
             className="w-14 h-14 rounded-full bg-black/66 shadow-lg flex items-center justify-center text-white text-2xl"
           >
-            <HiInformationCircle />
+            <HiLink />
           </button>
 
           {showSocial && (
             <div className="mt-2 flex flex-col gap-3 bg-white/30 backdrop-blur-xl p-2 rounded-lg shadow-lg animate-fade-in-up">
               {[
-                { label: "Info", icon: <HiInformationCircle size={25} />, link: "https://example.com/info" },
-                { label: "GitHub", icon: <FaGithub size={25} />, link: "https://github.com/jeetm" },
-                { label: "LinkedIn", icon: <FaLinkedin size={25} />, link: "https://linkedin.com/in/jeetm" },
-                { label: "Instagram", icon: <FaInstagram size={25} />, link: "https://instagram.com/jeetm" },
+                { label: "GitHub", icon: <FaGithub size={25} />, link: memberSocials.github },
+                { label: "LinkedIn", icon: <FaLinkedin size={25} />, link: memberSocials.linkedin },
+                { label: "Instagram", icon: <FaInstagram size={25} />, link: memberSocials.instagram },
               ].map((item, i) => (
                 <a
                   key={i}
@@ -343,8 +345,9 @@ const Page = () => {
           )}
         </div>
 
+        {/* Mobile vertical member cards */}
         <div
-          className="fixed lg:hidden bottom-4 left-0 z-50 h-[230px] overflow-y-auto no-scrollbar cursor-grab active:cursor-grabbing select-none px-2"
+          className="fixed lg:hidden pb-3 bottom-0 right-0 z-50 h-[230px] overflow-y-auto no-scrollbar cursor-grab active:cursor-grabbing select-none px-2"
           ref={(el) => {
             if (!el) return;
             let isDownY = false;
@@ -382,31 +385,29 @@ const Page = () => {
             };
           }}
         >
-          <div className="flex flex-col gap-[15px]">
-            {domains[selectedDomain].members.map((_, i) => (
+          <div className="flex flex-col gap-[10px]">
+            {domains[selectedDomain].members.map((member, i) => (
               <div
                 onClick={() => setMemberSelected(i)}
                 key={i}
-                className={`bg-white/30 flex justify-center items-center w-[50px] h-[50px] flex-shrink-0 border-2 backdrop-blur-3xl shadow-lg border-white cursor-pointer transform transition-all duration-300 ease-out hover:scale-105 hover:bg-white/50 hover:shadow-xl ${memberSelected === i ? 'scale-105 bg-white/50 shadow-xl ring-2 ring-white/50' : ''
+                className={`bg-white/30 flex justify-center items-center w-[60px] h-[60px] flex-shrink-0 border-2 backdrop-blur-3xl shadow-lg border-white cursor-pointer transform transition-all duration-300 ease-out hover:scale-105 hover:bg-white/50 hover:shadow-xl ${memberSelected === i ? 'scale-105 bg-white/50 shadow-xl ring-2 ring-white/50' : ''
                   } animate-fade-in-scale`}
                 style={{ animationDelay: `${1200 + i * 100}ms` }}
               >
                 <Image
-                  key={i}
-                  alt={'Team Member'}
-                  src={'/Team/jeet.png'}
-                  width={420}
-                  height={840}
-                  className="h-full w-auto object-contain drop-shadow-[0_35px_35px_rgba(0,0,0,0.9)] transition-all duration-500 ease-out"
+                  key={member.image}
+                  alt={member.name}
+                  src={member.image || '/Team/jeetu.png'} // Use member's image
+                  width={60}
+                  height={60}
+                  className="h-full w-auto object-contain drop-shadow-[0_10px_10px_rgba(0,0,0,0.9)] transition-all duration-500 ease-out"
                 />
               </div>
             ))}
           </div>
         </div>
-
       </div>
     </div>
-
   )
 }
 

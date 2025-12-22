@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import Navbar from "@/components/Home/Navbar";
+import BackButton from "@/components/BackButton/BackButton";
 import { FiUser, FiLock, FiEye, FiEyeOff, FiMail } from "react-icons/fi";
 import { FaGithub, FaGoogle } from "react-icons/fa";
 
@@ -90,7 +90,7 @@ const page = () => {
 
   return (
     <div className="min-h-screen w-full relative overflow-hidden">
-      <Navbar />
+      <BackButton />
       <div className="min-h-screen relative bg-[url('/Login/loginBack.png')] bg-no-repeat bg-cover bg-center">
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-black/60 via-transparent to-black/40"></div>
