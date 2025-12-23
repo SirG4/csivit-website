@@ -2,12 +2,10 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import dbConnect from "@/lib/db";
-import User from "@/models/User";
 import Attendance from "@/models/Attendance";
 import Event from "@/models/Event";
-import { calculateBadge } from "@/lib/gamification";
-
-const QR_EXPIRY_SECONDS = 60;
+import User from "@/models/User";
+import { calculateBadge, getBadgeName } from "@/lib/gamification";
 
 export async function POST(request) {
   try {
@@ -18,34 +16,13 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { eventKey, eventId, timestamp } = body;
+    const { eventKey, eventId } = body;
 
     if (!eventKey || !eventId) {
       return NextResponse.json(
-        { error: "Invalid QR payload" },
+        { error: "Missing eventKey or eventId" },
         { status: 400 }
       );
-    }
-
-    // Validate QR timestamp if provided
-    if (timestamp) {
-      const qrTime = new Date(timestamp);
-      const now = new Date();
-      const diffSeconds = (now - qrTime) / 1000;
-
-      if (diffSeconds > QR_EXPIRY_SECONDS) {
-        return NextResponse.json(
-          { error: "QR code expired. Please generate a new one." },
-          { status: 400 }
-        );
-      }
-
-      if (diffSeconds < 0) {
-        return NextResponse.json(
-          { error: "Invalid QR timestamp" },
-          { status: 400 }
-        );
-      }
     }
 
     await dbConnect();
@@ -123,7 +100,6 @@ export async function POST(request) {
           attendance,
           pointsEarned,
           badgeEarned: badgeName,
-          eventName: event.eventName,
         },
       },
       { status: 201 }
@@ -138,10 +114,8 @@ export async function POST(request) {
         { status: 409 }
       );
     }
-
-    console.error("Error scanning QR:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to process QR scan" },
+      { error: error.message || "Internal server error" },
       { status: 500 }
     );
   }

@@ -2,28 +2,44 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import dbConnect from "@/lib/db";
 import User from "@/models/User";
-import { CURRENT_EVENT } from "@/lib/eventConfig";
+import Event from "@/models/Event";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function POST(request) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.email) {
+    if (!session?.user?.id) {
       return NextResponse.json(
         { error: "Unauthorized: Must be signed in" },
         { status: 401 }
       );
     }
 
-    if (!CURRENT_EVENT.isActive) {
+    const body = await request.json();
+    const { eventId } = body;
+
+    if (!eventId) {
       return NextResponse.json(
-        { error: "No active event at this time" },
+        { error: "Event ID is required" },
         { status: 400 }
       );
     }
 
     await dbConnect();
+
+    const event = await Event.findById(eventId);
+
+    if (!event) {
+      return NextResponse.json({ error: "Event not found" }, { status: 404 });
+    }
+
+    if (!event.isActive) {
+      return NextResponse.json(
+        { error: "This event is not currently active" },
+        { status: 400 }
+      );
+    }
 
     const user = await User.findById(session.user.id);
 
@@ -31,18 +47,23 @@ export async function POST(request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Generate QR payload
     const qrPayload = {
-      userId: user._id.toString(),
-      email: user.email,
+      eventKey: event.eventKey,
+      eventId: event._id.toString(),
       timestamp: new Date().toISOString(),
     };
 
     return NextResponse.json(
       {
+        success: true,
         message: "QR payload generated",
         payload: JSON.stringify(qrPayload),
-        event: CURRENT_EVENT,
+        event: {
+          _id: event._id,
+          eventName: event.eventName,
+          eventKey: event.eventKey,
+          eventDate: event.eventDate,
+        },
       },
       { status: 200 }
     );
