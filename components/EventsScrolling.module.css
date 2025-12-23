@@ -2,9 +2,9 @@
   position: absolute;
   width: 420px;
   height: 594px;
-  border-radius: 12px;
+  /* border-radius: 12px;
   border: 3px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -19,6 +19,12 @@
 
 .posterDetails {
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+.posterCollage {
+  background: rgba(0, 0, 0, 0);
+  overflow: visible;
+  backdrop-filter: none;
 }
 
 .posterImageContent {
@@ -171,5 +177,56 @@
   }
   .posterNumber {
     font-size: 2rem;
+  }
+}
+
+/* Collage Styles */
+.collageContainer {
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+}
+
+.collageGrid {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 0.8rem;
+  transform-style: preserve-3d;
+}
+
+.collageImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: 3px solid #ff0000;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease;
+}
+
+@media (max-width:1000px){
+  .collageGrid {
+    gap: 0.5rem;
+  }
+  
+  .collageImage {
+    border: 2px solid #ff0000;
+  }
+}
+
+@media (max-width:480px){
+  .collageContainer {
+    padding: 0.5rem;
+  }
+  
+  .collageGrid {
+    gap: 0.3rem;
   }
 }

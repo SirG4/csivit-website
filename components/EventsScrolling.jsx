@@ -18,6 +18,12 @@ const EventsScrolling = () => {
 
   // 🔹 Create 20 poster placeholders
   const posterCount = 20;
+  
+  // 🔹 Define event types: 'upcoming' or 'past'
+  // First 10 posters (5 pairs) are upcoming, next 10 (5 pairs) are past events
+  const eventTypes = Array.from({ length: posterCount / 2 }, (_, i) => 
+    i < 2 ? 'upcoming' : 'past'
+  );
 
   // Utility to add refs
   const addToRefs = (el) => {
@@ -115,18 +121,31 @@ onUpdate: (self) => {
     const direction = scatterDirections[index];
 
     // Calculate opacity - starts at 1, fades to 0 as it moves out
-    const opacity = Math.max(0, 2 - imageProgress * 4);
+    const opacity = Math.max(0, 2 - imageProgress * 3);
 
     // Rotation: left posters (x: -1) rotate right (+45deg), right posters (x: 1) rotate left (-45deg)
     const rotationY = direction.x === -1 ? 30 : -30;
 
+    // Calculate current scale
+    const currentScale = gsap.utils.interpolate(start.scale, end.scale, imageProgress * scaleMultiplier);
+
     gsap.set(img, {
       z: gsap.utils.interpolate(start.z, end.z, imageProgress),
-      scale: gsap.utils.interpolate(start.scale, end.scale, imageProgress * scaleMultiplier),
+      scale: currentScale,
       x: gsap.utils.interpolate(start.x, end.x, imageProgress),
       y: gsap.utils.interpolate(start.y, end.y, imageProgress),
       rotationY: rotationY,
       opacity: opacity,
+    });
+
+    // Update collage images' translateZ based on parent scale
+    const collageImages = img.querySelectorAll(`.${styles.collageImage}`);
+    const baseZValues = [-20, 80, -80, 20];
+    collageImages.forEach((collageImg, collageIndex) => {
+      const scaledZ = baseZValues[collageIndex] * currentScale;
+      gsap.set(collageImg, {
+        z: scaledZ,
+      });
     });
   });
 
@@ -156,13 +175,15 @@ onUpdate: (self) => {
           {Array.from({ length: posterCount }, (_, index) => {
             const isEven = index % 2 === 0;
             const pairNumber = Math.floor(index / 2) + 1;
+            const pairIndex = Math.floor(index / 2);
+            const eventType = eventTypes[pairIndex];
             
             return (
               <div
                 key={index}
                 ref={addToRefs}
                 className={`${styles.posterPlaceholder} ${
-                  isEven ? styles.posterImage : styles.posterDetails
+                  isEven ? styles.posterImage : (eventType === 'upcoming' ? styles.posterDetails : styles.posterCollage)
                 }`}
               >
                 {isEven ? (
@@ -174,13 +195,43 @@ onUpdate: (self) => {
                       className={styles.posterImg}
                     />
                   </div>
-                ) : (
-                  // Details side
+                ) : eventType === 'upcoming' ? (
+                  // Details side for upcoming events
                   <div className={styles.posterDetailsContent}>
                     <h3 className={styles.eventTitle}>Event {pairNumber}</h3>
                     <p className={styles.eventDate}>Date: TBA</p>
                     <p className={styles.eventVenue}>Venue: CSI Hall</p>
                     <p className={styles.eventDesc}>Join us for an exciting gaming event!</p>
+                  </div>
+                ) : (
+                  // Image collage for past events
+                  <div className={styles.collageContainer}>
+                    <div className={styles.collageGrid}>
+                      <img 
+                        src={`/Events/collage${pairNumber}-1.jpg`}
+                        alt={`Event ${pairNumber} - Photo 1`}
+                        className={styles.collageImage}
+                        style={{ transform: 'translateZ(-20px)' }}
+                      />
+                      <img 
+                        src={`/Events/collage${pairNumber}-2.jpg`}
+                        alt={`Event ${pairNumber} - Photo 2`}
+                        className={styles.collageImage}
+                        style={{ transform: 'translateZ(80px)' }}
+                      />
+                      <img 
+                        src={`/Events/collage${pairNumber}-3.jpg`}
+                        alt={`Event ${pairNumber} - Photo 3`}
+                        className={styles.collageImage}
+                        style={{ transform: 'translateZ(-80px)' }}
+                      />
+                      <img 
+                        src={`/Events/collage${pairNumber}-4.jpg`}
+                        alt={`Event ${pairNumber} - Photo 4`}
+                        className={styles.collageImage}
+                        style={{ transform: 'translateZ(20px)' }}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
