@@ -31,9 +31,22 @@ const UserSchema = new mongoose.Schema(
     image: {
       type: String,
     },
-    badges: {
-      type: String,
-    },
+    badges: [
+      {
+        eventKey: {
+          type: String,
+          required: true,
+        },
+        badgeName: {
+          type: String,
+          required: true,
+        },
+        earnedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   {
     timestamps: true,

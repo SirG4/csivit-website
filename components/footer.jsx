@@ -29,33 +29,30 @@ export default function Footer() {
   }
 
   return (
-    <footer className="relative h-screen overflow-hidden text-gray-200 flex items-center justify-center" style={{ backgroundImage: 'url(/Footer/T_bg.png)', backgroundRepeat: 'repeat', backgroundSize: 'auto' }}>
+    <footer className="relative overflow-hidden text-gray-200 bg-[#000010cc]">
+      {/* Background gradient + subtle storm texture */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-[#03071A] to-[#041026] -z-10" />
+      <div className="absolute inset-0 opacity-10 pointer-events-none bg-[url('/assets/storm-texture.png')] bg-cover bg-center -z-5" />
 
-      <div className="max-w-7xl mx-auto px-8 py-8 bg-black relative" style={{ 
-        outline: '4px solid #7387e6',
-        outlineOffset: '-12px',
-        boxShadow: '0 0 20px rgba(115, 135, 230, 0.3)',
-        boxSizing: 'border-box'
-      }}>
-        {/* Corner squares */}
-        <div className="absolute w-6 h-6 bg-[#7387e6]" style={{ top: '12px', left: '12px', transform: 'translate(-50%, -50%)' }} />
-        <div className="absolute w-6 h-6 bg-[#7387e6]" style={{ top: '12px', right: '12px', transform: 'translate(50%, -50%)' }} />
-        <div className="absolute w-6 h-6 bg-[#7387e6]" style={{ bottom: '12px', left: '12px', transform: 'translate(-50%, 50%)' }} />
-        <div className="absolute w-6 h-6 bg-[#7387e6]" style={{ bottom: '12px', right: '12px', transform: 'translate(50%, 50%)' }} />
-        
-        {/* Large centered logo */}
-        <div className="absolute left-1/2 bg-black" style={{ top: '-10%', transform: 'translateX(-50%)' }}>
-          <div className="flex items-center justify-center relative px-6 py-3" style={{ 
-            outline: '4px solid #7387e6',
-            outlineOffset: '-12px',
-            boxSizing: 'border-box'
-          }}>
-            <img src="/csi logo.png" alt="CSI-VIT Logo" className="max-h-20 object-contain" />
-            {/* Corner squares */}
-            <div className="absolute w-6 h-6 bg-[#7387e6]" style={{ top: '12px', left: '12px', transform: 'translate(-50%, -50%)' }} />
-            <div className="absolute w-6 h-6 bg-[#7387e6]" style={{ top: '12px', right: '12px', transform: 'translate(50%, -50%)' }} />
-            <div className="absolute w-6 h-6 bg-[#7387e6]" style={{ bottom: '12px', left: '12px', transform: 'translate(-50%, 50%)' }} />
-            <div className="absolute w-6 h-6 bg-[#7387e6]" style={{ bottom: '12px', right: '12px', transform: 'translate(50%, 50%)' }} />
+      {/* Ambient glow that appears to rise from lightning above */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.2 }}
+        className="absolute top-0 left-0 right-0 h-24 pointer-events-none"
+        style={{
+          background: 'linear-gradient(180deg, rgba(74,200,255,0.12), rgba(4,8,16,0))',
+          filter: 'blur(28px)'
+        }}
+        aria-hidden
+      />
+
+      <div className="max-w-7xl mx-auto px-8 py-16">
+                {/* Large centered logo */}
+        <div className="mt-12 flex justify-center"
+        >
+          <div className=" flex items-center justify-center">
+            <img src="/csi logo.png" alt="CSI-VIT Logo" className="max-h-32 object-contain" />
           </div>
         </div>
 
