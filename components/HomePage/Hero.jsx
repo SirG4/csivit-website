@@ -10,7 +10,9 @@ import events from "@/public/HomePage/assassins_events 1.png";
 import prof from "@/public/HomePage/minecraft_profile 1.png";
 import dev from "@/public/HomePage/roadrash_developers 1.png";
 import bgf from "@/public/HomePage/bgf.png";
-import { gsap } from "gsap";
+import tbg from "@/public/HomePage/tetris_bg.png";
+import t2bg from "@/public/HomePage/T2_bg.png";
+import { gsap } from "gsap"
 
 
 import React from "react";
@@ -47,9 +49,9 @@ export default function Hero() {
     return (
         <div className="relative w-full bg-black">
             {/* Background Image - Covers entire page content */}
-            <div className="absolute inset-0 w-full h-full z-0">
+            <div className="absolute top-0 left-0 w-full h-[200vh] z-0">
                 <Image
-                    src={bgf}
+                    src={t2bg}
                     alt="Sky Background"
                     fill
                     className="object-cover"
@@ -120,12 +122,13 @@ export default function Hero() {
                     </div>
             </div>
             
-            {/* Infinitely repeating background section */}
+            {/* About us */}
             <div 
             >
                 {/* Content can be added here - this div will expand with content */}
                 <div className="h-screen"></div>
             </div>
+            
             <Footer/>
         </div>
     );
