@@ -4,6 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import { useGSAP } from "@gsap/react";
 import styles from "./EventsScrolling.module.css";
+
 // import Events from "../Events";
 // import Banner from "../Banner";
 
@@ -17,7 +18,7 @@ const EventsScrolling = () => {
   const coverRef = useRef(null);
 
   // 🔹 Create 20 poster placeholders
-  const posterCount = 20;
+  const posterCount = 10;
   
   // 🔹 Define event types: 'upcoming' or 'past'
   // First 10 posters (5 pairs) are upcoming, next 10 (5 pairs) are past events
@@ -166,15 +167,13 @@ onUpdate: (self) => {
 
   return (
     <div style={{ overflowX: 'hidden', width: '100vw' }}>
-      {/* <section className={styles.intro}>
-        <h1 className={styles.heading}>Vision That Move Beyond The Surface</h1>
-      </section> */}
 
       <section className={`${styles.spotlight} spotlight`}>
-        <div className={`${styles["spotlight-images"]}`}>
+        <div className={`${styles["spotlight-images"]}`}
+        >
           {Array.from({ length: posterCount }, (_, index) => {
             const isEven = index % 2 === 0;
-            const pairNumber = Math.floor(index / 2) + 1;
+            const pairNumber = (posterCount / 2) - Math.floor(index / 2);
             const pairIndex = Math.floor(index / 2);
             const eventType = eventTypes[pairIndex];
             
@@ -190,7 +189,7 @@ onUpdate: (self) => {
                   // Poster image side
                   <div className={styles.posterImageContent}>
                     <img 
-                      src={`/Team/Icons/poster${pairNumber}.jpg`} 
+                      src={`/Events/poster${pairNumber}.jpeg`} 
                       alt={`Event ${pairNumber}`}
                       className={styles.posterImg}
                     />
@@ -218,7 +217,7 @@ onUpdate: (self) => {
                           left: '10%',
                           width: '80%',
                           height: '100%',
-                          boxShadow: '0 0 0 4px #D4AF37, 10px 10px 30px rgba(0, 0, 0, 0.6)',
+                          boxShadow: '-10px 10px 30px rgba(0, 0, 0, 0.6)',
                           zIndex: 2
                         }}
                       />
@@ -233,7 +232,7 @@ onUpdate: (self) => {
                           left: '80%',
                           width: '100%',
                           height: '50%',
-                          boxShadow: '0 0 0 4px #D4AF37, 10px 10px 30px rgba(0, 0, 0, 0.6)',
+                          boxShadow: '-10px 10px 30px rgba(0, 0, 0, 0.6)',
                           zIndex: 3
                         }}
                       />
@@ -248,7 +247,7 @@ onUpdate: (self) => {
                           left: '5%',
                           width: '100%',
                           height: '50%',
-                          boxShadow: '0 0 0 4px #D4AF37, 10px 10px 30px rgba(0, 0, 0, 0.6)',
+                          boxShadow: '-10px 10px 30px rgba(0, 0, 0, 0.6)',
                           zIndex: 3
                         }}
                       />
@@ -263,7 +262,7 @@ onUpdate: (self) => {
                           left: '95%',
                           width: '80%',
                           height: '50%',
-                          boxShadow: '0px 0px 0px 4px #D4AF37, 10px 10px 30px rgba(0, 0, 0, 0.6)',
+                          boxShadow: '-10px 10px 30px rgba(0, 0, 0, 0.6)',
                           zIndex: 2
                         }}
                       />
