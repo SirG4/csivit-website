@@ -140,7 +140,7 @@ onUpdate: (self) => {
 
     // Update collage images' translateZ based on parent scale
     const collageImages = img.querySelectorAll(`.${styles.collageImage}`);
-    const baseZValues = [-20, 80, -80, 20];
+    const baseZValues = [0, 0, 0, 0];
     collageImages.forEach((collageImg, collageIndex) => {
       const scaledZ = baseZValues[collageIndex] * currentScale;
       gsap.set(collageImg, {
@@ -205,31 +205,67 @@ onUpdate: (self) => {
                   </div>
                 ) : (
                   // Image collage for past events
-                  <div className={styles.collageContainer}>
-                    <div className={styles.collageGrid}>
+                  <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                    <div style={{ position: 'relative', width: '80%', height: '80%' }}>
                       <img 
+                        className="border-8 border-white bg-black"
                         src={`/Events/collage${pairNumber}-1.jpg`}
                         alt={`Event ${pairNumber} - Photo 1`}
-                        className={styles.collageImage}
-                        style={{ transform: 'translateZ(-20px)' }}
+                        style={{ 
+                          transform: 'translateZ(0px)',
+                          position: 'absolute',
+                          top: '10%',
+                          left: '10%',
+                          width: '80%',
+                          height: '100%',
+                          boxShadow: '0 0 0 4px #D4AF37, 10px 10px 30px rgba(0, 0, 0, 0.6)',
+                          zIndex: 2
+                        }}
                       />
                       <img 
+                        className="border-8 border-white bg-black"
                         src={`/Events/collage${pairNumber}-2.jpg`}
                         alt={`Event ${pairNumber} - Photo 2`}
-                        className={styles.collageImage}
-                        style={{ transform: 'translateZ(80px)' }}
+                        style={{ 
+                          transform: 'translateZ(0px)',
+                          position: 'absolute',
+                          top: '0%',
+                          left: '80%',
+                          width: '100%',
+                          height: '50%',
+                          boxShadow: '0 0 0 4px #D4AF37, 10px 10px 30px rgba(0, 0, 0, 0.6)',
+                          zIndex: 3
+                        }}
                       />
                       <img 
+                        className="border-8 border-white bg-black"
                         src={`/Events/collage${pairNumber}-3.jpg`}
                         alt={`Event ${pairNumber} - Photo 3`}
-                        className={styles.collageImage}
-                        style={{ transform: 'translateZ(-80px)' }}
+                        style={{ 
+                          transform: 'translateZ(0px) ',
+                          position: 'absolute',
+                          top: '80%',
+                          left: '5%',
+                          width: '100%',
+                          height: '50%',
+                          boxShadow: '0 0 0 4px #D4AF37, 10px 10px 30px rgba(0, 0, 0, 0.6)',
+                          zIndex: 3
+                        }}
                       />
                       <img 
+                        className="border-8 border-white bg-black"
                         src={`/Events/collage${pairNumber}-4.jpg`}
                         alt={`Event ${pairNumber} - Photo 4`}
-                        className={styles.collageImage}
-                        style={{ transform: 'translateZ(20px)' }}
+                        style={{ 
+                          transform: 'translateZ(0px)',
+                          position: 'absolute',
+                          top: '55%',
+                          left: '95%',
+                          width: '80%',
+                          height: '50%',
+                          boxShadow: '0px 0px 0px 4px #D4AF37, 10px 10px 30px rgba(0, 0, 0, 0.6)',
+                          zIndex: 2
+                        }}
                       />
                     </div>
                   </div>

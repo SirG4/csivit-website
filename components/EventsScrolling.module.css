@@ -10,7 +10,7 @@
   justify-content: center;
   backdrop-filter: blur(4px);
   transform-style: preserve-3d;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .posterImage {
@@ -92,8 +92,8 @@
     width: 100vw;
     height: 100svh;
     padding: 2rem;
-    overflow: hidden;
-    overflow-x: hidden;
+    overflow: visible;
+    overflow-x: visible;
 }
 
 .intro h1,.outro h1{
@@ -189,6 +189,8 @@
   align-items: center;
   justify-content: center;
   transform-style: preserve-3d;
+
+
 }
 
 .collageGrid {
@@ -199,16 +201,21 @@
   grid-template-rows: 1fr 1fr;
   gap: 0.8rem;
   transform-style: preserve-3d;
+    overflow: visible;
+
+
+
 }
 
 .collageImage {
-  width: 100%;
+  width: 150%;
   height: 100%;
   object-fit: cover;
   border: 3px solid #ff0000;
   border-radius: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   transition: transform 0.3s ease;
+
 }
 
 @media (max-width:1000px){
