@@ -18,7 +18,9 @@ import { useEffect, useRef } from "react";
 
 import React from "react";
 
-gsap.registerPlugin(ScrollTrigger);
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 export default function Hero() {
     const router = useRouter();
