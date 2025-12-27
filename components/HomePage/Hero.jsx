@@ -56,7 +56,7 @@ export default function Hero() {
                     start: "top top",
                     end: "bottom bottom",
                     scrub: true,
-                    onLeave: () => gsap.to(cardsRef.current, { opacity: 0, duration: 0.3 }),
+                    
                     onEnterBack: () => gsap.to(cardsRef.current, { opacity: 1, duration: 0.3 }),
                 }
             });
