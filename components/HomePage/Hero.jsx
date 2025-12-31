@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { motion } from "framer-motion";
 
 import Footer from "../../components/footer.jsx";
@@ -27,6 +28,8 @@ export default function Hero() {
     const containerRef = useRef(null);
     const horizontalRef = useRef(null);
     const cardsRef = useRef(null);
+    const [hovered, setHovered] = useState(null);
+
     
     useEffect(() => {
         if (!containerRef.current || !horizontalRef.current) return;
@@ -145,15 +148,24 @@ export default function Hero() {
 
                 {/* Sticky Cards - Fixed during horizontal scroll */}
                 <div ref={cardsRef} className="w-[85vw] flex justify-between items-end  md:gap-1 mb-10 fixed bottom-10 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
-                    <motion.div  
-                        className="hero-card bg-black  h-50 w-50 flex-shrink-0 overflow-hidden cursor-pointer pointer-events-auto"
-                        whileHover={{ scale: 1.2 }}
+                    <motion.div
+                        onMouseEnter={() => setHovered("xbox")}
+                        onMouseLeave={() => setHovered(null)}
+                        className="hero-card bg-black h-50 w-50 flex-shrink-0 overflow-hidden cursor-pointer pointer-events-auto"
+                        animate={{
+                            scale: hovered === null || hovered === "xbox" ? 1.2 : 1
+                        }}
                         transition={{ duration: 0.3 }}
                         style={{ originY: 1 }}
-                    >
-                        <Image src={xbox} alt="Team" className="w-full h-full object-cover" />
+                        >
+                        <Image src={xbox} alt="Xbox" className="w-full h-full object-cover" />
                     </motion.div>
                     <motion.div 
+                        onMouseEnter={() => setHovered("team")}
+                        onMouseLeave={() => setHovered(null)}
+                        animate={{
+                            scale: hovered === "team" ? 1.2 : 1
+                        }}
                         onClick={() => handleTransitionNav('/team')} 
                         className="hero-card bg-black  h-50 w-50 flex-shrink-0 overflow-hidden cursor-pointer pointer-events-auto"
                         whileHover={{ scale: 1.2 }}
@@ -163,6 +175,11 @@ export default function Hero() {
                         <Image src={team} alt="Team" className="w-full h-full object-cover" />
                     </motion.div>
                     <motion.div 
+                        onMouseEnter={() => setHovered("events")}
+                        onMouseLeave={() => setHovered(null)}
+                        animate={{
+                            scale: hovered === "events" ? 1.2 : 1
+                        }}
                         onClick={() => handleTransitionNav('/events')} 
                         className="hero-card bg-black h-50 w-50 flex-shrink-0 overflow-hidden cursor-pointer pointer-events-auto"
                         whileHover={{ scale: 1.2 }}
@@ -172,6 +189,11 @@ export default function Hero() {
                         <Image src={events} alt="Events" className="w-full h-full object-cover" />
                     </motion.div>
                     <motion.div 
+                        onMouseEnter={() => setHovered("profile")}
+                        onMouseLeave={() => setHovered(null)}
+                        animate={{
+                            scale: hovered === "profile" ? 1.2 : 1
+                        }}
                         onClick={() => handleTransitionNav('/profile')} 
                         className="hero-card bg-black h-50 w-50 flex-shrink-0 overflow-hidden cursor-pointer pointer-events-auto"
                         whileHover={{ scale: 1.2 }}
@@ -181,6 +203,11 @@ export default function Hero() {
                         <Image src={prof} alt="Profile" className="w-full h-full object-cover" />
                     </motion.div>
                     <motion.div 
+                        onMouseEnter={() => setHovered("developer")}
+                        onMouseLeave={() => setHovered(null)}
+                        animate={{
+                            scale: hovered === "developer" ? 1.2 : 1
+                        }}
                         onClick={() => handleTransitionNav('/developer')} 
                         className="hero-card bg-black h-50 w-50 flex-shrink-0 overflow-hidden cursor-pointer pointer-events-auto"
                         whileHover={{ scale: 1.2 }}
