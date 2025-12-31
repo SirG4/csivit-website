@@ -9,8 +9,8 @@ import team from "@/public/HomePage/valo_team 1.png";
 import events from "@/public/HomePage/assassins_events 1.png";
 import prof from "@/public/HomePage/minecraft_profile 1.png";
 import dev from "@/public/HomePage/roadrash_developers 1.png";
-import t2bg from "@/public/HomePage/T2_bg.png";
-import hbg from "@/public/HomePage/halo_bg.jpg";
+import xbox from "@/public/HomePage/xbox.jpg";
+import hbg from "@/public/HomePage/bg2.jpg";
 
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -144,10 +144,18 @@ export default function Hero() {
                 </div>
 
                 {/* Sticky Cards - Fixed during horizontal scroll */}
-                <div ref={cardsRef} className="w-[85vw] flex justify-between items-end gap-1 md:gap-2 mb-10 fixed bottom-10 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+                <div ref={cardsRef} className="w-[85vw] flex justify-between items-end  md:gap-1 mb-10 fixed bottom-10 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+                    <motion.div  
+                        className="hero-card bg-black  h-50 w-50 flex-shrink-0 overflow-hidden cursor-pointer pointer-events-auto"
+                        whileHover={{ scale: 1.2 }}
+                        transition={{ duration: 0.3 }}
+                        style={{ originY: 1 }}
+                    >
+                        <Image src={xbox} alt="Team" className="w-full h-full object-cover" />
+                    </motion.div>
                     <motion.div 
                         onClick={() => handleTransitionNav('/team')} 
-                        className="hero-card bg-black rounded-lg h-50 w-50 flex-shrink-0 overflow-hidden cursor-pointer pointer-events-auto"
+                        className="hero-card bg-black  h-50 w-50 flex-shrink-0 overflow-hidden cursor-pointer pointer-events-auto"
                         whileHover={{ scale: 1.2 }}
                         transition={{ duration: 0.3 }}
                         style={{ originY: 1 }}
@@ -156,7 +164,7 @@ export default function Hero() {
                     </motion.div>
                     <motion.div 
                         onClick={() => handleTransitionNav('/events')} 
-                        className="hero-card bg-black rounded-lg h-50 w-50 flex-shrink-0 overflow-hidden cursor-pointer pointer-events-auto"
+                        className="hero-card bg-black h-50 w-50 flex-shrink-0 overflow-hidden cursor-pointer pointer-events-auto"
                         whileHover={{ scale: 1.2 }}
                         transition={{ duration: 0.3 }}
                         style={{ originY: 1 }}
@@ -165,7 +173,7 @@ export default function Hero() {
                     </motion.div>
                     <motion.div 
                         onClick={() => handleTransitionNav('/profile')} 
-                        className="hero-card bg-black rounded-lg h-50 w-50 flex-shrink-0 overflow-hidden cursor-pointer pointer-events-auto"
+                        className="hero-card bg-black h-50 w-50 flex-shrink-0 overflow-hidden cursor-pointer pointer-events-auto"
                         whileHover={{ scale: 1.2 }}
                         transition={{ duration: 0.3 }}
                         style={{ originY: 1 }}
@@ -174,19 +182,13 @@ export default function Hero() {
                     </motion.div>
                     <motion.div 
                         onClick={() => handleTransitionNav('/developer')} 
-                        className="hero-card bg-black rounded-lg h-50 w-50 flex-shrink-0 overflow-hidden cursor-pointer pointer-events-auto"
+                        className="hero-card bg-black h-50 w-50 flex-shrink-0 overflow-hidden cursor-pointer pointer-events-auto"
                         whileHover={{ scale: 1.2 }}
                         transition={{ duration: 0.3 }}
                         style={{ originY: 1 }}
                     >
                         <Image src={dev} alt="Developers" className="w-full h-full object-cover" />
                     </motion.div>
-                    <motion.div 
-                        className="bg-black rounded-lg h-50 w-50 flex-shrink-0 pointer-events-auto"
-                        whileHover={{ scale: 1.2 }}
-                        transition={{ duration: 0.3 }}
-                        style={{ originY: 1 }}
-                    ></motion.div>
                 </div>
             </div>
             
