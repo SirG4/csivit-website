@@ -17,11 +17,15 @@
 .posterImage {
   background: black;
   box-shadow: -10px 10px 30px rgba(0, 0, 0, 0.6);
-}
+  border: 8px solid white;
+  height: auto;
+  
+} 
 
 .posterDetails {
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   box-shadow: -10px 10px 30px rgba(0, 0, 0, 0.6);
+  border: 8px solid white;
 }
 
 .posterCollage {
@@ -32,7 +36,7 @@
 
 .posterImageContent {
   width: 100%;
-  height: 100%;
+  height: auto;
 }
 
 .posterImg {
@@ -162,7 +166,7 @@
     }
     .posterPlaceholder{
       width: min(78vw, 340px);
-      height: min(52vw, 230px);
+      height: min(110vw, 481px);
     }
     .posterNumber {
       font-size: 2.5rem;
@@ -176,7 +180,7 @@
   }
   .posterPlaceholder{
     width: min(88vw, 300px);
-    height: min(60vw, 200px);
+    height: min(124vw, 424px);
   }
   .posterNumber {
     font-size: 2rem;
@@ -210,7 +214,7 @@
 
 }
 
-.collageImage {
+/* .collageImage {
   width: 150%;
   height: 100%;
   object-fit: cover;
@@ -219,7 +223,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
   transition: transform 0.3s ease;
 
-}
+} */
 
 @media (max-width:1000px){
   .collageGrid {
