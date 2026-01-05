@@ -70,22 +70,21 @@ const EventsScrolling = () => {
     const screenHeight = window.innerHeight;
     const isMobile = screenWidth < 1000;
     // Keep desktop visuals as-is, tune only small screens
-    const scatterMultiplier = isMobile ? 0.8 : 0.5; // Reduced from 1.4 to 1.0 to bring closer to center
+    const scatterMultiplier = isMobile ? 1.4 : 0.5;
 
     // Start + End positions
     const offsetMultiplier = isMobile ? 50 : 100; // Adjust offset amount
-    const mobileVerticalOffset = isMobile ? -screenHeight * 0.25 : 0; // Move up to 75% from bottom (25% from top)
     
     const startPositions = scatterDirections.map((dir) => ({
       x: dir.x * offsetMultiplier, // Slight offset based on end direction
-      y: mobileVerticalOffset,
+      y: 0,
       z: -1000,
       scale: 0,
     }));
 
     const endPositions = scatterDirections.map((dir) => ({
       x: dir.x * screenWidth * scatterMultiplier*1.5,
-      y: dir.y * screenHeight * scatterMultiplier + mobileVerticalOffset,
+      y: dir.y * screenHeight * scatterMultiplier,
       z: 2000,
       scale: 1,
     }));
@@ -101,42 +100,20 @@ const EventsScrolling = () => {
       y: 0,
     });
 
-    // Calculate snap points based on when each poster pair is most visible
-    const posterPairs = posterCount / 2;
-    const staggerIncrement = isMobile ? 0.18 : 0.2; // Increased from 0.04 to 0.18 for mobile spacing
-    const snapPoints = [0]; // Start position
-    
-    // Add snap point for each poster pair at peak visibility
-    for (let i = 0; i < posterPairs; i++) {
-      const staggerDelay = i * staggerIncrement;
-      // Snap to point where poster is at peak visibility (scale ~0.5-0.7)
-      const peakVisibility = staggerDelay + (isMobile ? 0.12 : 0.12); // Made consistent
-      snapPoints.push(Math.min(peakVisibility, 0.95));
-    }
-    snapPoints.push(1); // Final scattered state
-
     // ScrollTrigger animation
     ScrollTrigger.create({
       trigger: ".spotlight",
       start: "top top",
-      end: `+=${window.innerHeight * (isMobile ? 15 : 15)}px`, // Increased from 10 to 15 for mobile
+      end: `+=${window.innerHeight * (isMobile ? 10 : 15)}px`,
       pin: true,
-      scrub: 0.5,
-      snap: {
-        snapTo: snapPoints,
-        duration: { min: 0.1, max: 1 },
-        delay: 0.01,
-        ease: "easeInOut",
-        directional: true,
-        inertia: false
-      },
+      scrub: 1,
 onUpdate: (self) => {
   const progress = self.progress;
 
   spotlightRefs.current.forEach((img, index) => { 
     // Pair consecutive placeholders: 0,1 -> 0; 2,3 -> 1; 4,5 -> 2, etc.
     const pairIndex = Math.floor(index / 2);
-    const staggerDelay = pairIndex * (isMobile ? 0.18 : 0.2); // Increased from 0.04 to 0.18 for mobile spacing
+    const staggerDelay = pairIndex * (isMobile ? 0.04 : 0.2);
     const scaleMultiplier = isMobile ? 2.2 : 2;
     const imageProgress = Math.max(0, (progress - staggerDelay) * (isMobile ? 2 : 2.5)); // Reduced from 3/4 to 2/2.5
 
@@ -145,9 +122,7 @@ onUpdate: (self) => {
     const direction = scatterDirections[index];
 
     // Calculate opacity - starts at 1, fades to 0 as it moves out
-    // Mobile: fade faster (multiply by 4 instead of 3) so opacity reaches 0 earlier
-    const opacityMultiplier = isMobile ? 4 : 3;
-    const opacity = Math.max(0, 2 - imageProgress * opacityMultiplier);
+    const opacity = Math.max(0, 2 - imageProgress * 3);
 
     // Rotation: left posters (x: -1) rotate right (+45deg), right posters (x: 1) rotate left (-45deg)
     const rotationY = direction.x === -1 ? 30 : -30;
