@@ -70,10 +70,10 @@ const EventsScrolling = () => {
     const screenHeight = window.innerHeight;
     const isMobile = screenWidth < 1000;
     // Keep desktop visuals as-is, tune only small screens
-    const scatterMultiplier = isMobile ? 1.4 : 0.5;
+    const scatterMultiplier = isMobile ? 0.7 : 0.5;
 
     // Start + End positions
-    const offsetMultiplier = isMobile ? 50 : 100; // Adjust offset amount
+    const offsetMultiplier = isMobile ? 20 : 100; // Adjust offset amount
     
     const startPositions = scatterDirections.map((dir) => ({
       x: dir.x * offsetMultiplier, // Slight offset based on end direction
@@ -113,9 +113,9 @@ onUpdate: (self) => {
   spotlightRefs.current.forEach((img, index) => { 
     // Pair consecutive placeholders: 0,1 -> 0; 2,3 -> 1; 4,5 -> 2, etc.
     const pairIndex = Math.floor(index / 2);
-    const staggerDelay = pairIndex * (isMobile ? 0.04 : 0.2);
-    const scaleMultiplier = isMobile ? 2.2 : 2;
-    const imageProgress = Math.max(0, (progress - staggerDelay) * (isMobile ? 2 : 2.5)); // Reduced from 3/4 to 2/2.5
+    const staggerDelay = pairIndex * (isMobile ? 0.15 : 0.2);
+    const scaleMultiplier = isMobile ? 1.5 : 2;
+    const imageProgress = Math.max(0, (progress - staggerDelay) * (isMobile ? 3 : 2.5)); // Increased mobile speed
 
     const start = startPositions[index];
     const end = endPositions[index];

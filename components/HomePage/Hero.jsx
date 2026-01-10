@@ -159,47 +159,81 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* ================= DESKTOP STICKY CARDS ================= */}
-        <div
-          ref={cardsRef}
-          className="hidden md:flex fixed bottom-10 left-1/2 -translate-x-1/2 gap-3 z-50 opacity-0"
-        >
-          {[gta, team, events, prof, dev].map((img, i) => (
-            <motion.div
-            key={i}
-            onMouseEnter={() => setHovered(i)}
-            onMouseLeave={() => setHovered(null)}
-            onClick={() =>
-              handleTransitionNav(
-                i === 1 ? "/team" :
-                i === 2 ? "/events" :
-                i === 3 ? "/profile" :
-                i === 4 ? "/developer" : null
-              )
-            }
-            animate={{
-              scale:
-                i === 0
-                  ? hovered === null
-                    ? 1.1   // GTA bigger by default
-                    : hovered === 0
-                      ? 1.1 // GTA hovered
-                      : 1     // GTA shrinks when others hovered
-                  : hovered === i
-                    ? 1.1   // Other cards on hover
-                    : 1
-            }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
-            className="bg-black w-40 h-40 overflow-hidden cursor-pointer"
-          >
-            <Image src={img} alt="card" className="w-full h-full object-cover" />
-          </motion.div>
-
-          ))}
+                {/* Sticky Cards - Fixed during horizontal scroll */}
+                <div ref={cardsRef} className="w-[85vw] flex justify-between items-end  md:gap-1 mb-10 fixed bottom-10 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+                    <motion.div
+                        onMouseEnter={() => setHovered("xbox")}
+                        onMouseLeave={() => setHovered(null)}
+                        className="hero-card bg-black h-50 w-50 flex-shrink-0 overflow-hidden cursor-pointer pointer-events-auto"
+                        animate={{
+                            scale: hovered === null || hovered === "xbox" ? 1.2 : 1
+                        }}
+                        transition={{ duration: 0.3 }}
+                        style={{ originY: 1 }}
+                        >
+                        <Image src={xbox} alt="Xbox" className="w-full h-full object-cover" />
+                    </motion.div>
+                    <motion.div 
+                        onMouseEnter={() => setHovered("team")}
+                        onMouseLeave={() => setHovered(null)}
+                        animate={{
+                            scale: hovered === "team" ? 1.2 : 1
+                        }}
+                        onClick={() => handleTransitionNav('/team')} 
+                        className="hero-card bg-black  h-50 w-50 flex-shrink-0 overflow-hidden cursor-pointer pointer-events-auto"
+                        whileHover={{ scale: 1.2 }}
+                        transition={{ duration: 0.3 }}
+                        style={{ originY: 1 }}
+                    >
+                        <Image src={team} alt="Team" className="w-full h-full object-cover" />
+                    </motion.div>
+                    <motion.div 
+                        onMouseEnter={() => setHovered("events")}
+                        onMouseLeave={() => setHovered(null)}
+                        animate={{
+                            scale: hovered === "events" ? 1.2 : 1
+                        }}
+                        onClick={() => handleTransitionNav('/events')} 
+                        className="hero-card bg-black h-50 w-50 flex-shrink-0 overflow-hidden cursor-pointer pointer-events-auto"
+                        whileHover={{ scale: 1.2 }}
+                        transition={{ duration: 0.3 }}
+                        style={{ originY: 1 }}
+                    >
+                        <Image src={events} alt="Events" className="w-full h-full object-cover" />
+                    </motion.div>
+                    <motion.div 
+                        onMouseEnter={() => setHovered("profile")}
+                        onMouseLeave={() => setHovered(null)}
+                        animate={{
+                            scale: hovered === "profile" ? 1.2 : 1
+                        }}
+                        onClick={() => handleTransitionNav('/profile')} 
+                        className="hero-card bg-black h-50 w-50 flex-shrink-0 overflow-hidden cursor-pointer pointer-events-auto"
+                        whileHover={{ scale: 1.2 }}
+                        transition={{ duration: 0.3 }}
+                        style={{ originY: 1 }}
+                    >
+                        <Image src={prof} alt="Profile" className="w-full h-full object-cover" />
+                    </motion.div>
+                    <motion.div 
+                        onMouseEnter={() => setHovered("developer")}
+                        onMouseLeave={() => setHovered(null)}
+                        animate={{
+                            scale: hovered === "developer" ? 1.2 : 1
+                        }}
+                        onClick={() => handleTransitionNav('/developer')} 
+                        className="hero-card bg-black h-50 w-50 flex-shrink-0 overflow-hidden cursor-pointer pointer-events-auto"
+                        whileHover={{ scale: 1.2 }}
+                        transition={{ duration: 0.3 }}
+                        style={{ originY: 1 }}
+                    >
+                        <Image src={dev} alt="Developers" className="w-full h-full object-cover" />
+                    </motion.div>
+                </div>
+            </div>
+            
+            {/* Footer - Vertical Scroll After Horizontal */}
+            <Footer/>
         </div>
-      </div>
-
-      <Footer />
-    </div>
-  );
+    );
 }
