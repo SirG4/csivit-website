@@ -8,7 +8,7 @@
           name: 'Amit N.',
           github: 'https://github.com/aaravmehta',
           linkedin: 'https://linkedin.com/in/aaravmehta',
-          image: '/Team/Members/Convenrs/amit.png',
+          image: '/Team/Members/Convenor/amit.png',
           description: 'Responsible for leading core committees and decision making.',
           position: 'Head',
         }
@@ -250,10 +250,10 @@
         position: 'Co-Head',
       },
       {
-        name: 'Ishan',
+        name: 'Ishaan',
         github: '',
         linkedin: '',
-        image: '/Team/Members/Media/ishan.png',
+        image: '/Team/Members/Media/ishaan.png',
         description: 'Editing and shooting',
         position: 'Core',
       },

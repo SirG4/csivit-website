@@ -29,7 +29,7 @@ const PageTransition = ({ children }) => {
   const routeToGameName={
     "/team":"Valorant",
     "/events":"Assains Creed",
-    "/profile":"Minecraft",
+    "/profile":"Steam",
     "/developer":"Road rash",
   };
 
