@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
@@ -13,6 +13,9 @@ gsap.registerPlugin(ScrollTrigger);
 const EventsScrolling = () => {
   const spotlightRefs = useRef([]);
   spotlightRefs.current = [];
+  const lenisRef = useRef(null);
+  const scrollTriggerRef = useRef(null);
+  const [currentPosterIndex, setCurrentPosterIndex] = useState(0);
 
   // 🔹 Refs for cover
   const coverRef = useRef(null);
@@ -36,6 +39,7 @@ const EventsScrolling = () => {
   useGSAP(() => {
     // Lenis smooth scroll setup
     const lenis = new Lenis();
+    lenisRef.current = lenis;
     lenis.on("scroll", ScrollTrigger.update);
     gsap.ticker.add((time) => {
       lenis.raf(time * 1000);
@@ -101,7 +105,7 @@ const EventsScrolling = () => {
     });
 
     // ScrollTrigger animation
-    ScrollTrigger.create({
+    const st = ScrollTrigger.create({
       trigger: ".spotlight",
       start: "top top",
       end: `+=${window.innerHeight * (isMobile ? 10 : 15)}px`,
@@ -163,7 +167,72 @@ onUpdate: (self) => {
 
 
     });
+    scrollTriggerRef.current = st;
   }, []);
+
+  // Navigation functions for mobile buttons
+  const handleNext = () => {
+    if (!lenisRef.current || !scrollTriggerRef.current) return;
+    
+    const maxIndex = (posterCount / 2) - 1;
+    if (currentPosterIndex >= maxIndex) return;
+    
+    const st = scrollTriggerRef.current;
+    const isMobile = window.innerWidth < 1000;
+    
+    // Animation stagger for each poster pair
+    const animationStagger = isMobile ? 0.15 : 0.2;
+    const progressMultiplier = isMobile ? 3 : 2.5;
+    
+    // Offset within each stagger to reach optimal viewing (imageProgress ~0.333)
+    const optimalOffset = 0.333 / progressMultiplier;
+    
+    // Get the total scroll distance of the ScrollTrigger
+    const scrollRange = st.end - st.start;
+    
+    // Calculate exact scroll position for next poster at optimal viewing
+    const nextPosterIndex = currentPosterIndex + 1;
+    const targetProgress = (nextPosterIndex * animationStagger) + optimalOffset;
+    const targetScroll = st.start + (scrollRange * targetProgress);
+    
+    lenisRef.current.scrollTo(targetScroll, {
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    });
+    
+    setCurrentPosterIndex(nextPosterIndex);
+  };
+
+  const handlePrevious = () => {
+    if (!lenisRef.current || !scrollTriggerRef.current) return;
+    
+    if (currentPosterIndex <= 0) return;
+    
+    const st = scrollTriggerRef.current;
+    const isMobile = window.innerWidth < 1000;
+    
+    // Animation stagger for each poster pair
+    const animationStagger = isMobile ? 0.15 : 0.2;
+    const progressMultiplier = isMobile ? 3 : 2.5;
+    
+    // Offset within each stagger to reach optimal viewing (imageProgress ~0.333)
+    const optimalOffset = 0.333 / progressMultiplier;
+    
+    // Get the total scroll distance of the ScrollTrigger
+    const scrollRange = st.end - st.start;
+    
+    // Calculate exact scroll position for previous poster at optimal viewing
+    const prevPosterIndex = currentPosterIndex - 1;
+    const targetProgress = (prevPosterIndex * animationStagger) + optimalOffset;
+    const targetScroll = st.start + (scrollRange * targetProgress);
+    
+    lenisRef.current.scrollTo(targetScroll, {
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    });
+    
+    setCurrentPosterIndex(prevPosterIndex);
+  };
 
   return (
     <div style={{ overflowX: 'hidden', width: '100vw' }}>
@@ -274,6 +343,29 @@ onUpdate: (self) => {
           })}
         </div>
 
+        {/* Mobile Navigation Buttons */}
+        <div className={styles.mobileNav}>
+          <button 
+            className={styles.navButton}
+            onClick={handlePrevious}
+            disabled={currentPosterIndex === 0}
+            aria-label="Previous poster"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <button 
+            className={styles.navButton}
+            onClick={handleNext}
+            disabled={currentPosterIndex === (posterCount / 2) - 1}
+            aria-label="Next poster"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
 
       </section>
 
