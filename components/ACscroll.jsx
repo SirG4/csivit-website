@@ -7,7 +7,7 @@ gsap.registerPlugin(ScrollTrigger);
 const ACscroll = () => {
   const canvasRef = useRef(null);
   const frameCount = 120; // Your image count
-  const totalLoops = 9; // Number of times to loop the animation
+  const totalLoops = 10; // Number of times to loop the animation
   const totalFrames = frameCount * totalLoops; // Total frames across all loops
   const images = useRef([]);
   const airpods = useRef({ frame: 0 });
@@ -104,7 +104,7 @@ const ACscroll = () => {
       {/* Spacer div to create scrollable content height */}
       <div className="h-[0vh] relative z-20">
         
-        <div className="h-screen"></div> {/* Last screen height */}
+        {/* <div className="h-screen"></div> Last screen height */}
       </div>
     </div>
   );

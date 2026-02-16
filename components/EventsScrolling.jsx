@@ -74,7 +74,7 @@ const EventsScrolling = () => {
     const screenHeight = window.innerHeight;
     const isMobile = screenWidth < 1000;
     // Keep desktop visuals as-is, tune only small screens
-    const scatterMultiplier = isMobile ? 0.7 : 0.5;
+    const scatterMultiplier = isMobile ? 0.5 : 0.5;
 
     // Start + End positions
     const offsetMultiplier = isMobile ? 20 : 100; // Adjust offset amount
@@ -117,7 +117,7 @@ onUpdate: (self) => {
   spotlightRefs.current.forEach((img, index) => { 
     // Pair consecutive placeholders: 0,1 -> 0; 2,3 -> 1; 4,5 -> 2, etc.
     const pairIndex = Math.floor(index / 2);
-    const staggerDelay = pairIndex * (isMobile ? 0.15 : 0.2);
+    const staggerDelay = pairIndex * (isMobile ? 0.12 : 0.16);
     const scaleMultiplier = isMobile ? 1.5 : 2;
     const imageProgress = Math.max(0, (progress - staggerDelay) * (isMobile ? 3 : 2.5)); // Increased mobile speed
 
@@ -181,7 +181,7 @@ onUpdate: (self) => {
     const isMobile = window.innerWidth < 1000;
     
     // Animation stagger for each poster pair
-    const animationStagger = isMobile ? 0.15 : 0.2;
+    const animationStagger = isMobile ? 0.12 : 0.16;
     const progressMultiplier = isMobile ? 3 : 2.5;
     
     // Offset within each stagger to reach optimal viewing (imageProgress ~0.333)
@@ -212,7 +212,7 @@ onUpdate: (self) => {
     const isMobile = window.innerWidth < 1000;
     
     // Animation stagger for each poster pair
-    const animationStagger = isMobile ? 0.15 : 0.2;
+    const animationStagger = isMobile ? 0.12 : 0.16;
     const progressMultiplier = isMobile ? 3 : 2.5;
     
     // Offset within each stagger to reach optimal viewing (imageProgress ~0.333)
