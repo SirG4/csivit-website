@@ -193,6 +193,59 @@
   }
 }
 
+/* Mobile Navigation Buttons */
+.mobileNav {
+  display: none;
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  gap: 1rem;
+  z-index: 100;
+}
+
+.navButton {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  color: #000;
+}
+
+.navButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  transform: scale(1.05);
+}
+
+.navButton:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.navButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.navButton svg {
+  width: 24px;
+  height: 24px;
+}
+
+@media (max-width: 1000px) {
+  .mobileNav {
+    display: flex;
+  }
+}
+
 /* Collage Styles */
 .collageContainer {
   width: 100%;
