@@ -1,20 +1,20 @@
- export const domains = [
-    {
-      name: 'Convenors',
-      icon: '/Team/Icons/convenors.png',
-      description: 'Convenors',
-      members: [
-        {
-          name: 'Amit N.',
-          github: 'https://github.com/aaravmehta',
-          linkedin: 'https://linkedin.com/in/aaravmehta',
-          image: '/Team/Members/Convenrs/amit.png',
-          description: 'Responsible for leading core committees and decision making.',
-          position: 'Head',
-        }
-      ],
-    },
-    {
+export const domains = [
+  {
+    name: 'Convenors',
+    icon: '/Team/Icons/convenor.png',
+    description: 'Convenors',
+    members: [
+      {
+        name: 'Amit N.',
+        github: 'https://github.com/aaravmehta',
+        linkedin: 'https://linkedin.com/in/aaravmehta',
+        image: '/Team/Members/Convenrs/amit.png',
+        description: 'Responsible for leading core committees and decision making.',
+        position: 'Head',
+      }
+    ],
+  },
+  {
     name: 'Executive',
     icon: '/Team/Icons/executives.png',
     description: 'Leadership and management events',
@@ -293,9 +293,9 @@
   },
   {
     name: 'Sponsorship',
-    icon: '/Team/Icons/solar_money-bag-outline.png',
+    icon: '/Team/Icons/sponsorship.png',
     description: 'Sponsorship and partnerships',
-    members: [
+    members: [  
       {
         name: 'Ashutosh',
         github: '',
