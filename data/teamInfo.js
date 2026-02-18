@@ -84,8 +84,8 @@
       },
       {
         name: 'Rohit',
-        github: 'https://github.com/rohit-123',
-        linkedin: 'https://www.linkedin.com/in/rohit-kumar-123',
+        github: 'https://github.com/SwiftByte6',
+        linkedin: 'https://www.linkedin.com/in/rohit-soneji-9483a5344/',
         image: '/Team/Members/Technical/rohit.png',
         description: 'Developer',
         position: 'core',
