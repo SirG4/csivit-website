@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 
 import team from "@/public/Home/Poster/TeamLoader.png";
 import events from "@/public/Home/Poster/EventsLoader.png";
@@ -13,11 +14,14 @@ import dev from "@/public/Home/Poster/DevLoader.png";
 const PageTransition = ({ children }) => {
   const router = useRouter();
   const pathname = usePathname();
+  const { data: session, status } = useSession();
   const overlayRef = useRef(null);
+  const videoRef = useRef(null);
   const isTransitioning = useRef(false);
   const [GameName,setGameName]=useState('');
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [transitionImage, setTransitionImage] = useState(null);
+  const [isVideoTransition, setIsVideoTransition] = useState(false);
 
   const routeToImage = {
     "/team": team,
@@ -32,6 +36,47 @@ const PageTransition = ({ children }) => {
     "/profile":"Steam",
     "/developer":"Road rash",
   };
+
+  // Protected routes that require authentication
+  const protectedRoutes = ["/profile", "/admin", "/scanner"];
+  // Public routes that authenticated users shouldn't access
+  const authRoutes = ["/login", "/signup"];
+
+  /* ---------------- PRELOAD ASSETS ON HOME PAGE ---------------- */
+  useEffect(() => {
+    // Only preload if on home page
+    if (pathname === "/" || pathname === "/home") {
+      // Preload images
+      const imageUrls = [team, events, prof, dev];
+      imageUrls.forEach((src) => {
+        const img = new window.Image();
+        img.src = src.src || src;
+      });
+
+      // Preload video
+      if (videoRef.current) {
+        videoRef.current.load();
+      }
+    }
+  }, [pathname]);
+
+  /* ---------------- AUTH REDIRECT ---------------- */
+  useEffect(() => {
+    if (status === "loading") return;
+
+    const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+    const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
+
+    // If user is not authenticated and trying to access protected route, redirect to login
+    if (!session && isProtectedRoute) {
+      router.push("/login");
+    }
+    
+    // If user is authenticated and trying to access login/signup, redirect to profile
+    if (session && isAuthRoute) {
+      router.push("/profile");
+    }
+  }, [session, status, pathname, router]);
 
   /* ---------------- PATH CHANGE ---------------- */
   useEffect(() => {
@@ -49,29 +94,65 @@ const PageTransition = ({ children }) => {
     const nextPath = pathname;
 
     if (prevPath === "/home" && routeToImage[nextPath]) {
-      setTransitionImage(routeToImage[nextPath]);
-      setGameName(routeToGameName[nextPath]);
+      // Check if it's profile route to use video
+      if (nextPath === "/profile") {
+        setIsVideoTransition(true);
+        setGameName(routeToGameName[nextPath]);
 
-      gsap.to(overlayRef.current, {
-        opacity: 1,
-        duration: 0.2,
-        onComplete: () => {
-          gsap.to(overlayRef.current, {
-            opacity: 1,
-            duration: 2.5,
-            onComplete: () => {
-              gsap.to(overlayRef.current, {
-                opacity: 0,
-                duration: 0.5,
-                onComplete: () => {
-                  setTransitionImage(null);
-                  overlayRef.current.style.pointerEvents = "none";
-                },
-              });
-            },
-          });
-        },
-      });
+        gsap.to(overlayRef.current, {
+          opacity: 1,
+          duration: 0.01,
+          onComplete: () => {
+            // Play video
+            if (videoRef.current) {
+              videoRef.current.play();
+            }
+            gsap.to(overlayRef.current, {
+              opacity: 1,
+              duration: 2.5,
+              onComplete: () => {
+                gsap.to(overlayRef.current, {
+                  opacity: 0,
+                  duration: 0.5,
+                  onComplete: () => {
+                    setIsVideoTransition(false);
+                    overlayRef.current.style.pointerEvents = "none";
+                    if (videoRef.current) {
+                      videoRef.current.pause();
+                      videoRef.current.currentTime = 0;
+                    }
+                  },
+                });
+              },
+            });
+          },
+        });
+      } else {
+        // Use image for other routes
+        setTransitionImage(routeToImage[nextPath]);
+        setGameName(routeToGameName[nextPath]);
+
+        gsap.to(overlayRef.current, {
+          opacity: 1,
+          duration: 0.2,
+          onComplete: () => {
+            gsap.to(overlayRef.current, {
+              opacity: 1,
+              duration: 2.5,
+              onComplete: () => {
+                gsap.to(overlayRef.current, {
+                  opacity: 0,
+                  duration: 0.5,
+                  onComplete: () => {
+                    setTransitionImage(null);
+                    overlayRef.current.style.pointerEvents = "none";
+                  },
+                });
+              },
+            });
+          },
+        });
+      }
     } else {
       gsap.to(overlayRef.current, {
         opacity: 0,
@@ -123,6 +204,32 @@ const PageTransition = ({ children }) => {
         className="fade-overlay"
         style={{ opacity: 0, pointerEvents: "none" }}
       >
+        {/* Video element - always present for preloading */}
+        <video
+          ref={videoRef}
+          className="transition-video"
+          style={{ display: isVideoTransition ? 'block' : 'none' }}
+          muted
+          playsInline
+          preload="auto"
+        >
+          <source src="/Home/Poster/minecraft_opening.mp4" type="video/mp4" />
+        </video>
+
+        {isVideoTransition && (
+          <>
+            <div className="transition-overlay-text">
+              <span className="inspired">Inspired by</span>
+              <span className="game-name">{GameName}</span>
+            </div>
+
+            <div className="progressbar-container">
+              <div className="progressbar">
+                <div className="progressbar-fill" />
+              </div>
+            </div>
+          </>
+        )}
         {transitionImage && (
           <>
             <Image
@@ -154,6 +261,15 @@ const PageTransition = ({ children }) => {
           inset: 0;
           background: #0f0f0f;
           z-index: 9999;
+        }
+
+        .transition-video {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
         }
 
         .transition-overlay-text {
