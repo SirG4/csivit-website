@@ -97,7 +97,7 @@ const PageTransition = ({ children }) => {
       // Check if it's profile route to use video
       if (nextPath === "/profile") {
         setIsVideoTransition(true);
-        setGameName(routeToGameName[nextPath]);
+       
 
         gsap.to(overlayRef.current, {
           opacity: 1,
@@ -117,6 +117,7 @@ const PageTransition = ({ children }) => {
                   onComplete: () => {
                     setIsVideoTransition(false);
                     overlayRef.current.style.pointerEvents = "none";
+                     setGameName(routeToGameName[nextPath]);
                     if (videoRef.current) {
                       videoRef.current.pause();
                       videoRef.current.currentTime = 0;

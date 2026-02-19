@@ -65,7 +65,9 @@ export default function Page() {
           bg-cover bg-no-repeat
           bg-left md:bg-center
           md:bg-fixed
+          blur-sm
           "
+        style={{ filter: 'blur(8px)' }}
       >
         {/* Overlay to darken the image */}
         <div className="absolute inset-0 bg-black/20"></div>

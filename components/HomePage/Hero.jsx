@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 
 import Footer from "../../components/footer.jsx";
@@ -19,6 +19,10 @@ import signup from "@/public/Home/Hero/signup.png";
 export default function Hero() {
   const router = useRouter();
   const [hovered, setHovered] = useState(null);
+  const scrollRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
 
   let isTransitioning = false;
 
@@ -35,6 +39,38 @@ export default function Hero() {
     } else {
       router.push(url);
     }
+  };
+
+  // Drag to scroll handlers
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setStartX(e.pageX - scrollRef.current.offsetLeft);
+    setScrollLeft(scrollRef.current.scrollLeft);
+  };
+
+  const handleTouchStart = (e) => {
+    setIsDragging(true);
+    setStartX(e.touches[0].pageX - scrollRef.current.offsetLeft);
+    setScrollLeft(scrollRef.current.scrollLeft);
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 2; // Scroll speed multiplier
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDragging) return;
+    const x = e.touches[0].pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 2;
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
   };
 
   return (
@@ -76,19 +112,39 @@ export default function Hero() {
         </div>
 
         {/* ================= MOBILE CARDS ================= */}
-        <div className="md:hidden absolute bottom-6 right-0 w-full pb-3 px-2 z-30">
+        <div className="md:hidden absolute bottom-[10%] right-0 w-full pb-3 px-2 z-30">
           <div 
-            className="flex overflow-x-auto gap-1 pb-1"
-            onWheel={(e) => {
-              const container = e.currentTarget;
-              container.scrollLeft += e.deltaY;
+            ref={scrollRef}
+            className="flex overflow-x-scroll gap-2 pb-1 select-none"
+            style={{
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              cursor: isDragging ? 'grabbing' : 'grab',
+              width: 'calc(100vw - 16px)', // Full width minus padding
             }}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleMouseUp}
           >
+            <style jsx>{`
+              div::-webkit-scrollbar {
+                display: none;
+              }
+            `}</style>
             {[gta, team, events, prof, dev].map((img, i) => (
               <motion.div
                 key={i}
                 whileTap={{ scale: 0.95 }}
-                onClick={() =>
+                onClick={(e) => {
+                  // Prevent click if dragging
+                  if (isDragging) {
+                    e.preventDefault();
+                    return;
+                  }
                   handleTransitionNav(
                     i === 0 ? "/" :
                     i === 1 ? "/team" :
@@ -97,15 +153,20 @@ export default function Hero() {
                     i === 4 ? "/developer" :
                     null
                   )
-                }
-                className="flex-shrink-0 w-24 h-24 bg-black overflow-hidden cursor-pointer rounded-lg"
+                }}
+                className="flex-shrink-0 bg-black overflow-hidden cursor-pointer rounded-lg"
+                style={{
+                  width: 'calc((100vw - 32px) / 3.5)', // Show 3.5 cards
+                  height: 'calc((100vw - 32px) / 3.5)',
+                }}
               >
                 <Image
                   src={img}
                   alt="card"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover pointer-events-none"
                   width={96}
                   height={96}
+                  draggable={false}
                 />
               </motion.div>
             ))}
