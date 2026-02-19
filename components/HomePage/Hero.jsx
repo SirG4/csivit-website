@@ -81,7 +81,7 @@ export default function Hero() {
 
         {/* Background */}
         <div className="absolute inset-0 z-0">
-          <Image src={hbg} alt="Background" fill className="object-cover" />
+          <Image src={hbg} alt="Background" fill className="object-cover object-[63%_center] md:object-center" />
         </div>
 
         {/* TOP BAR */}
@@ -112,7 +112,7 @@ export default function Hero() {
         </div>
 
         {/* ================= MOBILE CARDS ================= */}
-        <div className="md:hidden absolute bottom-[10%] right-0 w-full pb-3 px-2 z-30">
+        <div className="md:hidden absolute bottom-[7%] right-0 w-full pb-3 px-2 z-30">
           <div 
             ref={scrollRef}
             className="flex overflow-x-scroll gap-2 pb-1 select-none"
@@ -174,7 +174,7 @@ export default function Hero() {
         </div>
 
         {/* ================= DESKTOP HERO CARDS ================= */}
-        <div className="hidden md:flex absolute bottom-10 left-1/2 -translate-x-1/2 gap-3 z-30">
+        <div className="hidden md:flex absolute bottom-[7%] left-1/2 -translate-x-1/2 gap-3 z-30">
           {[gta, team, events, prof, dev].map((img, i) => (
             <motion.div
               key={i}
