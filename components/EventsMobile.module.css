@@ -7,7 +7,7 @@
   max-width: 500px;
   height: 90vh;
   font-family: system-ui, -apple-system, sans-serif;
-  background-color: #ff0000;
+  color: #ffffff;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -16,19 +16,20 @@
 
 .memoriesContainer {
   position: absolute;
-  background-color: #00ff00;
   right: 2%;
   bottom:0;
   width: 42%;
   max-width: 280px;
   height: auto;
-  background-color: #00ff00;
   border: none;
   border-radius: 4px;
   padding: 15px;
   display: flex;
   flex-direction: column;
   z-index: 10;
+  background: rgba(0, 0, 0, 0.4); 
+  backdrop-filter: blur(4px); 
+
 }
 
 .header {
@@ -40,7 +41,7 @@
   padding: 15px;
   /* Reduced opacity from 0.85 to 0.4 for transparency */
   /* background: rgba(0, 0, 0, 0.4);  */
-  background-color: #e100ff;
+  background: rgba(0, 0, 0, 0.4); 
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 4px;
   flex-shrink: 0;
@@ -78,7 +79,6 @@
 }
 
 .timeline {
-  background-color: #009dff;
   display: flex;
   flex-direction: column;
   position: relative;
