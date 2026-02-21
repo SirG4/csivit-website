@@ -1,237 +1,33 @@
-.mainContainer {
+.pageWrapper {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  background-color: transparent;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: 'Arial', sans-serif;
+}
+
+/* --- Display Panel & Image --- */
+.displayPanel {
   position: absolute;
-  top: 45%;
+  top: 40%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 90%;
   max-width: 500px;
-  height: 90vh;
-  font-family: system-ui, -apple-system, sans-serif;
-  color: #ffffff;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  overflow: hidden;
-}
-
-.memoriesContainer {
-  position: absolute;
-  right: 2%;
-  bottom:0;
-  width: 42%;
-  max-width: 280px;
-  height: auto;
-  border: none;
-  border-radius: 4px;
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  z-index: 10;
-  background: rgba(0, 0, 0, 0.4); 
-  backdrop-filter: blur(4px); 
-
-}
-
-.header {
-  display: flex;
-  
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-  padding: 15px;
-  /* Reduced opacity from 0.85 to 0.4 for transparency */
-  /* background: rgba(0, 0, 0, 0.4);  */
-  background: rgba(0, 0, 0, 0.4); 
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
-  flex-shrink: 0;
-  /* Reduced blur slightly so the poster is clearer */
-  backdrop-filter: blur(4px); 
-}
-
-.icon {
-  width: 28px;
-  height: 28px;
-  color: rgba(255, 255, 255, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.icon svg {
-  width: 100%;
-  height: 100%;
-}
-
-.animusIcon {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  filter: brightness(0.9);
-}
-
-.title {
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: 2px;
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0;
-}
-
-.timeline {
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  /* Exactly 3 times the item height (80px * 3) */
-  height: 240px; 
-  width: 100%;
-  overflow-y: auto;
-  /* Snaps scrolling smoothly to individual items */
-  scroll-snap-type: y mandatory;
-  scroll-behavior: smooth;
-  /* Padding allows first and last items to reach the center */
-  padding-top: 80px;
-  padding-bottom: 80px;
-  /* Hide scrollbar visually */
-  scrollbar-width: none; 
-}
-
-.timeline::-webkit-scrollbar {
-  display: none; 
-}
-.timeline::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 4px;
-}
-
-.timeline::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.4);
-  border-radius: 4px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
-}
-
-.timeline::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.6);
-  background-clip: padding-box;
-}
-
-.memoryItem {
-  position: relative;
-  /* Fixed height ensures perfect scrolling math */
-  height: 80px; 
-  flex-shrink: 0;
-  /* Forces the item to snap to the center of the timeline */
-  scroll-snap-align: center;
-  margin: 0;
-  padding: 0 16px;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 4px;
-  cursor: pointer;
-  align-self: flex-end;
-  transition: width 0.3s ease, opacity 0.3s ease, background 0.3s ease, border-color 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  backdrop-filter: blur(4px);
-}
-
-.memoryItem:hover {
-  background: rgba(0, 0, 0, 0.5);
-  border-color: rgba(255, 255, 255, 0.25);
-}
-
-.memoryItem.selected {
-  background: rgba(0, 0, 0, 0.6);
-  border: 1px solid rgba(200, 180, 120, 0.5);
-  border-right: 3px solid rgba(200, 180, 120, 0.8);
-  box-shadow: 
-    0 0 20px rgba(200, 180, 120, 0.2),
-    inset 0 0 30px rgba(255, 255, 255, 0.05);
-  padding-left: 48px;
-}
-.yearLabel {
-  font-size: 13px;
-  font-weight: 400;
-  color: rgba(255, 255, 255, 0.5);
-  letter-spacing: 1px;
-  margin-bottom: 8px;
-}
-
-.memoryItem.selected .yearLabel {
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.memoryTitle {
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: 2px;
-  color: rgba(255, 255, 255, 0.85);
-  text-transform: uppercase;
-  white-space: nowrap; /* Prevents text wrapping on curved items */
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.memoryItem.selected .memoryTitle {
-  color: rgba(255, 255, 255, 0.95);
-  text-shadow: 0 0 10px rgba(200, 180, 120, 0.3);
-}
-
-.selectionIndicator {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-.arrow {
-  font-size: 20px;
-  color: rgba(200, 180, 120, 0.8);
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 0.6;
-    transform: translateX(0);
-  }
-  50% {
-    opacity: 1;
-    transform: translateX(-4px);
-  }
-}
-
-.memoryItem::before {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 2px;
-  height: 0;
-  background: linear-gradient(180deg, rgba(200, 180, 120, 0.6), transparent);
-  transition: height 0.3s ease;
-}
-
-.memoryItem.selected::before {
-  height: 100%;
-}
-
-/* Display Panel Styles */
-.displayPanel {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  top:10;
-  align-items: center;
-  justify-content: center;
+  height: 60vh;
   z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* THIS IS THE MAGIC FIX FOR PULL-TO-REFRESH */
+  touch-action: none; 
 }
 
 .displayContent {
   width: 100%;
-  max-width: 500px;
   aspect-ratio: 4 / 5;
   position: relative;
 }
@@ -241,18 +37,18 @@
   height: 100%;
   position: relative;
   overflow: hidden;
-  border-radius: 4px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+  background: #000;
 }
 
 .memoryImage {
   object-fit: cover;
-  transition: transform 0.5s ease;
-  width: 100%;
-  height: 100%;
+  transition: filter 0.5s ease, transform 0.5s ease;
 }
 
-.imageWrapper:hover .memoryImage {
+.imageBlurred {
+  filter: blur(8px) brightness(0.4);
   transform: scale(1.05);
 }
 
@@ -261,138 +57,318 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 40px;
-  background: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.9) 0%,
-    rgba(0, 0, 0, 0.7) 50%,
-    transparent 100%
-  );
-  z-index: 1;
+  padding: 40px 30px 20px 30px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0,0,0,0.5) 60%, transparent 100%);
+  z-index: 2;
+  transition: opacity 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.swipeIndicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 15px;
+  animation: floatUp 2s infinite ease-in-out;
+}
+
+.swipeArrow {
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: bold;
+}
+
+.swipeText {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: -5px;
 }
 
 .displayTitle {
-  font-size: 48px;
-  font-weight: 700;
-  letter-spacing: 4px;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 3px;
   color: #fff;
-  margin: 0 0 10px 0;
+  margin: 0;
   text-transform: uppercase;
-  text-shadow: 
-    0 2px 10px rgba(0, 0, 0, 0.8),
-    0 0 30px rgba(200, 180, 120, 0.3);
-  animation: fadeInUp 0.6s ease;
 }
 
 .displayYear {
-  font-size: 20px;
-  font-weight: 400;
-  letter-spacing: 2px;
-  color: rgba(255, 255, 255, 0.7);
-  margin: 0;
-  animation: fadeInUp 0.6s ease 0.1s both;
+  font-size: 16px;
+  color: rgba(200, 180, 120, 0.9);
+  letter-spacing: 1px;
+  margin-top: 5px;
 }
 
-.noImage {
+/* --- THE AC DETAILS PANEL (Swipe Up View) --- */
+.detailsPanel {
+  position: absolute;
+  top: 100%;
+  left: 0;
   width: 100%;
   height: 100%;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  padding: 30px 20px;
+  transition: top 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.detailsActive {
+  top: 0;
+}
+
+.acHeaderContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  z-index: 11;
+  margin-bottom: -10px; 
+  margin-left: 10px;
+}
+
+.acHeaderSmall {
+  background-color: #9e1b1b; 
+  color: #fff;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  text-transform: uppercase;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+}
+
+.acHeaderLarge {
+  background-color: #9e1b1b;
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  padding: 6px 15px;
+  text-transform: uppercase;
+  margin-top: 2px;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+}
+
+.acContentBox {
+  background: rgba(240, 240, 240, 0.85); 
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.5);
+  border-radius: 2px;
+  padding: 30px 20px 20px 20px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  box-shadow: inset 0 0 20px rgba(255,255,255,0.5);
+}
+
+.acSection {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding-bottom: 10px;
+}
+
+.acFlexRow {
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, rgba(20, 20, 20, 0.8) 0%, rgba(40, 40, 40, 0.6) 100%);
-  border-radius: 4px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  gap: 10px;
 }
 
-.altText {
-  font-size: 24px;
-  font-weight: 300;
-  letter-spacing: 1px;
-  color: rgba(255, 255, 255, 0.5);
+.acLabelDark {
+  background: #333;
+  color: #fff;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+
+.acProgressBar {
+  flex-grow: 1;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.acProgressFill {
+  height: 100%;
+  background: #9e1b1b;
+  transition: width 1s ease-out;
+}
+
+.acProgressMarker {
+  position: absolute;
+  top: -4px;
+  left: 75%; 
+  width: 2px;
+  height: 16px;
+  background: #333;
+}
+
+.acLabelSmall {
+  font-size: 10px;
+  color: #555;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.acSectionTitle {
+  font-size: 12px;
+  color: #666;
+  margin: 0 0 4px 0;
+  text-transform: uppercase;
+}
+
+.acSectionData {
+  font-size: 14px;
+  color: #111;
+  font-weight: bold;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+/* The Fallback Close Button */
+.acCloseButton {
+  margin-top: auto;
   text-align: center;
-  padding: 40px;
-  font-style: italic;
+  font-size: 12px;
+  font-weight: bold;
+  color: #9e1b1b;
+  letter-spacing: 2px;
+  padding: 10px;
+  border: 1px solid #9e1b1b;
+  background: rgba(158, 27, 27, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  animation: none; /* Removed the floating animation for a solid button feel */
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.acCloseButton:active {
+  background: rgba(158, 27, 27, 0.3);
+  transform: scale(0.98);
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .mainContainer {
-    width: 95%;
-    max-width: 480px;
-    height: 90vh;
-  }
 
-  .memoriesContainer {
-    width: 45%;
-    max-width: 220px;
-    height: auto;
-    padding: 10px;
-    right: 2%;
-    bottom: 0;
-  }
+/* --- BOTTOM DOCK (Horizontal Menu) --- */
+.memoriesContainer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  padding: 15px 0 25px 0;
+  background: rgba(10, 10, 10, 0.85);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: bottom 0.4s ease; 
+}
 
-  .header {
-    margin-bottom: 10px;
-    padding: 10px;
-  }
+.dockHidden {
+  bottom: -200px;
+}
 
-  .icon {
-    width: 20px;
-    height: 20px;
-  }
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
 
-  .title {
-    font-size: 14px;
-  }
+.title {
+  font-size: 16px;
+  letter-spacing: 3px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
 
-  .memoryItem {
-    padding: 12px 10px;
-    min-height: 60px;
-  }
+.animusIcon {
+  filter: brightness(0.8);
+}
 
-  .memoryItem.selected {
-    padding-left: 32px;
-  }
+.timeline {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 90px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding-left: calc(50vw - 80px);
+  padding-right: calc(50vw - 80px);
+  scrollbar-width: none;
+  align-items: center;
+}
 
-  .yearLabel {
-    font-size: 10px;
-    margin-bottom: 4px;
-  }
+.timeline::-webkit-scrollbar {
+  display: none;
+}
 
-  .memoryTitle {
-    font-size: 13px;
-  }
+.memoryItem {
+  position: relative;
+  width: 160px;
+  min-width: 160px;
+  height: 60px;
+  flex-shrink: 0;
+  scroll-snap-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-  .arrow {
-    font-size: 16px;
-  }
+.memoryItem.selected {
+  background: rgba(255, 255, 255, 0.15);
+  border-bottom: 2px solid #9e1b1b; 
+  box-shadow: 0 5px 15px rgba(158, 27, 27, 0.2);
+}
 
-  .displayContent {
-    width: 100%;
-    max-width: 100%;
-  }
+.yearLabel {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 2px;
+}
 
-  .imageOverlay {
-    padding: 20px;
-  }
+.memoryTitle {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #fff;
+  white-space: nowrap;
+}
 
-  .displayTitle {
-    font-size: 24px;
-    letter-spacing: 2px;
-  }
+.selectionIndicator {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+}
 
-  .displayYear {
-    font-size: 14px;
-  }
+.dockArrow {
+  color: #9e1b1b;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+/* Animations */
+@keyframes floatUp {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
 }

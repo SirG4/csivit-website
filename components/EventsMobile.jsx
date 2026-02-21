@@ -1,14 +1,10 @@
 'use client';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
-import styles from './EventsMobile1.module.css';
+import styles from './EventsMobile.module.css';
 
-const EventsMobile1 = () => {
+const EventsMobile = () => {
   const [selectedIndex, setSelectedIndex] = useState(2);
-  const timelineRef = useRef(null);
-  
-  // Define a fixed height for items to make scroll math perfect
-  const ITEM_HEIGHT = 80; 
 
   const memories = [
     { year: '221 BCE', title: 'ANCIENT TIMES', image: '/Events/poster1.jpeg', alt: 'Ancient civilizations' },
@@ -21,41 +17,11 @@ const EventsMobile1 = () => {
     { year: '1920 CE', title: 'CHRONICLES', image: '/e3.jpg', alt: 'Modern Chronicles' },
   ];
 
-  // Actively update selected item based on scroll position
-  const handleScroll = (e) => {
-    if (!e.target) return;
-    const scrollTop = e.target.scrollTop;
-    // Divide current scroll position by item height to find the centered item
-    const newIndex = Math.round(scrollTop / ITEM_HEIGHT);
-    
-    if (newIndex >= 0 && newIndex < memories.length && newIndex !== selectedIndex) {
-      setSelectedIndex(newIndex);
-    }
-  };
-
-  // Allow clicking an item to scroll it to the center
-  const handleItemClick = (index) => {
-    if (timelineRef.current) {
-      timelineRef.current.scrollTo({
-        top: index * ITEM_HEIGHT,
-        behavior: 'smooth'
-      });
-    }
-  };
-
-  // Center the default selected item on mount
-  useEffect(() => {
-    if (timelineRef.current) {
-      timelineRef.current.scrollTop = selectedIndex * ITEM_HEIGHT;
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <div className={styles.mainContainer}>
       <div className={styles.displayPanel}>
         <div className={styles.displayContent}>
-          {memories[selectedIndex]?.image ? (
+          {memories[selectedIndex].image ? (
             <div className={styles.imageWrapper}>
               <Image
                 src={memories[selectedIndex].image}
@@ -71,11 +37,9 @@ const EventsMobile1 = () => {
             </div>
           ) : (
             <div className={styles.noImage}>
-              <p className={styles.altText}>{memories[selectedIndex]?.alt}</p>
+              <p className={styles.altText}>{memories[selectedIndex].alt}</p>
             </div>
           )}
-            </div>
-        </div>
 
           <div className={styles.memoriesContainer}>
             <div className={styles.header}>
@@ -91,46 +55,52 @@ const EventsMobile1 = () => {
               <h2 className={styles.title}>MEMORIES</h2>
             </div>
 
-            <div
-              className={styles.timeline}
-              ref={timelineRef}
-              onScroll={handleScroll}
-            >
-              {memories.map((memory, index) => {
-                const distanceFromCenter = Math.abs(index - selectedIndex);
-                const widthReduction = distanceFromCenter * 8;
-                
-                // Only show the center item and the one directly above/below it
-                const isVisible = distanceFromCenter <= 1;
+            <div className={styles.timeline}>
+              {/* Slot 1: item above selected (or blank) */}
+              {selectedIndex > 0 ? (
+                <div
+                  className={styles.memoryItem}
+                  onClick={() => setSelectedIndex(selectedIndex - 1)}
+                  style={{ width: 'calc(100% - 8%)' }}
+                >
+                  <div className={styles.yearLabel}>{memories[selectedIndex - 1].year}</div>
+                  <div className={styles.memoryTitle}>{memories[selectedIndex - 1].title}</div>
+                </div>
+              ) : (
+                <div className={styles.memoryItemBlank} />
+              )}
 
-                return (
-                  <div
-                    key={index}
-                    className={`${styles.memoryItem} ${
-                      index === selectedIndex ? styles.selected : ''
-                    }`}
-                    onClick={() => handleItemClick(index)}
-                    style={{
-                      width: `calc(100% - ${widthReduction}%)`,
-                      opacity: isVisible ? 1 : 0,
-                      pointerEvents: isVisible ? 'auto' : 'none',
-                    }}
-                  >
-                    <div className={styles.yearLabel}>{memory.year}</div>
-                    <div className={styles.memoryTitle}>{memory.title}</div>
-                    {index === selectedIndex && (
-                      <div className={styles.selectionIndicator}>
-                        <div className={styles.arrow}>→</div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+              {/* Slot 2: currently selected item */}
+              <div
+                className={`${styles.memoryItem} ${styles.selected}`}
+                style={{ width: '100%' }}
+              >
+                <div className={styles.selectionIndicator}>
+                  <div className={styles.arrow}>→</div>
+                </div>
+                <div className={styles.yearLabel}>{memories[selectedIndex].year}</div>
+                <div className={styles.memoryTitle}>{memories[selectedIndex].title}</div>
+              </div>
+
+              {/* Slot 3: item below selected (or blank) */}
+              {selectedIndex < memories.length - 1 ? (
+                <div
+                  className={styles.memoryItem}
+                  onClick={() => setSelectedIndex(selectedIndex + 1)}
+                  style={{ width: 'calc(100% - 8%)' }}
+                >
+                  <div className={styles.yearLabel}>{memories[selectedIndex + 1].year}</div>
+                  <div className={styles.memoryTitle}>{memories[selectedIndex + 1].title}</div>
+                </div>
+              ) : (
+                <div className={styles.memoryItemBlank} />
+              )}
             </div>
           </div>
         </div>
-
+      </div>
+    </div>
   );
 };
 
-export default EventsMobile1;
+export default EventsMobile;
