@@ -74,6 +74,8 @@ const EventsMobile1 = () => {
               <p className={styles.altText}>{memories[selectedIndex]?.alt}</p>
             </div>
           )}
+            </div>
+        </div>
 
           <div className={styles.memoriesContainer}>
             <div className={styles.header}>
@@ -127,8 +129,7 @@ const EventsMobile1 = () => {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+
   );
 };
 
