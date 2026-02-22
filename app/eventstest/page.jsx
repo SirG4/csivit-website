@@ -3,14 +3,14 @@
 import React from 'react'
 import BackButton from '@/components/BackButton/BackButton';
 import Image from "next/image";
-import EventsScrolling from "@/components/EventsScrolling";
+import EventsScrolling from "@/components/Events/EventsScrolling";
 import Lenis from 'lenis'
 import { useEffect } from "react";
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import ACscroll from "@/components/ACscroll";
-import EventsMobile from "@/components/EventsMobile";
-import EventsMobile1 from "@/components/EventsMobile1";
+import ACscroll from "@/components/Events/ACscroll";
+import EventsMobile from "@/components/Events/EventsMobile";
+import EventsMobile1 from "@/components/Events/EventsMobile1";
 
 gsap.registerPlugin(ScrollTrigger);
 
