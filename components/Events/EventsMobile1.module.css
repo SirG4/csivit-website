@@ -1,0 +1,374 @@
+.pageWrapper {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  background-color: transparent;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: 'Arial', sans-serif;
+}
+
+/* --- Display Panel & Image --- */
+.displayPanel {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 500px;
+  height: 60vh;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* THIS IS THE MAGIC FIX FOR PULL-TO-REFRESH */
+  touch-action: none; 
+}
+
+.displayContent {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  position: relative;
+}
+
+.imageWrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+  background: #000;
+}
+
+.memoryImage {
+  object-fit: cover;
+  transition: filter 0.5s ease, transform 0.5s ease;
+}
+
+.imageBlurred {
+  filter: blur(8px) brightness(0.4);
+  transform: scale(1.05);
+}
+
+.imageOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 40px 30px 20px 30px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0,0,0,0.5) 60%, transparent 100%);
+  z-index: 2;
+  transition: opacity 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.swipeIndicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 15px;
+  animation: floatUp 2s infinite ease-in-out;
+}
+
+.swipeArrow {
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: bold;
+}
+
+.swipeText {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: -5px;
+}
+
+.displayTitle {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: #fff;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.displayYear {
+  font-size: 16px;
+  color: rgba(200, 180, 120, 0.9);
+  letter-spacing: 1px;
+  margin-top: 5px;
+}
+
+/* --- THE AC DETAILS PANEL (Swipe Up View) --- */
+.detailsPanel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  padding: 30px 20px;
+  transition: top 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.detailsActive {
+  top: 0;
+}
+
+.acHeaderContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  z-index: 11;
+  margin-bottom: -10px; 
+  margin-left: 10px;
+}
+
+.acHeaderSmall {
+  background-color: #9e1b1b; 
+  color: #fff;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  text-transform: uppercase;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+}
+
+.acHeaderLarge {
+  background-color: #9e1b1b;
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  padding: 6px 15px;
+  text-transform: uppercase;
+  margin-top: 2px;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+}
+
+.acContentBox {
+  background: rgba(240, 240, 240, 0.85); 
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.5);
+  border-radius: 2px;
+  padding: 30px 20px 20px 20px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  box-shadow: inset 0 0 20px rgba(255,255,255,0.5);
+}
+
+.acSection {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding-bottom: 10px;
+}
+
+.acFlexRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.acLabelDark {
+  background: #333;
+  color: #fff;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+
+.acProgressBar {
+  flex-grow: 1;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.acProgressFill {
+  height: 100%;
+  background: #9e1b1b;
+  transition: width 1s ease-out;
+}
+
+.acProgressMarker {
+  position: absolute;
+  top: -4px;
+  left: 75%; 
+  width: 2px;
+  height: 16px;
+  background: #333;
+}
+
+.acLabelSmall {
+  font-size: 10px;
+  color: #555;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.acSectionTitle {
+  font-size: 12px;
+  color: #666;
+  margin: 0 0 4px 0;
+  text-transform: uppercase;
+}
+
+.acSectionData {
+  font-size: 14px;
+  color: #111;
+  font-weight: bold;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+/* The Fallback Close Button */
+.acCloseButton {
+  margin-top: auto;
+  text-align: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: #9e1b1b;
+  letter-spacing: 2px;
+  padding: 10px;
+  border: 1px solid #9e1b1b;
+  background: rgba(158, 27, 27, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  animation: none; /* Removed the floating animation for a solid button feel */
+}
+
+.acCloseButton:active {
+  background: rgba(158, 27, 27, 0.3);
+  transform: scale(0.98);
+}
+
+
+/* --- BOTTOM DOCK (Horizontal Menu) --- */
+.memoriesContainer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  padding: 15px 0 25px 0;
+  background: rgba(10, 10, 10, 0.85);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: bottom 0.4s ease; 
+}
+
+.dockHidden {
+  bottom: -200px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.title {
+  font-size: 16px;
+  letter-spacing: 3px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+}
+
+.animusIcon {
+  filter: brightness(0.8);
+}
+
+.timeline {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 90px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding-left: calc(50vw - 80px);
+  padding-right: calc(50vw - 80px);
+  scrollbar-width: none;
+  align-items: center;
+}
+
+.timeline::-webkit-scrollbar {
+  display: none;
+}
+
+.memoryItem {
+  position: relative;
+  width: 160px;
+  min-width: 160px;
+  height: 60px;
+  flex-shrink: 0;
+  scroll-snap-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.memoryItem.selected {
+  background: rgba(255, 255, 255, 0.15);
+  border-bottom: 2px solid #9e1b1b; 
+  box-shadow: 0 5px 15px rgba(158, 27, 27, 0.2);
+}
+
+.yearLabel {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  margin-bottom: 2px;
+}
+
+.memoryTitle {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.selectionIndicator {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.dockArrow {
+  color: #9e1b1b;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+/* Animations */
+@keyframes floatUp {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
