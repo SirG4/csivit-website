@@ -6,6 +6,7 @@ import styles from './EventsMobile1.module.css';
 const EventsMobile1 = () => {
   const [selectedIndex, setSelectedIndex] = useState(2);
   const [showDetails, setShowDetails] = useState(false);
+  const [showCollage, setShowCollage] = useState(false);
   
   // Swipe gesture states
   const [touchStart, setTouchStart] = useState(null);
@@ -22,6 +23,7 @@ const EventsMobile1 = () => {
       image: '/Events/poster2.jpeg',
       alt: 'Film Fiesta 5.0 Poster',
       sync: 100,
+      collageNumber: 2,
       location: 'VIT Auditorium — 4 PM onwards',
       desc: 'CSI-VIT presents Film Fiesta 5.0! Catch screenings of Arrival, Jojo Rabbit, Ford v Ferrari, and Superman back-to-back. Contact: Gautami Kamble: 75065 63517 | Varun Singh: 75883 05192',
     },
@@ -31,6 +33,7 @@ const EventsMobile1 = () => {
       image: '/Events/poster3.jpeg',
       alt: 'Cyberfrat Cybersecurity Symposium Poster',
       sync: 100,
+      collageNumber: 3,
       location: 'VIT Auditorium — 11:00 AM to 3:00 PM',
       desc: 'CSI-VIT in collaboration with Cyberfrat presents a Cybersecurity Symposium: "Securing the Digital Future." Featuring industry leaders from Equifax, SBI, Cyberfrat, LTIMindtree, Cutsight & VIT Mumbai. Contact: Varun Singh: 75883 05192 | Gautami Kamble: 75065 63517',
     },
@@ -40,6 +43,7 @@ const EventsMobile1 = () => {
       image: '/Events/poster1.jpeg',
       alt: 'Data Beyond Dashboard Poster',
       sync: 100,
+      collageNumber: null,
       location: 'Live on YouTube — 4 PM to 6 PM',
       desc: 'A special alumni episode featuring Rujuta Lanke, Data Analyst at American Express, New York — sharing her journey beyond VIT. Contact: Gautami Kamble: 75065 63517 | Varun Singh: 75883 05192',
     },
@@ -49,6 +53,7 @@ const EventsMobile1 = () => {
       image: '/Events/poster4.jpeg',
       alt: 'Cloud Native Now in Mumbai Poster',
       sync: 100,
+      collageNumber: 4,
       location: 'VIT Auditorium, Wadala — 10 AM to 2 PM',
       desc: 'Cloud Native Now in Mumbai! An inaugural meeting: "From Local Trains to Global Code." Empowering developers through hands-on learning and community-driven growth. Contact: Gautami K.: +91 75065 63517 | Varun S.: +91 75883 05192',
     },
@@ -58,6 +63,7 @@ const EventsMobile1 = () => {
       image: '/Events/poster5.jpeg',
       alt: 'Bug Auction — Enthusia Poster',
       sync: 78,
+      collageNumber: null,
       location: 'VIT Mumbai — Details TBA',
       desc: 'CSI-VIT Enthusia presents Bug Auction — "Gotta patch \'em all!" Hunt bugs, bid your way to the top, and claim your reward. Stay tuned for venue and timing details.',
     },
@@ -79,8 +85,14 @@ const EventsMobile1 = () => {
     const isUpSwipe = distance > minSwipeDistance;
     const isDownSwipe = distance < -minSwipeDistance;
     
-    if (isUpSwipe && !showDetails) setShowDetails(true);
-    if (isDownSwipe && showDetails) setShowDetails(false);
+    if (isUpSwipe) {
+      if (showCollage) setShowCollage(false);
+      else if (!showDetails) setShowDetails(true);
+    }
+    if (isDownSwipe) {
+      if (showDetails) setShowDetails(false);
+      else if (!showCollage) setShowCollage(true);
+    }
   };
 
   // --- Scroll Logic ---
@@ -91,11 +103,13 @@ const EventsMobile1 = () => {
     
     if (newIndex >= 0 && newIndex < memories.length && newIndex !== selectedIndex) {
       setSelectedIndex(newIndex);
+      setShowCollage(false);
     }
   };
 
   const handleItemClick = (index) => {
     if (showDetails) setShowDetails(false); // Close details if clicking a new item
+    if (showCollage) setShowCollage(false); // Close collage if clicking a new item
     if (timelineRef.current) {
       timelineRef.current.scrollTo({ left: index * ITEM_WIDTH, behavior: 'smooth' });
     }
@@ -127,18 +141,59 @@ const EventsMobile1 = () => {
                 src={activeMemory.image}
                 alt={activeMemory.alt}
                 fill
-                className={`${styles.memoryImage} ${showDetails ? styles.imageBlurred : ''}`}
+                className={`${styles.memoryImage} ${(showDetails || showCollage) ? styles.imageBlurred : ''}`}
                 priority
               />
-              
+
+              {/* Top overlay — Swipe Down for Photos hint */}
+              <div className={`${styles.topOverlay} ${(showDetails || showCollage) ? styles.hidden : ''}`}>
+                <div className={styles.swipeDownIndicator}>
+                  <span className={styles.swipeDownArrow}>↓</span>
+                  <span className={styles.swipeDownText}>SWIPE DOWN FOR PHOTOS</span>
+                </div>
+              </div>
+
               {/* The "Swipe Up" prompt that vanishes when details are open */}
-              <div className={`${styles.imageOverlay} ${showDetails ? styles.hidden : ''}`}>
+              <div className={`${styles.imageOverlay} ${(showDetails || showCollage) ? styles.hidden : ''}`}>
                 <div className={styles.swipeIndicator}>
                   <span className={styles.swipeArrow}>^</span>
                   <span className={styles.swipeText}>SWIPE UP FOR DATA</span>
                 </div>
                 <h3 className={styles.displayTitle}>{activeMemory.title}</h3>
                 <p className={styles.displayYear}>{activeMemory.year}</p>
+              </div>
+
+              {/* COLLAGE PANEL — slides down from top */}
+              <div className={`${styles.collagePanel} ${showCollage ? styles.collageActive : ''}`}>
+                <div className={styles.acHeaderContainer}>
+                  <div className={styles.acHeaderSmall}>EVENT ARCHIVE</div>
+                  <div className={styles.acHeaderLarge}>{activeMemory.title}</div>
+                </div>
+
+                <div className={styles.collageGrid}>
+                  {[1, 2, 3, 4].map((n) => (
+                    <div key={n} className={styles[`collageImg${n}`]}>
+                      {activeMemory.collageNumber ? (
+                        <img
+                          src={`/Events/collage${activeMemory.collageNumber}-${n}.jpg`}
+                          alt={`${activeMemory.title} - Photo ${n}`}
+                          className={styles.collagePhoto}
+                        />
+                      ) : (
+                        <div className={styles.collagePlaceholder}>
+                          <span className={styles.collageComingSoon}>COMING SOON</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <div
+                  className={styles.acCloseButton}
+                  onClick={() => setShowCollage(false)}
+                >
+                  [ CLOSE ARCHIVE ]
+                </div>
               </div>
 
               {/* DETAILS PANEL - Assassin's Creed Light Theme */}
