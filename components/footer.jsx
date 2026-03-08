@@ -10,6 +10,8 @@ import {
   FaMapMarkerAlt
 } from 'react-icons/fa'
 
+import f_backdrop from '@/public/Home/Hero/f_backdrop.png';
+
 export default function Footer() {
   const scrollToTop = () => {
     if (typeof window !== 'undefined') {
@@ -18,11 +20,10 @@ export default function Footer() {
   }
 
   return (
-    <footer className="relative overflow-hidden text-gray-200 bg-[#000010cc]">
+    <footer className="relative overflow-hidden text-gray-200 isolate min-h-screenflex items-center justify-center">
       {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-[#03071A] to-[#041026] -z-10" />
-      <div className="absolute inset-0 opacity-10 pointer-events-none bg-[url('/assets/storm-texture.png')] bg-cover bg-center -z-10" />
-
+      <div className="absolute inset-0 bg-cover bg-center -z-20" style={{ backgroundImage: `url(${f_backdrop.src})` }} />
+  
       {/* Top glow */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -35,13 +36,13 @@ export default function Footer() {
         }}
       />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-5 lg:py-5 ">
         {/* Logo */}
         <div className="flex justify-center mb-12 lg:mb-16">
           <img
             src="/csi_logo.png"
             alt="CSI-VIT Logo"
-            className="h-28 lg:h-36 object-contain drop-shadow-[0_0_25px_rgba(74,200,255,0.25)]"
+            className="h-28 lg:h-36 object-contain drop-shadow-[0_0_25px_rgba(74,200,255,0.45)]"
           />
         </div>
 
@@ -53,18 +54,18 @@ export default function Footer() {
             initial={{ y: 12, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.05 }}
-            className="space-y-4 lg:pr-8 text-center lg:text-left"
+            className="space-y-4 lg:pr-8 text-center lg:text-left rounded-xl bg-black/60 backdrop-blur-md border border-white/10 p-6"
           >
             <div>
-              <h3 className="text-xl font-semibold text-[#DDF8FF] neon-text mb-2">
+              <h3 className="text-xl font-semibold text-white neon-text mb-2">
                 Computer Society of India - VIT
               </h3>
-              <p className="text-sm text-gray-300 italic">
+              <p className="text-sm text-[#9EE8FF] italic">
                 "Exploring Technology Beyond Limits"
               </p>
             </div>
 
-            <p className="text-sm text-gray-400 leading-relaxed px-4 lg:px-0">
+            <p className="text-sm text-gray-200 leading-relaxed px-4 lg:px-0">
               CSI-VIT brings students, researchers, and developers together to
               explore technology, conduct workshops, and build projects that
               bridge academic learning with real-world engineering.
@@ -76,23 +77,23 @@ export default function Footer() {
             initial={{ y: 12, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.12 }}
-            className="space-y-6 lg:pl-8 text-center lg:text-left"
+            className="space-y-6 text-center lg:text-left rounded-xl bg-black/60 backdrop-blur-md border border-white/10 p-6"
           >
-            <h4 className="text-lg font-semibold text-[#9EE8FF] neon-text">
+            <h4 className="text-lg font-semibold text-white neon-text">
               Contact Information
             </h4>
             
             <div className="space-y-4">
               {/* Email */}
               <div className="flex flex-col lg:flex-row lg:items-start gap-3 items-center">
-                <div className="text-[#4AC8FF]">
+                <div className="text-[#4AC8FF] text-lg">
                   <FaEnvelope />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-300 mb-1">Email</p>
+                  <p className="text-sm font-semibold text-white mb-1">Email</p>
                   <a
                     href="mailto:csivittechteam@gmail.com"
-                    className="text-sm text-gray-400 hover:text-[#9EE8FF] hover:underline transition-colors"
+                    className="text-sm text-gray-200 hover:text-[#9EE8FF] hover:underline transition-colors"
                   >
                     csivittechteam@gmail.com
                   </a>
@@ -101,12 +102,12 @@ export default function Footer() {
 
               {/* Location */}
               <div className="flex flex-col lg:flex-row lg:items-start gap-3 items-center">
-                <div className="text-[#4AC8FF]">
+                <div className="text-[#4AC8FF] text-lg">
                   <FaMapMarkerAlt />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-300 mb-1">Location</p>
-                  <p className="text-sm text-gray-400">
+                  <p className="text-sm font-semibold text-white mb-1">Location</p>
+                  <p className="text-sm text-gray-200">
                     Vidyalankar Institute of Technology, <br />
                     Wadala, Mumbai, <br />
                   </p>
@@ -120,9 +121,9 @@ export default function Footer() {
             initial={{ y: 12, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.18 }}
-            className="space-y-6 text-center lg:text-left"
+            className="space-y-6 text-center lg:text-left rounded-xl bg-black/60 backdrop-blur-md border border-white/10 p-6"
           >
-            <h4 className="text-lg font-semibold text-[#9EE8FF] neon-text">
+            <h4 className="text-lg font-semibold text-white neon-text">
               Connect With Us
             </h4>
 
@@ -138,12 +139,12 @@ export default function Footer() {
                   href={social.href}
                   aria-label={social.name}
                   className="w-12 h-12 flex items-center justify-center rounded-lg
-                    bg-[rgba(255,255,255,0.03)]
-                    border border-[rgba(128, 203, 235, 0.15)]
-                    text-[#9EE8FF] text-xl
-                    hover:bg-[rgba(158, 182, 193, 0.1)]
-                    hover:scale-110 hover:border-[rgba(74,200,255,0.3)]
-                    hover:shadow-[0_0_15px_rgba(74,200,255,0.2)]
+                    bg-white/10
+                    border border-white/20
+                    text-white text-xl
+                    hover:bg-[rgba(74,200,255,0.2)]
+                    hover:scale-110 hover:border-[#4AC8FF]
+                    hover:shadow-[0_0_15px_rgba(74,200,255,0.35)]
                     transition-all duration-300"
                 >
                   {social.icon}
@@ -152,7 +153,7 @@ export default function Footer() {
             </div>
 
             <div className="pt-4 px-4 lg:px-0">
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-gray-200">
                 Follow us for updates on events, workshops, and tech insights.
               </p>
             </div>
@@ -160,26 +161,26 @@ export default function Footer() {
         </div>
 
         {/* Bottom Section */}
-        <div className="pt-8 border-t border-[rgba(74,200,255,0.08)]">
-          <div className="flex flex-col items-center justify-between gap-6">
+        <div className="border-t border-white/20">
+          <div className="rounded-xl bg-black/60 backdrop-blur-md border border-white/10 px-6 py-5 flex flex-col items-center justify-between gap-6">
             {/* Copyright */}
-            <div className="text-sm text-gray-400 text-center">
+            <div className="text-sm text-gray-200 text-center">
               © 2026 Computer Society of India - VIT. All rights reserved.
             </div>
 
             {/* Built with */}
             <div className="flex flex-col items-center gap-4">
-              <span className="text-sm text-gray-400 text-center">
+              <span className="text-sm text-gray-200 text-center">
                 Built with struggle by CSI-VIT Tech Team
               </span>
               <div className="flex flex-wrap gap-2 justify-center">
-                <span className="px-3 py-1 text-xs rounded-full border border-[rgba(74,200,255,0.2)] bg-[rgba(74,200,255,0.1)]">
+                <span className="px-3 py-1 text-xs rounded-full border border-[#4AC8FF]/40 bg-[#4AC8FF]/15 text-white font-medium">
                   Next.js
                 </span>
-                <span className="px-3 py-1 text-xs rounded-full border border-[rgba(74,200,255,0.2)] bg-[rgba(74,200,255,0.1)]">
+                <span className="px-3 py-1 text-xs rounded-full border border-[#4AC8FF]/40 bg-[#4AC8FF]/15 text-white font-medium">
                   React
                 </span>
-                <span className="px-3 py-1 text-xs rounded-full border border-[rgba(74,200,255,0.2)] bg-[rgba(74,200,255,0.1)]">
+                <span className="px-3 py-1 text-xs rounded-full border border-[#4AC8FF]/40 bg-[#4AC8FF]/15 text-white font-medium">
                   Tailwind
                 </span>
               </div>
@@ -208,6 +209,7 @@ export default function Footer() {
           text-shadow: 0 0 14px rgba(74,200,255,0.25);
         }
       `}</style>
+
     </footer>
   )
 }

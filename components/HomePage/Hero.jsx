@@ -12,7 +12,7 @@ import events from "@/public/HomePage/assassins_events 1.png";
 import prof from "@/public/HomePage/minecraft_profile 1.png";
 import dev from "@/public/HomePage/roadrash_developers 1.png";
 import gta from "@/public/Home/Hero/main.png";
-import hbg from "@/public/Home/Hero/backdrop.png";
+import hbg from "@/public/Home/Hero/backdrop2.png";
 import name from "@/public/Home/Hero/name.png";
 import signup from "@/public/Home/Hero/signup.png";
 
