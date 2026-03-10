@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
+import { useSession } from "next-auth/react";
 
 import Footer from "../../components/footer.jsx";
 
@@ -18,6 +19,7 @@ import signup from "@/public/Home/Hero/signup.png";
 
 export default function Hero() {
   const router = useRouter();
+  const { status } = useSession();
   const [hovered, setHovered] = useState(null);
   const scrollRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -86,13 +88,15 @@ export default function Hero() {
 
         {/* TOP BAR */}
         <div className="relative z-30 flex justify-between items-start pt-8 px-6 md:px-16">
-          <Image
-            src={signup}
-            alt="Sign Up"
-            className="w-28 md:w-32 cursor-pointer"
-            priority
-            onClick={() => handleTransitionNav("/signup")}
-          />
+          {status !== "authenticated" && (
+            <Image
+              src={signup}
+              alt="Sign Up"
+              className="w-28 md:w-32 cursor-pointer"
+              priority
+              onClick={() => handleTransitionNav("/signup")}
+            />
+          )}
         </div>
 
         {/* CONTENT */}

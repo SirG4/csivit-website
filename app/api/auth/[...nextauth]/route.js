@@ -31,7 +31,7 @@ export const authOptions = {
           }
 
           const user = await User.findOne({ email: credentials.email }).select(
-            "+password"
+            "+password",
           );
 
           if (!user) {
@@ -40,7 +40,7 @@ export const authOptions = {
 
           const isPasswordValid = await bcryptjs.compare(
             credentials.password,
-            user.password
+            user.password,
           );
 
           if (!isPasswordValid) {
@@ -61,6 +61,7 @@ export const authOptions = {
   ],
   pages: {
     signIn: "/login",
+    error: "/login",
   },
   callbacks: {
     async signIn({ user, account, profile }) {
@@ -68,49 +69,83 @@ export const authOptions = {
         await dbConnect();
 
         if (account?.provider === "google" || account?.provider === "github") {
+          const oauthEmail = (
+            user?.email ||
+            profile?.email ||
+            ""
+          ).toLowerCase();
+
+          // OAuth providers can return no email (e.g. private GitHub email).
+          if (!oauthEmail) {
+            return "/login?error=OAuthEmailMissing";
+          }
+
+          const image =
+            account.provider === "google"
+              ? profile?.picture
+              : profile?.avatar_url;
+
+          const fallbackName = oauthEmail.split("@")[0] || "User";
+
           // Check if user exists
-          let existingUser = await User.findOne({ email: user.email });
+          let existingUser = await User.findOne({ email: oauthEmail });
 
           if (!existingUser) {
             // Create new user from OAuth
-            const image =
-              account.provider === "google"
-                ? profile?.picture
-                : profile?.avatar_url;
-
             existingUser = await User.create({
-              name: user.name,
-              email: user.email,
+              name: user?.name || profile?.name || fallbackName,
+              email: oauthEmail,
               provider: account.provider,
               providerId: account.providerAccountId,
               image: image,
             });
-          } else if (!existingUser.providerId) {
-            // Update existing credentials user with OAuth info
-            const image =
-              account.provider === "google"
-                ? profile?.picture
-                : profile?.avatar_url;
+          } else {
+            // Link existing user account with current OAuth provider when possible.
+            const updateData = {};
 
-            existingUser = await User.findByIdAndUpdate(
-              existingUser._id,
-              {
-                provider: account.provider,
-                providerId: account.providerAccountId,
-                image: image,
-              },
-              { new: true }
-            );
+            if (
+              !existingUser.providerId ||
+              existingUser.provider === account.provider
+            ) {
+              updateData.provider = account.provider;
+              updateData.providerId = account.providerAccountId;
+            }
+
+            if (!existingUser.image && image) {
+              updateData.image = image;
+            }
+
+            if (!existingUser.name && (user?.name || profile?.name)) {
+              updateData.name = user?.name || profile?.name;
+            }
+
+            if (Object.keys(updateData).length > 0) {
+              existingUser = await User.findByIdAndUpdate(
+                existingUser._id,
+                updateData,
+                { new: true },
+              );
+            }
+
+            if (!existingUser) {
+              return "/login?error=OAuthUserLinkFailed";
+            }
+          }
+
+          if (!existingUser?._id) {
+            return "/login?error=OAuthUserCreateFailed";
           }
 
           user.id = existingUser._id.toString();
+          user.email = existingUser.email;
+          user.name = existingUser.name;
           user.image = existingUser.image;
         }
 
         return true;
       } catch (error) {
         console.error("SignIn callback error:", error);
-        return false;
+        return "/login?error=OAuthSigninFailed";
       }
     },
 
