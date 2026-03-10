@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { signIn, useSession } from "next-auth/react";
@@ -8,10 +8,42 @@ import BackButton from "@/components/BackButton/BackButton";
 import { FiUser, FiLock, FiEye, FiEyeOff, FiMail } from "react-icons/fi";
 import { FaGithub, FaGoogle } from "react-icons/fa";
 
+// Component that handles OAuth error messages from URL params
+function AuthErrorHandler({ setError }) {
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const authError = searchParams.get("error");
+    if (!authError) {
+      return;
+    }
+
+    const authErrorMessages = {
+      AccessDenied: "Sign-in was denied. Please try again.",
+      OAuthEmailMissing:
+        "Your OAuth account did not provide an email. Please use a different account.",
+      OAuthUserCreateFailed:
+        "We could not create your account right now. Please try again.",
+      OAuthUserLinkFailed:
+        "We could not link your account right now. Please try again.",
+      OAuthSigninFailed:
+        "OAuth sign-in failed due to a server error. Please try again.",
+      OAuthAccountNotLinked:
+        "This email is already linked with another sign-in method.",
+    };
+
+    setError(
+      authErrorMessages[authError] ||
+        "Authentication failed. Please try again.",
+    );
+  }, [searchParams, setError]);
+
+  return null;
+}
+
 const page = () => {
   const { status } = useSession();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState("");
@@ -60,38 +92,15 @@ const page = () => {
     }
   }, [status, router]);
 
-  useEffect(() => {
-    const authError = searchParams.get("error");
-    if (!authError) {
-      return;
-    }
-
-    const authErrorMessages = {
-      AccessDenied: "Sign-in was denied. Please try again.",
-      OAuthEmailMissing:
-        "Your OAuth account did not provide an email. Please use a different account.",
-      OAuthUserCreateFailed:
-        "We could not create your account right now. Please try again.",
-      OAuthUserLinkFailed:
-        "We could not link your account right now. Please try again.",
-      OAuthSigninFailed:
-        "OAuth sign-in failed due to a server error. Please try again.",
-      OAuthAccountNotLinked:
-        "This email is already linked with another sign-in method.",
-    };
-
-    setError(
-      authErrorMessages[authError] ||
-        "Authentication failed. Please try again.",
-    );
-  }, [searchParams]);
-
   if (status === "authenticated") {
     return null;
   }
 
   return (
     <div className="min-h-screen w-full relative overflow-hidden">
+      <Suspense fallback={null}>
+        <AuthErrorHandler setError={setError} />
+      </Suspense>
       <BackButton />
       <div className="min-h-screen relative bg-[url('/Login/loginBack.png')] bg-no-repeat bg-cover bg-center">
         {/* Gradient overlay */}
