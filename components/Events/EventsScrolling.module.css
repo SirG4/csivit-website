@@ -1,0 +1,305 @@
+.posterPlaceholder {
+  position: absolute;
+  width: 420px;
+  height: 594px;
+  /* border-radius: 12px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3); */
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  transform-style: preserve-3d;
+  overflow: visible;
+}
+
+.posterImage {
+  background: black;
+  box-shadow: -10px 10px 30px rgba(0, 0, 0, 0.6);
+  border: 8px solid white;
+  height: auto;
+  
+} 
+
+.posterDetails {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  box-shadow: -10px 10px 30px rgba(0, 0, 0, 0.6);
+  border: 8px solid white;
+}
+
+.posterCollage {
+  background: rgba(0, 0, 0, 0);
+  overflow: visible;
+  backdrop-filter: none;
+}
+
+.posterImageContent {
+  width: 100%;
+  height: auto;
+}
+
+.posterImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.posterDetailsContent {
+  padding: 2rem;
+  color: white;
+  text-align: left;
+  width: 100%;
+}
+
+.eventTitle {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #fff;
+}
+
+.eventDate,
+.eventVenue {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.eventDesc {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 1.5rem;
+}
+
+.posterNumber {
+  font-size: 4rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+
+.heading{
+  font-size: 5rem;
+  font-weight: 500;
+  letter-spacing:-0.1rem ;
+  line-height: 0.9;
+}
+
+.intro,.outro,.spotlight{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0);
+    color: white;
+    position: relative;
+    width: 100vw;
+    height: 100svh;
+    padding: 2rem;
+    overflow: visible;
+    overflow-x: visible;
+}
+
+.intro h1,.outro h1{
+    width: 50%;
+    text-align:center;
+}
+
+.spotlight-images,.spotlight-cover-img{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    perspective: 2000px;
+}
+
+.spotlight-images > div{
+    top: 50%;
+    left: 50%;
+    transform: translate(-50% ,-50%);
+    will-change: transform;
+}
+
+.spotlight-cover-img{
+    will-change: transform;
+}
+.spotlight-cover-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* fills container */
+  border-radius: 0;  /* reset if needed */
+}
+
+.spotlight-intro-header,.spotlight-outro-header{
+    position:absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    text-align: center;
+    width: 50%;
+
+}
+
+.spotlight-intro-header{
+    z-index: 1;
+}
+
+.spotlight-outro-header{
+    z-index: 10;
+}
+
+@media (max-width:1000px){
+    .intro h1,.outro h1,.spotlight-intro-header,.spotlight-intro-header{
+        width: 100%;
+    }
+    .spotlight-intro-header,.spotlight-outro-header{
+        padding: 2rem;
+    }
+    .heading{
+      font-size: 2.4rem;
+      line-height: 1;
+    }
+    .posterPlaceholder{
+      width: min(85vw, 360px);
+      height: min(120vw, 510px);
+    }
+    .posterNumber {
+      font-size: 2.5rem;
+    }
+    .posterImage {
+      height: auto;
+    }
+}
+
+/* Ultra small phones */
+@media (max-width:480px){
+  .heading{
+    font-size: 2rem;
+  }
+  .posterPlaceholder{
+    width: min(90vw, 320px);
+    height: min(127vw, 453px);
+  }
+  .posterNumber {
+    font-size: 2rem;
+  }
+  .posterImage {
+    height: auto;
+  }
+}
+
+/* Mobile Navigation Buttons */
+.mobileNav {
+  display: none;
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  gap: 1rem;
+  z-index: 100;
+}
+
+.navButton {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  color: #000;
+}
+
+.navButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  transform: scale(1.05);
+}
+
+.navButton:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.navButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.navButton svg {
+  width: 24px;
+  height: 24px;
+}
+
+@media (max-width: 1000px) {
+  .mobileNav {
+    display: flex;
+  }
+}
+
+/* Collage Styles */
+.collageContainer {
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+
+
+}
+
+.collageGrid {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 0.8rem;
+  transform-style: preserve-3d;
+    overflow: visible;
+
+
+
+}
+
+/* .collageImage {
+  width: 150%;
+  height: 100%;
+  object-fit: cover;
+  border: 3px solid #ff0000;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  transition: transform 0.3s ease;
+
+} */
+
+@media (max-width:1000px){
+  .collageGrid {
+    gap: 0.5rem;
+  }
+  
+  .collageImage {
+    border: 2px solid #ff0000;
+  }
+}
+
+@media (max-width:480px){
+  .collageContainer {
+    padding: 0.5rem;
+  }
+  
+  .collageGrid {
+    gap: 0.3rem;
+  }
+}

@@ -84,8 +84,8 @@ export const domains = [
       },
       {
         name: 'Rohit',
-        github: 'https://github.com/rohit-123',
-        linkedin: 'https://www.linkedin.com/in/rohit-kumar-123',
+        github: 'https://github.com/SwiftByte6',
+        linkedin: 'https://www.linkedin.com/in/rohit-soneji-9483a5344/',
         image: '/Team/Members/Technical/rohit.png',
         description: 'Developer',
         position: 'core',
@@ -250,10 +250,10 @@ export const domains = [
         position: 'Co-Head',
       },
       {
-        name: 'Ishan',
+        name: 'Ishaan',
         github: '',
         linkedin: '',
-        image: '/Team/Members/Media/ishan.png',
+        image: '/Team/Members/Media/ishaan.png',
         description: 'Editing and shooting',
         position: 'Core',
       },
