@@ -13,12 +13,12 @@ export async function GET(request) {
         success: true,
         data: events,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     return NextResponse.json(
       { error: error.message || "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -28,12 +28,13 @@ export async function POST(request) {
     await dbConnect();
 
     const body = await request.json();
-    const { eventName, eventDate, description, pointsPerAttendance } = body;
+    const { eventName, eventDate, description, pointsPerAttendance, poster } =
+      body;
 
     if (!eventName || !eventDate) {
       return NextResponse.json(
         { error: "Missing required fields" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -42,6 +43,7 @@ export async function POST(request) {
       eventDate: new Date(eventDate),
       description,
       pointsPerAttendance: pointsPerAttendance || 10,
+      poster: poster || "/Events/Icons/event1.png",
     });
 
     await event.save();
@@ -51,19 +53,19 @@ export async function POST(request) {
         success: true,
         data: event,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error("Error creating event:", error);
     if (error.code === 11000) {
       return NextResponse.json(
         { error: "Event already exists" },
-        { status: 409 }
+        { status: 409 },
       );
     }
     return NextResponse.json(
       { error: error.message || "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
