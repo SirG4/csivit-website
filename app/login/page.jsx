@@ -1,12 +1,45 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { signIn, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import BackButton from "@/components/BackButton/BackButton";
 import { FiUser, FiLock, FiEye, FiEyeOff, FiMail } from "react-icons/fi";
 import { FaGithub, FaGoogle } from "react-icons/fa";
+
+// Component that handles OAuth error messages from URL params
+function AuthErrorHandler({ setError }) {
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const authError = searchParams.get("error");
+    if (!authError) {
+      return;
+    }
+
+    const authErrorMessages = {
+      AccessDenied: "Sign-in was denied. Please try again.",
+      OAuthEmailMissing:
+        "Your OAuth account did not provide an email. Please use a different account.",
+      OAuthUserCreateFailed:
+        "We could not create your account right now. Please try again.",
+      OAuthUserLinkFailed:
+        "We could not link your account right now. Please try again.",
+      OAuthSigninFailed:
+        "OAuth sign-in failed due to a server error. Please try again.",
+      OAuthAccountNotLinked:
+        "This email is already linked with another sign-in method.",
+    };
+
+    setError(
+      authErrorMessages[authError] ||
+        "Authentication failed. Please try again.",
+    );
+  }, [searchParams, setError]);
+
+  return null;
+}
 
 const page = () => {
   const { status } = useSession();
@@ -65,6 +98,9 @@ const page = () => {
 
   return (
     <div className="min-h-screen w-full relative overflow-hidden">
+      <Suspense fallback={null}>
+        <AuthErrorHandler setError={setError} />
+      </Suspense>
       <BackButton />
       <div className="min-h-screen relative bg-[url('/Login/loginBack.png')] bg-no-repeat bg-cover bg-center">
         {/* Gradient overlay */}
@@ -73,9 +109,7 @@ const page = () => {
         {/* Background elements */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl"></div>
-          <div
-            className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl"
-          ></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl"></div>
         </div>
 
         {/* Main content */}
@@ -154,9 +188,7 @@ const page = () => {
 
                 {/* Remember Me & Forgot Password (Login only) */}
                 {isLogin && (
-                  <div
-                    className="flex items-center justify-between"
-                  >
+                  <div className="flex items-center justify-between">
                     <label className="flex items-center">
                       <input
                         type="checkbox"
@@ -185,15 +217,13 @@ const page = () => {
                     {loading
                       ? "Signing In..."
                       : isLogin
-                      ? "Sign In"
-                      : "Create Account"}
+                        ? "Sign In"
+                        : "Create Account"}
                   </div>
                 </button>
 
                 {/* Divider */}
-                <div
-                  className="relative"
-                >
+                <div className="relative">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-white/20"></div>
                   </div>
@@ -205,9 +235,7 @@ const page = () => {
                 </div>
 
                 {/* Social Login Buttons */}
-                <div
-                  className="grid grid-cols-2 gap-4"
-                >
+                <div className="grid grid-cols-2 gap-4">
                   <button
                     type="button"
                     onClick={() =>
@@ -231,9 +259,7 @@ const page = () => {
                 </div>
 
                 {/* Bottom Toggle */}
-                <div
-                  className="mt-4 text-center text-sm text-gray-300"
-                >
+                <div className="mt-4 text-center text-sm text-gray-300">
                   <span>Don't have an account? </span>
                   <Link
                     href="/signup"

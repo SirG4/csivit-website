@@ -14,7 +14,11 @@ export default function Page() {
   const [selectedUser, setSelectedUser] = useState("");
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [qrEventName, setQrEventName] = useState("");
+  const [qrEventId, setQrEventId] = useState("");
   const [userBadges, setUserBadges] = useState([]);
+  const [upcomingEvents, setUpcomingEvents] = useState([]);
+  const [pastEvents, setPastEvents] = useState([]);
+  const [loadingEvents, setLoadingEvents] = useState(true);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -23,6 +27,8 @@ export default function Page() {
       setSelectedUser(session.user.name);
       // Fetch user badges
       fetchUserData();
+      // Fetch events
+      fetchEvents();
     }
   }, [status, session, router]);
 
@@ -38,8 +44,34 @@ export default function Page() {
     }
   };
 
-  const handleQRClick = (eventName) => {
+  const fetchEvents = async () => {
+    try {
+      setLoadingEvents(true);
+      const response = await fetch("/api/events");
+      if (response.ok) {
+        const data = await response.json();
+        const events = data.data || [];
+
+        // Split events into upcoming and past based on current date
+        const now = new Date();
+        const upcoming = events.filter(
+          (event) => new Date(event.eventDate) >= now,
+        );
+        const past = events.filter((event) => new Date(event.eventDate) < now);
+
+        setUpcomingEvents(upcoming);
+        setPastEvents(past);
+      }
+    } catch (error) {
+      console.error("Error fetching events:", error);
+    } finally {
+      setLoadingEvents(false);
+    }
+  };
+
+  const handleQRClick = (eventName, eventId) => {
     setQrEventName(eventName);
+    setQrEventId(eventId);
     setQrModalOpen(true);
   };
 
@@ -67,7 +99,7 @@ export default function Page() {
           md:bg-fixed
           blur-sm
           "
-        style={{ filter: 'blur(8px)' }}
+        style={{ filter: "blur(8px)" }}
       >
         {/* Overlay to darken the image */}
         <div className="absolute inset-0 bg-black/20"></div>
@@ -158,123 +190,114 @@ export default function Page() {
                 <div className="font-medium bg-black/30 p-3">
                   Upcoming Events
                 </div>
-                <div className="bg-black/50 m-3 p-4 hover:bg-white/20 transition">
-                  <div className="flex items-center gap-4">
-                    <Image
-                      src="/Profile/steam_poster.jpg"
-                      alt="Upcoming Event"
-                      width={100}
-                      height={100}
-                      unoptimized
-                    />
-                    <div>
-                      <div className="text-lg font-bold">
-                        COMPETITIVE PROGRAMMING
-                      </div>
-                      <p className="text-sm mt-1">Today</p>
-                      <button className=" bg-gray-600 text-xs lg:text-sm mt-2 mr-2 px-2 py-1 hover:underline">
-                        View Details
-                      </button>
-                      <button
-                        onClick={() => handleQRClick("COMPETITIVE PROGRAMMING")}
-                        className="bg-indigo-700 text-xs lg:text-sm mt-2 px-2 py-1 hover:underline"
-                      >
-                        QR for Entry
-                      </button>
-                    </div>
+                {loadingEvents ? (
+                  <div className="text-center py-8 text-gray-400">
+                    Loading events...
                   </div>
-                </div>
-                <div className="bg-black/50 m-3 p-4 hover:bg-white/20 transition">
-                  <div className="flex items-center gap-4">
-                    <Image
-                      src="/Profile/steam_poster.jpg"
-                      alt="Upcoming Event"
-                      width={100}
-                      height={100}
-                      unoptimized
-                    />
-                    <div>
-                      <div className="text-lg font-bold">
-                        COMPETITIVE PROGRAMMING
-                      </div>
-                      <p className="text-sm mt-1">Tomorrow</p>
-                      <button className=" bg-gray-600 text-xs lg:text-sm mt-2 mr-2 px-2 py-1 hover:underline">
-                        View Details
-                      </button>
-                      <button
-                        onClick={() => handleQRClick("COMPETITIVE PROGRAMMING")}
-                        className="bg-indigo-700 text-xs lg:text-sm mt-2 px-2 py-1 hover:underline"
-                      >
-                        QR for Entry
-                      </button>
-                    </div>
+                ) : upcomingEvents.length === 0 ? (
+                  <div className="text-center py-8 text-gray-400">
+                    No upcoming events
                   </div>
-                </div>
+                ) : (
+                  upcomingEvents.map((event) => (
+                    <div
+                      key={event._id}
+                      className="bg-black/50 m-3 p-4 hover:bg-white/20 transition"
+                    >
+                      <div className="flex items-center gap-4">
+                        <Image
+                          src={event.poster || "/Profile/steam_poster.jpg"}
+                          alt={event.eventName}
+                          width={100}
+                          height={100}
+                          unoptimized
+                        />
+                        <div>
+                          <div className="text-lg font-bold">
+                            {event.eventName}
+                          </div>
+                          <p className="text-sm mt-1">
+                            {new Date(event.eventDate).toLocaleDateString(
+                              "en-US",
+                              {
+                                month: "short",
+                                day: "numeric",
+                                year: "numeric",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              },
+                            )}
+                          </p>
+                          {event.description && (
+                            <p className="text-xs text-gray-400 mt-1">
+                              {event.description}
+                            </p>
+                          )}
+                          <button
+                            onClick={() =>
+                              handleQRClick(event.eventName, event._id)
+                            }
+                            className="bg-indigo-700 text-xs lg:text-sm mt-2 px-2 py-1 hover:underline"
+                          >
+                            QR for Entry
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
 
               {/* Past Events */}
               <div>
                 <h3 className="font-medium bg-black/30 p-3">Past Events</h3>
-                <div className="bg-black/50 m-3 p-4 hover:bg-white/20 transition">
-                  <div className="flex items-center gap-4">
-                    <Image
-                      src="/Profile/steam_poster.jpg"
-                      alt="Past Event"
-                      width={100}
-                      height={100}
-                      unoptimized
-                    />
-                    <div>
-                      <h4 className="text-lg font-bold">
-                        CYBERFRAT (Cybersecurity Symposium)
-                      </h4>
-                      <p className="text-sm mt-1">DATE : 27 / 09 / 2025</p>
-                      <button className=" bg-gray-600 text-xs lg:text-sm mt-2 mr-2 px-2 py-1 hover:underline">
-                        View Details
-                      </button>
-                    </div>
+                {loadingEvents ? (
+                  <div className="text-center py-8 text-gray-400">
+                    Loading events...
                   </div>
-                </div>
-                <div className="bg-black/50 m-3 p-4 hover:bg-white/20 transition">
-                  <div className="flex items-center gap-4">
-                    <Image
-                      src="/Profile/steam_poster.jpg"
-                      alt="Past Event"
-                      width={100}
-                      height={100}
-                      unoptimized
-                    />
-                    <div>
-                      <h4 className="text-lg font-bold">
-                        CYBERFRAT (Cybersecurity Symposium)
-                      </h4>
-                      <p className="text-sm mt-1">DATE : 27 / 09 / 2025</p>
-                      <button className=" bg-gray-600 text-xs lg:text-sm mt-2 mr-2 px-2 py-1 hover:underline">
-                        View Details
-                      </button>
-                    </div>
+                ) : pastEvents.length === 0 ? (
+                  <div className="text-center py-8 text-gray-400">
+                    No past events
                   </div>
-                </div>
-                <div className="bg-black/50 m-3 p-4 hover:bg-white/20 transition">
-                  <div className="flex items-center gap-4">
-                    <Image
-                      src="/Profile/steam_poster.jpg"
-                      alt="Past Event"
-                      width={100}
-                      height={100}
-                      unoptimized
-                    />
-                    <div>
-                      <h4 className="text-lg font-bold">
-                        CYBERFRAT (Cybersecurity Symposium)
-                      </h4>
-                      <p className="text-sm mt-1">DATE : 27 / 09 / 2025</p>
-                      <button className=" bg-gray-600 text-xs lg:text-sm mt-2 mr-2 px-2 py-1 hover:underline">
-                        View Details
-                      </button>
+                ) : (
+                  pastEvents.map((event) => (
+                    <div
+                      key={event._id}
+                      className="bg-black/50 m-3 p-4 hover:bg-white/20 transition"
+                    >
+                      <div className="flex items-center gap-4">
+                        <Image
+                          src={event.poster || "/Profile/steam_poster.jpg"}
+                          alt={event.eventName}
+                          width={100}
+                          height={100}
+                          unoptimized
+                        />
+                        <div>
+                          <h4 className="text-lg font-bold">
+                            {event.eventName}
+                          </h4>
+                          <p className="text-sm mt-1">
+                            DATE:{" "}
+                            {new Date(event.eventDate).toLocaleDateString(
+                              "en-US",
+                              {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                              },
+                            )}
+                          </p>
+                          {event.description && (
+                            <p className="text-xs text-gray-400 mt-1">
+                              {event.description}
+                            </p>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  ))
+                )}
               </div>
             </div>
           </section>
@@ -318,6 +341,7 @@ export default function Page() {
         isOpen={qrModalOpen}
         onClose={() => setQrModalOpen(false)}
         eventName={qrEventName}
+        eventId={qrEventId}
       />
     </div>
   );

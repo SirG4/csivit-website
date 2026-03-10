@@ -1,9 +1,10 @@
-'use client';
+"use client";
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
+import { useSession } from "next-auth/react";
 
 import Footer from "../../components/footer.jsx";
 
@@ -18,6 +19,7 @@ import signup from "@/public/Home/Hero/signup.png";
 
 export default function Hero() {
   const router = useRouter();
+  const { status } = useSession();
   const [hovered, setHovered] = useState(null);
   const scrollRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -30,8 +32,8 @@ export default function Hero() {
     if (!url || isTransitioning) return;
     isTransitioning = true;
 
-    const overlay = document.querySelector('.fade-overlay');
-    if (overlay) overlay.style.pointerEvents = 'all';
+    const overlay = document.querySelector(".fade-overlay");
+    if (overlay) overlay.style.pointerEvents = "all";
 
     if (overlay) {
       overlay.style.opacity = 1;
@@ -75,29 +77,33 @@ export default function Hero() {
 
   return (
     <div className="relative w-full bg-black overflow-x-hidden">
-
       {/* ================= HERO SECTION ================= */}
       <section className="relative w-full min-h-screen">
-
         {/* Background */}
         <div className="absolute inset-0 z-0">
-          <Image src={hbg} alt="Background" fill className="object-cover object-[63%_center] md:object-center" />
+          <Image
+            src={hbg}
+            alt="Background"
+            fill
+            className="object-cover object-[63%_center] md:object-center"
+          />
         </div>
 
         {/* TOP BAR */}
         <div className="relative z-30 flex justify-between items-start pt-8 px-6 md:px-16">
-          <Image
-            src={signup}
-            alt="Sign Up"
-            className="w-28 md:w-32 cursor-pointer"
-            priority
-            onClick={() => handleTransitionNav("/signup")}
-          />
+          {status !== "authenticated" && (
+            <Image
+              src={signup}
+              alt="Sign Up"
+              className="w-28 md:w-32 cursor-pointer"
+              priority
+              onClick={() => handleTransitionNav("/signup")}
+            />
+          )}
         </div>
 
         {/* CONTENT */}
         <div className="relative z-20 flex h-full">
-
           {/* LEFT */}
           <div className="w-full md:w-1/2 flex flex-col justify-center pl-3 lg:px-6 md:px-16">
             <Image
@@ -113,14 +119,14 @@ export default function Hero() {
 
         {/* ================= MOBILE CARDS ================= */}
         <div className="md:hidden absolute bottom-[7%] right-0 w-full pb-3 px-2 z-30">
-          <div 
+          <div
             ref={scrollRef}
             className="flex overflow-x-scroll gap-2 pb-1 select-none"
             style={{
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-              cursor: isDragging ? 'grabbing' : 'grab',
-              width: 'calc(100vw - 16px)', // Full width minus padding
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+              cursor: isDragging ? "grabbing" : "grab",
+              width: "calc(100vw - 16px)", // Full width minus padding
             }}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
@@ -146,18 +152,23 @@ export default function Hero() {
                     return;
                   }
                   handleTransitionNav(
-                    i === 0 ? "/" :
-                    i === 1 ? "/team" :
-                    i === 2 ? "/events" :
-                    i === 3 ? "/profile" :
-                    i === 4 ? "/developer" :
-                    null
-                  )
+                    i === 0
+                      ? "/"
+                      : i === 1
+                        ? "/team"
+                        : i === 2
+                          ? "/events"
+                          : i === 3
+                            ? "/profile"
+                            : i === 4
+                              ? "/developer"
+                              : null,
+                  );
                 }}
                 className="flex-shrink-0 bg-black overflow-hidden cursor-pointer rounded-lg"
                 style={{
-                  width: 'calc((100vw - 32px) / 3.5)', // Show 3.5 cards
-                  height: 'calc((100vw - 32px) / 3.5)',
+                  width: "calc((100vw - 32px) / 3.5)", // Show 3.5 cards
+                  height: "calc((100vw - 32px) / 3.5)",
                 }}
               >
                 <Image
@@ -182,12 +193,17 @@ export default function Hero() {
               onMouseLeave={() => setHovered(null)}
               onClick={() =>
                 handleTransitionNav(
-                  i === 0 ? "/" :
-                  i === 1 ? "/team" :
-                  i === 2 ? "/events" :
-                  i === 3 ? "/profile" :
-                  i === 4 ? "/developer" :
-                  null
+                  i === 0
+                    ? "/"
+                    : i === 1
+                      ? "/team"
+                      : i === 2
+                        ? "/events"
+                        : i === 3
+                          ? "/profile"
+                          : i === 4
+                            ? "/developer"
+                            : null,
                 )
               }
               animate={{
@@ -200,7 +216,7 @@ export default function Hero() {
                         : 1
                     : hovered === i
                       ? 1.1
-                      : 1
+                      : 1,
               }}
               transition={{ duration: 0.3, ease: "easeOut" }}
               className="bg-black w-40 h-40 overflow-hidden cursor-pointer"
@@ -213,7 +229,6 @@ export default function Hero() {
             </motion.div>
           ))}
         </div>
-
       </section>
 
       {/* ================= FOOTER ================= */}

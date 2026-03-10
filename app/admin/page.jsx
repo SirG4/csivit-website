@@ -111,8 +111,8 @@ export default function AdminDashboard() {
               {tab === "dashboard"
                 ? "📊 Dashboard"
                 : tab === "events"
-                ? "🎪 Events"
-                : "📈 Analytics"}
+                  ? "🎪 Events"
+                  : "📈 Analytics"}
             </button>
           ))}
         </div>
@@ -207,15 +207,36 @@ function EventForm({ onEventCreated }) {
     eventDate: "",
     description: "",
     pointsPerAttendance: 10,
+    poster: "",
   });
   const [submitting, setSubmitting] = useState(false);
+  const [posterError, setPosterError] = useState("");
 
-  const posterOptions = [
-    "/Events/Icons/event1.png",
-    "/Events/Icons/event2.png",
-    "/Events/Icons/event3.png",
-    "/Home/Hero/hero.png",
-  ];
+  const handlePosterChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setPosterError("Please select an image file.");
+      return;
+    }
+
+    // Keep payload size manageable for API + Mongo document size.
+    if (file.size > 2 * 1024 * 1024) {
+      setPosterError("Image must be 2MB or smaller.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setPosterError("");
+      setFormData((prev) => ({ ...prev, poster: String(reader.result || "") }));
+    };
+    reader.onerror = () => {
+      setPosterError("Failed to read image file.");
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -242,7 +263,9 @@ function EventForm({ onEventCreated }) {
           eventDate: "",
           description: "",
           pointsPerAttendance: 10,
+          poster: "",
         });
+        setPosterError("");
         onEventCreated();
         alert("Event created successfully!");
       } else {
@@ -305,6 +328,28 @@ function EventForm({ onEventCreated }) {
               min="1"
               className="w-full px-4 py-3 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-purple-500 focus:outline-none transition-all"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold mb-2 text-gray-300">
+              Event Poster
+            </label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handlePosterChange}
+              className="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:border-purple-500 focus:outline-none transition-all file:mr-3 file:rounded file:border-0 file:bg-purple-600 file:px-3 file:py-1 file:text-white hover:file:bg-purple-500"
+            />
+            {posterError && (
+              <p className="text-red-400 text-xs mt-2">{posterError}</p>
+            )}
+            {formData.poster && (
+              <img
+                src={formData.poster}
+                alt="Poster preview"
+                className="mt-3 w-24 h-24 object-cover rounded border border-gray-600"
+              />
+            )}
           </div>
         </div>
 
@@ -401,7 +446,7 @@ function AttendanceViewer({ event, attendees, onBack, loading }) {
   const filteredAttendees = attendees.filter(
     (a) =>
       a.userId.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      a.userId.email.toLowerCase().includes(searchTerm.toLowerCase())
+      a.userId.email.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (

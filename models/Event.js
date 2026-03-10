@@ -30,6 +30,10 @@ const EventSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    poster: {
+      type: String,
+      default: "/Events/Icons/event1.png",
+    },
     createdAt: {
       type: Date,
       default: Date.now,
@@ -37,7 +41,7 @@ const EventSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 EventSchema.pre("save", async function () {
