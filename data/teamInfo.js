@@ -8,7 +8,7 @@ export const domains = [
         name: 'Amit N.',
         github: 'https://github.com/aaravmehta',
         linkedin: 'https://linkedin.com/in/aaravmehta',
-        image: '/Team/Members/Convenrs/amit.png',
+        image: '/Team/Members/Convenor/amit.png',
         description: 'Responsible for leading core committees and decision making.',
         position: 'Head',
       }
