@@ -10,7 +10,7 @@ export const domains = [
         linkedin: 'https://linkedin.com/in/aaravmehta',
         image: '/Team/Members/Convenor/amit.png',
         description: 'Responsible for leading core committees and decision making.',
-        position: 'Head',
+        position: 'Convenor',
       }
     ],
   },
