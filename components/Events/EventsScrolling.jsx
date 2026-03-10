@@ -18,14 +18,18 @@ const eventDetails = {
   5: {
     title: "Bug Auction",
     date: "12th March",
-    venue: "TBA",
-    description: "A technical debugging competition where teams bid on bugs with virtual credits, then analyze and fix them. Features two stages: Auction (strategy & planning) and Debugging (coding accuracy & logic). Team-based event that tests strategy, problem-solving, and collaboration skills."
+    venue: "VIT Mumbai — Details TBA",
+    description: "CSI-VIT Enthusia presents Bug Auction — \"Gotta patch 'em all!\" Hunt bugs, bid your way to the top, and claim your reward. Stay tuned for venue and timing details.",
+    sync: 78,
+    registrationInfo: "Team-based event. Registration details will be announced soon. Stay tuned on our socials for the registration link and further instructions.",
   },
   4: {
     title: "Event 4",
     date: "TBA",
     venue: "CSI Hall",
-    description: "More details coming soon."
+    description: "More details coming soon.",
+    sync: 50,
+    registrationInfo: "Registration details coming soon.",
   },
   // Events 3, 2, 1 are past events and will show photo collages instead
 };
@@ -36,6 +40,7 @@ const EventsScrolling = () => {
   const lenisRef = useRef(null);
   const scrollTriggerRef = useRef(null);
   const [currentPosterIndex, setCurrentPosterIndex] = useState(0);
+  const [registerModal, setRegisterModal] = useState(null);
 
   // 🔹 Refs for cover
   const coverRef = useRef(null);
@@ -284,12 +289,55 @@ onUpdate: (self) => {
                     />
                   </div>
                 ) : eventType === 'upcoming' ? (
-                  // Details side for upcoming events
+                  // Details side for upcoming events — AC theme
                   <div className={styles.posterDetailsContent}>
-                    <h3 className={styles.eventTitle}>{eventDetails[pairNumber]?.title || `Event ${pairNumber}`}</h3>
-                    <p className={styles.eventDate}>Date: {eventDetails[pairNumber]?.date || "TBA"}</p>
-                    <p className={styles.eventVenue}>Venue: {eventDetails[pairNumber]?.venue || "CSI Hall"}</p>
-                    <p className={styles.eventDesc}>{eventDetails[pairNumber]?.description || "More details coming soon!"}</p>
+                    <div className={styles.acHeaderContainer}>
+                      <div className={styles.acHeaderSmall}>DATA FRAGMENT</div>
+                      <div className={styles.acHeaderLarge}>{eventDetails[pairNumber]?.title || `Event ${pairNumber}`}</div>
+                    </div>
+
+                    <div className={styles.acContentBox}>
+                      {/* Sync Bar */}
+                      <div className={styles.acSection}>
+                        <div className={styles.acFlexRow}>
+                          <span className={styles.acLabelDark}>{eventDetails[pairNumber]?.sync ?? 0}%</span>
+                          <div className={styles.acProgressBar}>
+                            <div
+                              className={styles.acProgressFill}
+                              style={{ width: `${eventDetails[pairNumber]?.sync ?? 0}%` }}
+                            />
+                            <div className={styles.acProgressMarker} />
+                          </div>
+                          <span className={styles.acLabelSmall}>SYNC</span>
+                        </div>
+                      </div>
+
+                      {/* Location */}
+                      <div className={styles.acSection}>
+                        <p className={styles.acSectionTitle}>Location</p>
+                        <p className={styles.acSectionData}>{eventDetails[pairNumber]?.venue || "TBA"}</p>
+                      </div>
+
+                      {/* Date */}
+                      <div className={styles.acSection}>
+                        <p className={styles.acSectionTitle}>Temporal Coordinates</p>
+                        <p className={styles.acSectionData}>{eventDetails[pairNumber]?.date || "TBA"}</p>
+                      </div>
+
+                      {/* Description */}
+                      <div className={styles.acSection}>
+                        <p className={styles.acSectionTitle}>Animus Description</p>
+                        <p className={styles.acSectionData}>{eventDetails[pairNumber]?.description || "More details coming soon."}</p>
+                      </div>
+
+                      {/* Register Button */}
+                      <button
+                        className={styles.acRegisterButton}
+                        onClick={() => setRegisterModal(pairNumber)}
+                      >
+                        [ REGISTER ]
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   // Image collage for past events
@@ -362,6 +410,46 @@ onUpdate: (self) => {
             );
           })}
         </div>
+
+        {/* Registration Modal */}
+        {registerModal !== null && (
+          <div
+            className={styles.modalOverlay}
+            onClick={() => setRegisterModal(null)}
+          >
+            <div
+              className={styles.modalContent}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className={styles.acHeaderContainer}>
+                <div className={styles.acHeaderSmall}>DATA FRAGMENT</div>
+                <div className={styles.acHeaderLarge}>{eventDetails[registerModal]?.title}</div>
+              </div>
+
+              <div className={styles.acContentBox}>
+                <div className={styles.acSection}>
+                  <p className={styles.acSectionTitle}>Registration Info</p>
+                  <p className={styles.acSectionData}>{eventDetails[registerModal]?.registrationInfo}</p>
+                </div>
+
+                <a
+                  href="#"
+                  className={styles.modalRegisterBtn}
+                  onClick={(e) => e.preventDefault()}
+                >
+                  REGISTER NOW
+                </a>
+
+                <button
+                  className={styles.acCloseButton}
+                  onClick={() => setRegisterModal(null)}
+                >
+                  [ CLOSE DATA STREAM ]
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Mobile Navigation Buttons */}
         <div className={styles.mobileNav}>

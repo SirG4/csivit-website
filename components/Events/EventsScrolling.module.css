@@ -23,9 +23,14 @@
 } 
 
 .posterDetails {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  box-shadow: -10px 10px 30px rgba(0, 0, 0, 0.6);
-  border: 8px solid white;
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+  align-items: flex-start;
+  justify-content: flex-start;
 }
 
 .posterCollage {
@@ -46,32 +51,233 @@
 }
 
 .posterDetailsContent {
-  padding: 2rem;
-  color: white;
-  text-align: left;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 20px 15px;
+  overflow: visible;
+}
+
+/* ========== AC THEME — Event Details ========== */
+
+.acHeaderContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: -10px;
+  margin-left: 10px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+
+.acHeaderSmall {
+  background-color: #9e1b1b;
+  color: #fff;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  text-transform: uppercase;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
+}
+
+.acHeaderLarge {
+  background-color: #9e1b1b;
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  padding: 6px 15px;
+  text-transform: uppercase;
+  margin-top: 2px;
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
+}
+
+.acContentBox {
+  background: rgba(240, 240, 240, 0.88);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 24px 14px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.4);
+  overflow-y: auto;
+  scrollbar-width: none;
   width: 100%;
 }
 
-.eventTitle {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
+.acContentBox::-webkit-scrollbar {
+  display: none;
+}
+
+.acSection {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  padding-bottom: 10px;
+}
+
+.acSection:last-of-type {
+  border-bottom: none;
+}
+
+.acFlexRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.acLabelDark {
+  background: #333;
   color: #fff;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 2px;
+  white-space: nowrap;
 }
 
-.eventDate,
-.eventVenue {
-  font-size: 1.2rem;
-  margin-bottom: 1rem;
-  color: rgba(255, 255, 255, 0.8);
-  font-weight: 500;
+.acProgressBar {
+  flex-grow: 1;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.18);
+  position: relative;
 }
 
-.eventDesc {
-  font-size: 1rem;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.7);
-  margin-top: 1.5rem;
+.acProgressFill {
+  height: 100%;
+  background: #9e1b1b;
+  transition: width 1s ease-out;
+}
+
+.acProgressMarker {
+  position: absolute;
+  top: -4px;
+  left: 75%;
+  width: 2px;
+  height: 16px;
+  background: #333;
+}
+
+.acLabelSmall {
+  font-size: 10px;
+  color: #555;
+  font-weight: bold;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.acSectionTitle {
+  font-size: 11px;
+  color: #666;
+  margin: 0 0 3px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.acSectionData {
+  font-size: 13px;
+  color: #111;
+  font-weight: bold;
+  margin: 0;
+  text-transform: uppercase;
+  line-height: 1.4;
+}
+
+.acRegisterButton {
+  margin-top: auto;
+  text-align: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: #9e1b1b;
+  letter-spacing: 2px;
+  padding: 10px;
+  border: 1px solid #9e1b1b;
+  background: rgba(158, 27, 27, 0.08);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.acRegisterButton:hover {
+  background: rgba(158, 27, 27, 0.2);
+}
+
+.acRegisterButton:active {
+  transform: scale(0.98);
+}
+
+.acCloseButton {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: #9e1b1b;
+  letter-spacing: 2px;
+  padding: 10px;
+  border: 1px solid #9e1b1b;
+  background: rgba(158, 27, 27, 0.05);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.acCloseButton:hover {
+  background: rgba(158, 27, 27, 0.15);
+}
+
+.acCloseButton:active {
+  transform: scale(0.98);
+}
+
+/* ========== REGISTRATION MODAL ========== */
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  width: min(460px, 90vw);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0 15px;
+  animation: modalIn 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.modalRegisterBtn {
+  display: block;
+  text-align: center;
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  color: #fff;
+  background: #9e1b1b;
+  padding: 12px;
+  text-decoration: none;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  margin-top: auto;
+}
+
+.modalRegisterBtn:hover {
+  background: #b52020;
 }
 
 .posterNumber {
