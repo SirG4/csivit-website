@@ -3,6 +3,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import { useGSAP } from "@gsap/react";
+import { ChevronsDown } from "lucide-react";
 import styles from "./EventsScrolling.module.css";
 
 // import Events from "../Events";
@@ -46,12 +47,12 @@ const EventsScrolling = () => {
   const coverRef = useRef(null);
 
   // 🔹 Create 20 poster placeholders
-  const posterCount = 10;
+  const posterCount = 8; // Bug Auction (event 5) hidden — set back to 10 to restore
   
   // 🔹 Define event types: 'upcoming' or 'past'
-  // First 10 posters (5 pairs) are upcoming, next 10 (5 pairs) are past events
+  // Change i < N to mark the first N pairs as upcoming (0 = all past)
   const eventTypes = Array.from({ length: posterCount / 2 }, (_, i) => 
-    i < 2 ? 'upcoming' : 'past'
+    i < 0 ? 'upcoming' : 'past'
   );
 
   // Utility to add refs
@@ -343,66 +344,48 @@ onUpdate: (self) => {
                   // Image collage for past events
                   <div style={{ position: 'relative', width: '100%', height: '100%' }}>
                     <div style={{ position: 'relative', width: '80%', height: '80%' }}>
-                      <img 
-                        className="border-8 border-white bg-black"
-                        src={`/Events/collage${pairNumber}-1.jpg`}
-                        alt={`Event ${pairNumber} - Photo 1`}
-                        style={{ 
-                          transform: 'translateZ(0px)',
-                          position: 'absolute',
-                          top: '10%',
-                          left: '10%',
-                          width: '80%',
-                          height: '100%',
-                          boxShadow: '-10px 10px 30px rgba(0, 0, 0, 0.6)',
-                          zIndex: 2
-                        }}
-                      />
-                      <img 
-                        className="border-8 border-white bg-black"
-                        src={`/Events/collage${pairNumber}-2.jpg`}
-                        alt={`Event ${pairNumber} - Photo 2`}
-                        style={{ 
-                          transform: 'translateZ(0px)',
-                          position: 'absolute',
-                          top: '0%',
-                          left: '80%',
-                          width: '100%',
-                          height: '50%',
-                          boxShadow: '-10px 10px 30px rgba(0, 0, 0, 0.6)',
-                          zIndex: 3
-                        }}
-                      />
-                      <img 
-                        className="border-8 border-white bg-black"
-                        src={`/Events/collage${pairNumber}-3.jpg`}
-                        alt={`Event ${pairNumber} - Photo 3`}
-                        style={{ 
-                          transform: 'translateZ(0px) ',
-                          position: 'absolute',
-                          top: '80%',
-                          left: '5%',
-                          width: '100%',
-                          height: '50%',
-                          boxShadow: '-10px 10px 30px rgba(0, 0, 0, 0.6)',
-                          zIndex: 3
-                        }}
-                      />
-                      <img 
-                        className="border-8 border-white bg-black"
-                        src={`/Events/collage${pairNumber}-4.jpg`}
-                        alt={`Event ${pairNumber} - Photo 4`}
-                        style={{ 
-                          transform: 'translateZ(0px)',
-                          position: 'absolute',
-                          top: '55%',
-                          left: '95%',
-                          width: '80%',
-                          height: '50%',
-                          boxShadow: '-10px 10px 30px rgba(0, 0, 0, 0.6)',
-                          zIndex: 2
-                        }}
-                      />
+                      {[
+                        { n: 1, style: { top: '10%', left: '10%', width: '80%',  height: '100%', zIndex: 2 } },
+                        { n: 2, style: { top: '0%',  left: '80%', width: '100%', height: '50%',  zIndex: 3 } },
+                        { n: 3, style: { top: '80%', left: '5%',  width: '100%', height: '50%',  zIndex: 3 } },
+                        { n: 4, style: { top: '55%', left: '95%', width: '80%',  height: '50%',  zIndex: 2 } },
+                      ].map(({ n, style }) => (
+                        <div
+                          key={n}
+                          className="border-8 border-white"
+                          style={{
+                            transform: 'translateZ(0px)',
+                            position: 'absolute',
+                            boxShadow: '-10px 10px 30px rgba(0, 0, 0, 0.6)',
+                            overflow: 'hidden',
+                            background: '#111',
+                            ...style,
+                          }}
+                        >
+                          <img
+                            src={`/Events/collage${pairNumber}-${n}.jpg`}
+                            alt={`Event ${pairNumber} - Photo ${n}`}
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'flex';
+                            }}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                          />
+                          <div style={{
+                            display: 'none',
+                            position: 'absolute',
+                            inset: 0,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#555',
+                            fontSize: '11px',
+                            letterSpacing: '0.2em',
+                            fontFamily: 'monospace',
+                          }}>
+                            COMING SOON
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -450,6 +433,12 @@ onUpdate: (self) => {
             </div>
           </div>
         )}
+
+        {/* Desktop Scroll Hint */}
+        <div className={styles.scrollHint} aria-hidden="true">
+          <span className={styles.scrollHintLabel}>SCROLL</span>
+          <ChevronsDown className={styles.scrollHintIcon} size={28} strokeWidth={1.5} />
+        </div>
 
         {/* Mobile Navigation Buttons */}
         <div className={styles.mobileNav}>

@@ -57,16 +57,17 @@ const EventsMobile1 = () => {
       location: 'VIT Auditorium, Wadala — 10 AM to 2 PM',
       desc: 'Cloud Native Now in Mumbai! An inaugural meeting: "From Local Trains to Global Code." Empowering developers through hands-on learning and community-driven growth. Contact: Gautami K.: +91 75065 63517 | Varun S.: +91 75883 05192',
     },
-    {
-      year: '12 MAR 2026',
-      title: 'BUG AUCTION',
-      image: '/Events/poster5.jpeg',
-      alt: 'Bug Auction — Enthusia Poster',
-      sync: 78,
-      collageNumber: null,
-      location: 'VIT Mumbai — Details TBA',
-      desc: 'CSI-VIT Enthusia presents Bug Auction — "Gotta patch \'em all!" Hunt bugs, bid your way to the top, and claim your reward. Stay tuned for venue and timing details.',
-    },
+    // Bug Auction hidden — uncomment below to restore
+    // {
+    //   year: '12 MAR 2026',
+    //   title: 'BUG AUCTION',
+    //   image: '/Events/poster5.jpeg',
+    //   alt: 'Bug Auction — Enthusia Poster',
+    //   sync: 78,
+    //   collageNumber: null,
+    //   location: 'VIT Mumbai — Details TBA',
+    //   desc: 'CSI-VIT Enthusia presents Bug Auction — "Gotta patch \'em all!" Hunt bugs, bid your way to the top, and claim your reward. Stay tuned for venue and timing details.',
+    // },
   ];
 
   // --- Swipe Gesture Logic ---
@@ -173,17 +174,18 @@ const EventsMobile1 = () => {
                 <div className={styles.collageGrid}>
                   {[1, 2, 3, 4].map((n) => (
                     <div key={n} className={styles[`collageImg${n}`]}>
-                      {activeMemory.collageNumber ? (
-                        <img
-                          src={`/Events/collage${activeMemory.collageNumber}-${n}.jpg`}
-                          alt={`${activeMemory.title} - Photo ${n}`}
-                          className={styles.collagePhoto}
-                        />
-                      ) : (
-                        <div className={styles.collagePlaceholder}>
-                          <span className={styles.collageComingSoon}>COMING SOON</span>
-                        </div>
-                      )}
+                      <img
+                        src={`/Events/collage${activeMemory.collageNumber}-${n}.jpg`}
+                        alt={`${activeMemory.title} - Photo ${n}`}
+                        className={styles.collagePhoto}
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextSibling.style.display = 'flex';
+                        }}
+                      />
+                      <div className={styles.collagePlaceholder} style={{ display: 'none' }}>
+                        <span className={styles.collageComingSoon}>COMING SOON</span>
+                      </div>
                     </div>
                   ))}
                 </div>

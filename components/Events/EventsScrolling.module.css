@@ -399,6 +399,38 @@
   }
 }
 
+/* Desktop Scroll Hint */
+.scrollHint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  pointer-events: none;
+  animation: scrollHintBounce 2s ease-in-out infinite;
+}
+
+.scrollHintLabel {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: rgba(255, 0, 0, 0.55);
+  text-transform: uppercase;
+}
+
+.scrollHintIcon {
+  color: rgba(255, 0, 0, 0.55);
+}
+
+@keyframes scrollHintBounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%       { transform: translateX(-50%) translateY(8px); }
+}
+
 /* Mobile Navigation Buttons */
 .mobileNav {
   display: none;
@@ -449,6 +481,9 @@
 @media (max-width: 1000px) {
   .mobileNav {
     display: flex;
+  }
+  .scrollHint {
+    display: none;
   }
 }
 
