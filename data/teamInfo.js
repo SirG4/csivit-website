@@ -1,4 +1,4 @@
-export const domains = [
+  export const domains = [
   {
     name: 'Convenors',
     icon: '/Team/Icons/convenor.png',
@@ -42,6 +42,13 @@ export const domains = [
         image: '/Team/Members/Executive/ira.png',
         description: 'Bridging committee members and higher authorities',
         position: 'Secretary',
+      },
+        name: 'Swathi',
+        github: '',
+        linkedin: 'https://www.linkedin.com/in/swathi-pillai-a52b48350/',
+        image: '/Team/Members/Executive/swathi.png',
+        description: 'Optimizing committee operations to drive technical excellence and disciplined execution.',
+        position: 'Vice Chairperson',
       },
     ],
   },
