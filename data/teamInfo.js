@@ -43,6 +43,7 @@
         description: 'Bridging committee members and higher authorities',
         position: 'Secretary',
       },
+      {
         name: 'Swathi',
         github: '',
         linkedin: 'https://www.linkedin.com/in/swathi-pillai-a52b48350/',
