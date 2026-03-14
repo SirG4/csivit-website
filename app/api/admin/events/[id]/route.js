@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import Event from "@/models/Event";
+import { requireAdmin } from "@/lib/adminAuth";
 
 export async function PUT(request, { params }) {
   try {
+    await requireAdmin();
     await dbConnect();
 
     const { id } = params;
@@ -41,6 +43,7 @@ export async function PUT(request, { params }) {
 
 export async function DELETE(request, { params }) {
   try {
+    await requireAdmin();
     await dbConnect();
 
     const { id } = params;

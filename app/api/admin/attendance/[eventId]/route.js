@@ -3,9 +3,11 @@ import dbConnect from "@/lib/db";
 import Attendance from "@/models/Attendance";
 import Event from "@/models/Event";
 import User from "@/models/User";
+import { requireAdmin } from "@/lib/adminAuth";
 
 export async function GET(request, { params }) {
   try {
+    await requireAdmin();
     await dbConnect();
 
     const { eventId } = params;

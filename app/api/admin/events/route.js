@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import Event from "@/models/Event";
+import { requireAdmin } from "@/lib/adminAuth";
 
 export async function GET(request) {
   try {
+    await requireAdmin();
     await dbConnect();
 
     const events = await Event.find().sort({ createdAt: -1 });
@@ -25,6 +27,7 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
+    await requireAdmin();
     await dbConnect();
 
     const body = await request.json();

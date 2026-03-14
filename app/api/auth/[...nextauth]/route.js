@@ -52,6 +52,7 @@ export const authOptions = {
             name: user.name,
             email: user.email,
             image: user.image,
+            role: user.role,
           };
         } catch (error) {
           throw new Error(error.message);
@@ -140,6 +141,7 @@ export const authOptions = {
           user.email = existingUser.email;
           user.name = existingUser.name;
           user.image = existingUser.image;
+          user.role = existingUser.role;
         }
 
         return true;
@@ -152,6 +154,7 @@ export const authOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.role = user.role;
       }
       return token;
     },
@@ -167,6 +170,7 @@ export const authOptions = {
           session.user.name = user.name;
           session.user.email = user.email;
           session.user.image = user.image;
+          session.user.role = user.role;
         }
 
         return session;
