@@ -6,8 +6,8 @@ export async function GET(request) {
   try {
     await dbConnect();
 
-    // Fetch all active events (not over and not hidden), sorted by event date
-    const events = await Event.find({ isOver: false, isHidden: false }).sort({ eventDate: 1 });
+    // Fetch all events that are not hidden, sorted by event date
+    const events = await Event.find({ isHidden: false }).sort({ eventDate: 1 });
 
     return NextResponse.json(
       {
