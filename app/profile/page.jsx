@@ -11,40 +11,23 @@ import RegisterModal from "@/components/RegisterModal";
 import ConfirmKickModal from "@/components/ConfirmKickModal";
 
 const STATIC_EVENTS = [
-//   {
-//     _id: "6b2f1a2b3c4d5e6f7a8b9c01",
-//     eventName: "CSIVIT Orientation",
-//     eventDate: "2026-03-20T10:00:00.000Z",
-//     description: "Welcome to CSIVIT! Join us for an introductory session.",
-//     poster: "/Profile/steam_poster.jpg", // Using default poster
-//     badgeIcon: "https://api.dicebear.com/7.x/identicon/svg?seed=orientation", // participation badge
-//     winnerBadge1: "https://api.dicebear.com/7.x/identicon/svg?seed=orientation-w1",
-//     winnerBadge2: "https://api.dicebear.com/7.x/identicon/svg?seed=orientation-w2",
-//     winnerBadge3: "https://api.dicebear.com/7.x/identicon/svg?seed=orientation-w3",
-//     isRegistrationLive: true,
-//     isOver: false,
-//     minMembers: 1,
-//     maxMembers: 1,
-//     isStatic: true,
-//     unstopUrl: "https://unstop.com/o/csivit-orientation"
-//   },
-//   {
-//     _id: "6b2f1a2b3c4d5e6f7a8b9c02",
-//     eventName: "Code2Create",
-//     eventDate: "2026-03-25T09:00:00.000Z",
-//     description: "CSI-VIT's flagship hackathon. Innovation at its best.",
-//     poster: "/Profile/steam_poster.jpg", // Using default poster
-//     badgeIcon: "https://api.dicebear.com/7.x/identicon/svg?seed=c2c", // participation badge
-//     winnerBadge1: "https://api.dicebear.com/7.x/identicon/svg?seed=c2c-w1",
-//     winnerBadge2: "https://api.dicebear.com/7.x/identicon/svg?seed=c2c-w2",
-//     winnerBadge3: "https://api.dicebear.com/7.x/identicon/svg?seed=c2c-w3",
-//     isRegistrationLive: true,
-//     isOver: false,
-//     minMembers: 1,
-//     maxMembers: 1,
-//     isStatic: true,
-//     unstopUrl: "https://unstop.com/o/code2create"
-//   }
+  {
+    _id: "6b2f1a2b3c4d5e6f7a8b9c01",
+    eventName: "Design Paradox",
+    eventDate: "2026-03-20T16:00:00.000+00:00",
+    description: "UI and Product Design challenge where teams craft a landing page concept for a fictional energy drink launched by an unexpected legacy brand.",
+    poster: "/Profile/parapost.png", // Using default poster
+    badgeIcon: "/Profile/parap.png", // participation badge
+    winnerBadge1: "/Profile/para1.png",
+    winnerBadge2: "/Profile/para2.png",
+    winnerBadge3: "/Profile/para3.png",
+    isRegistrationLive: true,
+    isOver: false,
+    minMembers: 1,
+    maxMembers: 1,
+    isStatic: true,
+    unstopUrl: "https://unstop.com/p/design-paradox-ui-product-design-challenge-vidyalankar-institute-of-technology-vit-mumbai-1657879"
+  },
 ];
 
 export default function Page() {
