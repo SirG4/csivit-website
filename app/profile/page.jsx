@@ -7,6 +7,8 @@ import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import BackButton from "@/components/BackButton/BackButton";
 import QRModal from "@/components/QRModal";
+import RegisterModal from "@/components/RegisterModal";
+import ConfirmKickModal from "@/components/ConfirmKickModal";
 
 export default function Page() {
   const { data: session, status } = useSession();
@@ -20,6 +22,16 @@ export default function Page() {
   const [pastEvents, setPastEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
 
+  // Registration related states
+  const [registerModalOpen, setRegisterModalOpen] = useState(false);
+  const [registerEventName, setRegisterEventName] = useState("");
+  const [registerEventId, setRegisterEventId] = useState("");
+  const [userRegistrations, setUserRegistrations] = useState([]);
+
+  // Kick modal state
+  const [kickModalOpen, setKickModalOpen] = useState(false);
+  const [kickTarget, setKickTarget] = useState(null);
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
@@ -29,6 +41,8 @@ export default function Page() {
       fetchUserData();
       // Fetch events
       fetchEvents();
+      // Fetch registrations
+      fetchUserRegistrations();
     }
   }, [status, session, router]);
 
@@ -41,6 +55,18 @@ export default function Page() {
       }
     } catch (error) {
       console.error("Error fetching badges:", error);
+    }
+  };
+
+  const fetchUserRegistrations = async () => {
+    try {
+      const response = await fetch("/api/user/registrations");
+      if (response.ok) {
+        const data = await response.json();
+        setUserRegistrations(data.data || []);
+      }
+    } catch (error) {
+      console.error("Error fetching registrations:", error);
     }
   };
 
@@ -73,6 +99,44 @@ export default function Page() {
     setQrEventName(eventName);
     setQrEventId(eventId);
     setQrModalOpen(true);
+  };
+
+  const handleQRClose = () => {
+    setQrModalOpen(false);
+    fetchUserRegistrations(); // Refresh registrations when closing QR in case user was scanned
+    fetchUserData(); // Refresh badges too
+  };
+
+  const handleRegisterClick = (eventName, eventId) => {
+    setRegisterEventName(eventName);
+    setRegisterEventId(eventId);
+    setRegisterModalOpen(true);
+  };
+
+  const handleKickClick = (registrationId, memberName) => {
+    setKickTarget({ registrationId, memberName });
+    setKickModalOpen(true);
+  };
+
+  const executeKick = async () => {
+    if (!kickTarget) return;
+    try {
+      const response = await fetch("/api/events/team/kick", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetRegistrationId: kickTarget.registrationId }),
+      });
+      if (response.ok) {
+        fetchUserRegistrations();
+      } else {
+        const data = await response.json();
+        alert(data.error || "Failed to kick member");
+      }
+    } catch (error) {
+      console.error("Error kicking:", error);
+    } finally {
+      setKickTarget(null);
+    }
   };
 
   if (status === "loading") {
@@ -233,14 +297,40 @@ export default function Page() {
                               {event.description}
                             </p>
                           )}
-                          <button
-                            onClick={() =>
-                              handleQRClick(event.eventName, event._id)
+                          {(() => {
+                            const reg = userRegistrations.find((r) => {
+                              const regEventId = r.eventId?._id?.toString() || r.eventId?.toString();
+                              return regEventId === event._id?.toString();
+                            });
+                            if (reg) {
+                              if (reg.hasAttended) {
+                                return (
+                                  <button
+                                    disabled
+                                    className="bg-gray-600/50 text-gray-300 text-xs lg:text-sm mt-2 px-3 py-1.5 rounded cursor-not-allowed border border-gray-500/30"
+                                  >
+                                    Attended ✓
+                                  </button>
+                                );
+                              }
+                              return (
+                                <button
+                                  onClick={() => handleQRClick(event.eventName, event._id)}
+                                  className="bg-indigo-700 text-xs lg:text-sm mt-2 px-3 py-1.5 rounded hover:bg-indigo-600 transition"
+                                >
+                                  QR for Entry
+                                </button>
+                              );
                             }
-                            className="bg-indigo-700 text-xs lg:text-sm mt-2 px-2 py-1 hover:underline"
-                          >
-                            QR for Entry
-                          </button>
+                            return (
+                              <button
+                                onClick={() => handleRegisterClick(event.eventName, event._id)}
+                                className="bg-green-700 text-xs lg:text-sm mt-2 px-3 py-1.5 rounded hover:bg-green-600 transition"
+                              >
+                                Register
+                              </button>
+                            );
+                          })()}
                         </div>
                       </div>
                     </div>
@@ -299,6 +389,71 @@ export default function Page() {
                   ))
                 )}
               </div>
+
+              {/* Registered Events */}
+              <div className="mt-6">
+                <h3 className="font-medium bg-black/30 p-3">Registered Events & Teams</h3>
+                {userRegistrations.length === 0 ? (
+                  <div className="text-center py-8 text-gray-400">
+                    No registered events yet
+                  </div>
+                ) : (
+                  userRegistrations.map((reg) => (
+                    <div
+                      key={reg._id}
+                      className="bg-black/50 m-3 p-4 hover:bg-white/20 transition border-l-4 border-cyan-500"
+                    >
+                      <div className="flex flex-col gap-2">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="text-lg font-bold text-cyan-300">
+                              {reg.eventId?.eventName || "Unknown Event"}
+                            </h4>
+                            <p className="text-sm font-mono mt-1 text-gray-300">
+                              TEAM CODE: <span className="text-yellow-400 select-all">{reg.teamCode}</span>
+                            </p>
+                          </div>
+                          {reg.isTeamLeader && (
+                            <span className="bg-yellow-500/20 text-yellow-300 text-xs border border-yellow-500/50 px-2 py-1 rounded">
+                              Team Leader
+                            </span>
+                          )}
+                        </div>
+                        
+                        <div className="mt-2 bg-black/30 p-3 rounded">
+                          <h5 className="text-xs text-gray-400 mb-2 uppercase tracking-wider font-semibold">Team Members</h5>
+                          <div className="space-y-2">
+                            {reg.teamMembers?.map((memberReg) => (
+                              <div key={memberReg._id} className="flex justify-between items-center bg-gray-900/50 p-2 rounded">
+                                <div className="flex items-center gap-2">
+                                  <Image
+                                    src={memberReg.userId?.image || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect fill='%23667eea' width='64' height='64'/%3E%3Ctext x='50%25' y='50%25' font-size='24' fill='white' text-anchor='middle' dy='.3em'%3E%3F%3C/text%3E%3C/svg%3E"}
+                                    alt="member avatar"
+                                    width={24}
+                                    height={24}
+                                    className="rounded-full"
+                                    unoptimized
+                                  />
+                                  <span className="text-sm">{memberReg.userId?.name} {memberReg.isTeamLeader && "👑"}</span>
+                                </div>
+                                {reg.isTeamLeader && memberReg.userId?._id !== session?.user?.id && (
+                                  <button
+                                    onClick={() => handleKickClick(memberReg._id, memberReg.userId?.name)}
+                                    className="text-xs bg-red-900/50 hover:bg-red-800 text-red-300 px-2 py-1 rounded transition"
+                                  >
+                                    Kick
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </section>
 
@@ -317,15 +472,15 @@ export default function Page() {
                 </p>
               ) : (
                 <div className="flex gap-4 overflow-x-auto scrollbar-x pb-2 scroll-smooth snap-x">
-                  {userBadges.map((badge) => (
+                  {userBadges.filter(b => b.badgeIcon).map((badge, index) => (
                     <Image
-                      key={badge.eventKey}
-                      src="/Profile/badge.png"
+                      key={`${badge.eventKey}-${index}`}
+                      src={badge.badgeIcon}
                       alt={badge.badgeName}
                       width={64}
                       height={64}
                       unoptimized
-                      className="snap-start"
+                      className="snap-start object-contain"
                       title={badge.badgeName}
                     />
                   ))}
@@ -339,9 +494,32 @@ export default function Page() {
       {/* QR Modal */}
       <QRModal
         isOpen={qrModalOpen}
-        onClose={() => setQrModalOpen(false)}
+        onClose={handleQRClose}
         eventName={qrEventName}
         eventId={qrEventId}
+      />
+
+      {/* Register Modal */}
+      <RegisterModal
+        isOpen={registerModalOpen}
+        onClose={() => setRegisterModalOpen(false)}
+        eventName={registerEventName}
+        eventId={registerEventId}
+        onRegistrationSuccess={() => {
+          setRegisterModalOpen(false);
+          fetchUserRegistrations(); // Refresh registrations after successful register
+        }}
+      />
+
+      {/* Confirm Kick Modal */}
+      <ConfirmKickModal
+        isOpen={kickModalOpen}
+        onClose={() => {
+          setKickModalOpen(false);
+          setKickTarget(null);
+        }}
+        onConfirm={executeKick}
+        memberName={kickTarget?.memberName || "this member"}
       />
     </div>
   );

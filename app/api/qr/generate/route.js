@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import dbConnect from "@/lib/db";
 import User from "@/models/User";
 import Event from "@/models/Event";
+import Registration from "@/models/Registration";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function POST(request) {
@@ -16,7 +17,16 @@ export async function POST(request) {
       );
     }
 
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch (e) {
+      return NextResponse.json(
+        { error: "Invalid request: Body is required" },
+        { status: 400 }
+      );
+    }
+
     const { eventId } = body;
 
     if (!eventId) {
@@ -28,6 +38,7 @@ export async function POST(request) {
 
     await dbConnect();
 
+    // 1. Check if event exists and is active
     const event = await Event.findById(eventId);
 
     if (!event) {
@@ -41,17 +52,34 @@ export async function POST(request) {
       );
     }
 
-    const user = await User.findById(session.user.id);
+    // 2. Check if user is registered for this event
+    const registration = await Registration.findOne({
+      userId: session.user.id,
+      eventId: eventId,
+    });
 
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    if (!registration) {
+      return NextResponse.json(
+        { error: "You must be registered for this event to generate a QR code" },
+        { status: 403 }
+      );
+    }
+
+    // 3. Generate static QR payload with only eventId and userId
+    const userId = session?.user?.id;
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: "Session error: User ID missing" },
+        { status: 500 }
+      );
     }
 
     const qrPayload = {
-      eventKey: event.eventKey,
       eventId: event._id.toString(),
-      timestamp: new Date().toISOString(),
+      userId: userId,
     };
+
 
     return NextResponse.json(
       {
@@ -75,3 +103,4 @@ export async function POST(request) {
     );
   }
 }
+

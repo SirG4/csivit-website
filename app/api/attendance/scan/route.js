@@ -5,51 +5,62 @@ import dbConnect from "@/lib/db";
 import User from "@/models/User";
 import Attendance from "@/models/Attendance";
 import Event from "@/models/Event";
-import { calculateBadge } from "@/lib/gamification";
+import Registration from "@/models/Registration";
 
-const QR_EXPIRY_SECONDS = 60;
+
+const QR_EXPIRY_SECONDS = 300; // Increased to be more lenient for static QR
 
 export async function POST(request) {
   try {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized: Please sign in again" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { eventKey, eventId, timestamp } = body;
+    let body;
+    try {
+      body = await request.json();
+    } catch (e) {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
 
-    if (!eventKey || !eventId) {
+    // Handle both object payload and legacy string payload
+    let eventId, eventKey, timestamp, userId;
+    
+    if (typeof body === 'string') {
+      // If the body is just a string (ID), try to use it as eventId
+      eventId = body;
+    } else if (body && typeof body === 'object') {
+      ({ eventKey, eventId, timestamp, userId } = body);
+    }
+
+    if (!eventId) {
       return NextResponse.json(
-        { error: "Invalid QR payload" },
+        { error: "Invalid QR payload: Missing Event ID", received: body },
         { status: 400 }
       );
     }
 
-    // Validate QR timestamp if provided
-    if (timestamp) {
-      const qrTime = new Date(timestamp);
-      const now = new Date();
-      const diffSeconds = (now - qrTime) / 1000;
-
-      if (diffSeconds > QR_EXPIRY_SECONDS) {
+    // Determination of who to mark attendance for
+    let targetUserId = session.user.id;
+    
+    // If a userId is present in the scan, it's an admin scanning a user
+    if (userId) {
+      await dbConnect();
+      const scanner = await User.findById(session.user.id);
+      if (scanner?.role !== "admin") {
         return NextResponse.json(
-          { error: "QR code expired. Please generate a new one." },
-          { status: 400 }
+          { error: "Forbidden: Only admins can scan user entry passes" },
+          { status: 403 }
         );
       }
-
-      if (diffSeconds < 0) {
-        return NextResponse.json(
-          { error: "Invalid QR timestamp" },
-          { status: 400 }
-        );
-      }
+      targetUserId = userId;
     }
 
     await dbConnect();
 
+    // 1. Check if event exists and is active
     const event = await Event.findById(eventId);
 
     if (!event) {
@@ -58,17 +69,33 @@ export async function POST(request) {
 
     if (!event.isActive) {
       return NextResponse.json(
-        { error: "Event is not active" },
+        { error: "This event is not currently active" },
         { status: 400 }
       );
     }
 
-    if (event.eventKey !== eventKey) {
-      return NextResponse.json({ error: "Invalid event key" }, { status: 400 });
+    // If eventKey is provided in payload, it must match
+    if (eventKey && event.eventKey !== eventKey) {
+      return NextResponse.json({ error: "Invalid event key for this event" }, { status: 400 });
     }
 
+    // 2. Enforce registration check
+    const registration = await Registration.findOne({
+      userId: targetUserId,
+      eventId: eventId,
+    });
+
+    if (!registration) {
+      const user = await User.findById(targetUserId);
+      return NextResponse.json(
+        { error: `${user?.name || "User"} is not registered for this event` },
+        { status: 403 }
+      );
+    }
+
+    // 3. Mark attendance
     const existingAttendance = await Attendance.findOne({
-      userId: session.user.id,
+      userId: targetUserId,
       eventId,
     });
 
@@ -76,43 +103,47 @@ export async function POST(request) {
       return NextResponse.json(
         {
           error: "Already Claimed",
-          message: "You already marked attendance for this event",
+          message: "Attendance already marked for this event",
         },
         { status: 409 }
       );
     }
 
     const userAttendanceCount = await Attendance.countDocuments({
-      userId: session.user.id,
+      userId: targetUserId,
     });
 
     const pointsEarned = event.pointsPerAttendance || 10;
-    const badgeData = calculateBadge(userAttendanceCount + 1);
-    const badgeName = badgeData ? badgeData.name : null;
+    const finalBadgeEarned = event.badgeIcon || null;
 
     const attendance = new Attendance({
-      userId: session.user.id,
+      userId: targetUserId,
       eventId,
-      eventKey,
-      badgeEarned: badgeName,
+      eventKey: event.eventKey,
+      badgeEarned: finalBadgeEarned,
+      participationBadge: event.badgeIcon || null,
       pointsEarned,
     });
 
     await attendance.save();
 
-    const user = await User.findById(session.user.id);
+    const targetUser = await User.findById(targetUserId);
 
-    if (user && badgeName) {
-      const existingBadge = user.badges.find((b) => b.badgeName === badgeName);
-
-      if (!existingBadge) {
-        user.badges.push({
-          eventKey,
-          badgeName,
-        });
-
-        await user.save();
+    if (targetUser) {
+      if (event.badgeIcon) {
+        const existingEventBadge = targetUser.badges.find(
+          (b) => b.eventKey === event.eventKey && b.badgeName === event.eventName
+        );
+        if (!existingEventBadge) {
+          targetUser.badges.push({
+            eventKey: event.eventKey,
+            badgeName: event.eventName,
+            badgeIcon: event.badgeIcon,
+          });
+        }
       }
+
+      await targetUser.save();
     }
 
     return NextResponse.json(
@@ -122,9 +153,12 @@ export async function POST(request) {
         data: {
           attendance,
           pointsEarned,
-          badgeEarned: badgeName,
+          badgeEarned: finalBadgeEarned,
+          badge: event.badgeIcon ? { badgeName: event.eventName } : null,
           eventName: event.eventName,
+          userName: targetUser?.name,
         },
+        badge: event.badgeIcon ? { badgeName: event.eventName } : null,
       },
       { status: 201 }
     );
@@ -133,7 +167,7 @@ export async function POST(request) {
       return NextResponse.json(
         {
           error: "Already Claimed",
-          message: "You already marked attendance for this event",
+          message: "Attendance already marked for this event",
         },
         { status: 409 }
       );
@@ -146,3 +180,5 @@ export async function POST(request) {
     );
   }
 }
+
+

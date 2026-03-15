@@ -5,7 +5,8 @@ import dbConnect from "@/lib/db";
 import Attendance from "@/models/Attendance";
 import Event from "@/models/Event";
 import User from "@/models/User";
-import { calculateBadge, getBadgeName } from "@/lib/gamification";
+import Registration from "@/models/Registration";
+
 
 export async function POST(request) {
   try {
@@ -27,6 +28,7 @@ export async function POST(request) {
 
     await dbConnect();
 
+    // 1. Check if event exists and is active
     const event = await Event.findById(eventId);
 
     if (!event) {
@@ -44,6 +46,20 @@ export async function POST(request) {
       return NextResponse.json({ error: "Invalid event key" }, { status: 400 });
     }
 
+    // 2. Check if user is registered for this event
+    const registration = await Registration.findOne({
+      userId: session.user.id,
+      eventId: eventId,
+    });
+
+    if (!registration) {
+      return NextResponse.json(
+        { error: "You must be registered for this event to mark attendance" },
+        { status: 403 }
+      );
+    }
+
+    // 3. Mark attendance
     const existingAttendance = await Attendance.findOne({
       userId: session.user.id,
       eventId,
@@ -64,14 +80,14 @@ export async function POST(request) {
     });
 
     const pointsEarned = event.pointsPerAttendance || 10;
-    const badgeData = calculateBadge(userAttendanceCount + 1);
-    const badgeName = badgeData ? badgeData.name : null;
+    const finalBadgeEarned = event.badgeIcon || null;
 
     const attendance = new Attendance({
       userId: session.user.id,
       eventId,
       eventKey,
-      badgeEarned: badgeName,
+      badgeEarned: finalBadgeEarned,
+      participationBadge: event.badgeIcon || null,
       pointsEarned,
     });
 
@@ -79,17 +95,21 @@ export async function POST(request) {
 
     const user = await User.findById(session.user.id);
 
-    if (user && badgeName) {
-      const existingBadge = user.badges.find((b) => b.badgeName === badgeName);
-
-      if (!existingBadge) {
-        user.badges.push({
-          eventKey,
-          badgeName,
-        });
-
-        await user.save();
+    if (user) {
+      if (event.badgeIcon) {
+        const existingEventBadge = user.badges.find(
+          (b) => b.eventKey === eventKey && b.badgeName === event.eventName
+        );
+        if (!existingEventBadge) {
+          user.badges.push({
+            eventKey,
+            badgeName: event.eventName,
+            badgeIcon: event.badgeIcon,
+          });
+        }
       }
+
+      await user.save();
     }
 
     return NextResponse.json(
@@ -99,7 +119,8 @@ export async function POST(request) {
         data: {
           attendance,
           pointsEarned,
-          badgeEarned: badgeName,
+          badgeEarned: finalBadgeEarned,
+          badge: event.badgeIcon ? { badgeName: event.eventName } : null,
         },
       },
       { status: 201 }
@@ -120,3 +141,4 @@ export async function POST(request) {
     );
   }
 }
+

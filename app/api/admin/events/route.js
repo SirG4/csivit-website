@@ -31,8 +31,29 @@ export async function POST(request) {
     await dbConnect();
 
     const body = await request.json();
-    const { eventName, eventDate, description, pointsPerAttendance, poster } =
-      body;
+    const {
+      eventName,
+      eventDate,
+      description,
+      pointsPerAttendance,
+      poster,
+      minMembers,
+      maxMembers,
+      badgeIcon,
+      winnerBadge1,
+      winnerBadge2,
+      winnerBadge3,
+      isRegistrationLive,
+      isHidden,
+    } = body;
+
+    console.log("EVENT CREATION PAYLOAD SIZES:");
+    console.log("poster size:", poster ? poster.length : 0);
+    console.log("badgeIcon size:", badgeIcon ? badgeIcon.length : 0);
+    console.log("winnerBadge1 size:", winnerBadge1 ? winnerBadge1.length : 0);
+    console.log("winnerBadge2 size:", winnerBadge2 ? winnerBadge2.length : 0);
+    console.log("winnerBadge3 size:", winnerBadge3 ? winnerBadge3.length : 0);
+
 
     if (!eventName || !eventDate) {
       return NextResponse.json(
@@ -47,6 +68,14 @@ export async function POST(request) {
       description,
       pointsPerAttendance: pointsPerAttendance || 10,
       poster: poster || "/Events/Icons/event1.png",
+      minMembers: minMembers || 1,
+      maxMembers: maxMembers || 1,
+      badgeIcon: badgeIcon || "",
+      winnerBadge1: winnerBadge1 || "",
+      winnerBadge2: winnerBadge2 || "",
+      winnerBadge3: winnerBadge3 || "",
+      isRegistrationLive: isRegistrationLive || false,
+      isHidden: isHidden || false,
     });
 
     await event.save();

@@ -26,6 +26,7 @@ export async function GET(request) {
       );
     }
 
+
     return NextResponse.json(
       { badges: user.badges || [] },
       { status: 200 }

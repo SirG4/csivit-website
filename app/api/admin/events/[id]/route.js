@@ -8,7 +8,7 @@ export async function PUT(request, { params }) {
     await requireAdmin();
     await dbConnect();
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
 
     const event = await Event.findById(id);
@@ -19,10 +19,17 @@ export async function PUT(request, { params }) {
 
     if (body.eventName) event.eventName = body.eventName;
     if (body.eventDate) event.eventDate = new Date(body.eventDate);
-    if (body.description) event.description = body.description;
-    if (body.pointsPerAttendance)
+    if (body.description !== undefined) event.description = body.description;
+    if (body.pointsPerAttendance !== undefined)
       event.pointsPerAttendance = body.pointsPerAttendance;
     if (body.isActive !== undefined) event.isActive = body.isActive;
+    if (body.poster !== undefined) event.poster = body.poster;
+    if (body.badgeIcon !== undefined) event.badgeIcon = body.badgeIcon;
+    if (body.winnerBadge1 !== undefined) event.winnerBadge1 = body.winnerBadge1;
+    if (body.winnerBadge2 !== undefined) event.winnerBadge2 = body.winnerBadge2;
+    if (body.winnerBadge3 !== undefined) event.winnerBadge3 = body.winnerBadge3;
+    if (body.isRegistrationLive !== undefined) event.isRegistrationLive = body.isRegistrationLive;
+    if (body.isHidden !== undefined) event.isHidden = body.isHidden;
 
     await event.save();
 
@@ -46,7 +53,7 @@ export async function DELETE(request, { params }) {
     await requireAdmin();
     await dbConnect();
 
-    const { id } = params;
+    const { id } = await params;
 
     const event = await Event.findById(id);
 

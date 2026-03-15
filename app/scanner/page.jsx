@@ -83,12 +83,14 @@ export default function ScannerPage() {
 
       if (!response.ok) {
         if (response.status === 409) {
-          setError(data.error || "Badge already earned for this event");
+          setError(data.error || "Attendance already marked for this event");
         } else {
+          // Display the specific error from the server if available
           setError(data.error || "Failed to process QR");
         }
       } else {
-        setSuccessMessage(`🎉 Badge earned: ${data.badge.badgeName}`);
+        const badgeName = data.badge?.badgeName || data.data?.badgeEarned;
+        setSuccessMessage(badgeName ? `🎉 Badge earned: ${badgeName}` : "✅ Attendance marked!");
         setResult(data);
         setTimeout(() => {
           setSuccessMessage("");
@@ -100,6 +102,7 @@ export default function ScannerPage() {
       setError("Invalid QR code format");
       setTimeout(() => startScanner(), 2000);
     }
+
   };
 
   if (loading) {
@@ -260,11 +263,16 @@ export default function ScannerPage() {
                 <div className="relative bg-black border-2 border-purple-400 rounded-lg p-4">
                   <div className="text-center">
                     <p className="text-purple-300 font-mono uppercase text-xs mb-2">
-                      █ BADGE ACQUIRED █
+                      █ {result.badge ? "BADGE ACQUIRED" : "ATTENDANCE VERIFIED"} █
                     </p>
                     <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-purple-300">
-                      {result.badge.badgeName}
+                      {result.badge?.badgeName || result.data?.userName || "SUCCESS"}
                     </p>
+                    {result.badge && result.data?.userName && (
+                                <p className="text-gray-400 text-[10px] mt-1 uppercase font-mono">
+                                    Awarded to {result.data.userName}
+                                </p>
+                            )}
                     <p className="text-purple-200 text-xs font-mono mt-2">
                       → REFRESH IN 3 SECONDS ←
                     </p>
@@ -272,6 +280,7 @@ export default function ScannerPage() {
                 </div>
               </div>
             )}
+
           </div>
           {/* Footer Info */}
           <div className="mt-12 text-center">

@@ -34,6 +34,38 @@ const EventSchema = new mongoose.Schema(
       type: String,
       default: "/Events/Icons/event1.png",
     },
+    minMembers: {
+      type: Number,
+      default: 1,
+    },
+    maxMembers: {
+      type: Number,
+      default: 1,
+    },
+    badgeIcon: {
+      type: String,
+      default: "",
+    },
+    winnerBadge1: {
+      type: String,
+      default: "",
+    },
+    winnerBadge2: {
+      type: String,
+      default: "",
+    },
+    winnerBadge3: {
+      type: String,
+      default: "",
+    },
+    isRegistrationLive: {
+      type: Boolean,
+      default: false,
+    },
+    isHidden: {
+      type: Boolean,
+      default: false,
+    },
     createdAt: {
       type: Date,
       default: Date.now,
@@ -68,4 +100,8 @@ EventSchema.pre("save", async function () {
   }
 });
 
-export default mongoose.models.Event || mongoose.model("Event", EventSchema);
+if (mongoose.models.Event) {
+  delete mongoose.models.Event;
+}
+
+export default mongoose.model("Event", EventSchema);

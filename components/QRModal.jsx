@@ -3,49 +3,48 @@
 import { useState, useEffect } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 
-export default function QRModal({ isOpen, onClose, eventName }) {
+export default function QRModal({ isOpen, onClose, eventName, eventId }) {
   const [qrPayload, setQrPayload] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [refreshTimer, setRefreshTimer] = useState(30);
 
-  // Generate QR on mount or when timer reaches 0
+  // Generate QR on mount
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && eventId) {
       generateQR();
     }
-  }, [isOpen]);
-
-  // Timer countdown
-  useEffect(() => {
-    if (!isOpen || !qrPayload) return;
-
-    const interval = setInterval(() => {
-      setRefreshTimer((prev) => {
-        if (prev <= 1) {
-          generateQR(); // Auto-refresh when timer reaches 0
-          return 30;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [isOpen, qrPayload]);
+  }, [isOpen, eventId]);
 
   const generateQR = async () => {
+    if (!eventId) {
+      setError("Event ID is missing. Please close and try again.");
+      return;
+    }
     try {
       setLoading(true);
       setError("");
-      const response = await fetch("/api/qr/generate", { method: "POST" });
-      const data = await response.json();
+      
+      const response = await fetch("/api/qr/generate", { 
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ eventId })
+      });
+
+      
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        throw new Error("Invalid response from server");
+      }
 
       if (!response.ok) {
         throw new Error(data.error || "Failed to generate QR");
       }
 
       setQrPayload(data.payload);
-      setRefreshTimer(30);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -86,7 +85,7 @@ export default function QRModal({ isOpen, onClose, eventName }) {
                   {eventName}
                 </h2>
                 <div className="text-xs text-cyan-300 font-mono mt-1">
-                  █ SCAN MODE ACTIVE █
+                  █ STATIC ENTRY PASS █
                 </div>
               </div>
               <button
@@ -123,57 +122,41 @@ export default function QRModal({ isOpen, onClose, eventName }) {
                 {/* Instructions */}
                 <div className="text-center space-y-2 border-t-2 border-yellow-400 pt-4">
                   <p className="text-yellow-300 text-sm font-bold uppercase tracking-widest">
-                    ► Scan to mark presence ◄
+                    ► Present at registration ◄
                   </p>
                   <p className="text-cyan-300 text-xs font-mono">
-                    ONE SCAN · ONE BADGE
+                    YOUR PERSONAL ENTRY PASS
                   </p>
                 </div>
 
-                {/* Timer */}
-                <div className="flex items-center justify-between bg-gradient-to-r from-purple-900/40 to-cyan-900/40 border-2 border-purple-500 rounded-lg p-3 font-mono">
-                  <span className="text-purple-300 text-sm">⏱ REFRESH IN:</span>
-                  <span
-                    className={`text-lg font-bold ${
-                      refreshTimer <= 10
-                        ? "text-red-400 animate-pulse"
-                        : "text-cyan-300"
-                    }`}
-                  >
-                    {refreshTimer}s
-                  </span>
+                {/* Support Text */}
+                <div className="bg-gradient-to-r from-purple-900/40 to-cyan-900/40 border-2 border-purple-500 rounded-lg p-3 font-mono text-center">
+                  <p className="text-purple-300 text-[10px] uppercase">
+                    This QR code is unique to you and the event
+                  </p>
                 </div>
 
-                {/* Refresh Button */}
+                {/* Close Button */}
                 <button
-                  onClick={generateQR}
-                  disabled={loading}
+                  onClick={onClose}
                   className="w-full relative overflow-hidden rounded-lg font-bold uppercase tracking-wider text-black transition duration-300"
                   style={{
-                    background: loading
-                      ? "#666"
-                      : "linear-gradient(135deg, #FFFF00, #00FFFF)",
-                    boxShadow: loading
-                      ? "none"
-                      : "0 0 20px rgba(255, 255, 0, 0.5), 0 0 40px rgba(0, 255, 255, 0.3)",
+                    background: "linear-gradient(135deg, #FFFF00, #00FFFF)",
+                    boxShadow: "0 0 20px rgba(255, 255, 0, 0.5), 0 0 40px rgba(0, 255, 255, 0.3)",
                     border: "2px solid #FFFF00",
                     padding: "0.75rem",
-                    cursor: loading ? "not-allowed" : "pointer",
+                    cursor: "pointer",
                   }}
                   onMouseEnter={(e) => {
-                    if (!loading) {
-                      e.target.style.boxShadow =
-                        "0 0 30px rgba(255, 255, 0, 0.8), 0 0 60px rgba(0, 255, 255, 0.6)";
-                    }
+                    e.target.style.boxShadow =
+                      "0 0 30px rgba(255, 255, 0, 0.8), 0 0 60px rgba(0, 255, 255, 0.6)";
                   }}
                   onMouseLeave={(e) => {
-                    if (!loading) {
-                      e.target.style.boxShadow =
-                        "0 0 20px rgba(255, 255, 0, 0.5), 0 0 40px rgba(0, 255, 255, 0.3)";
-                    }
+                    e.target.style.boxShadow =
+                      "0 0 20px rgba(255, 255, 0, 0.5), 0 0 40px rgba(0, 255, 255, 0.3)";
                   }}
                 >
-                  {loading ? "⏳ GENERATING..." : "🔄 REFRESH QR"}
+                  DONE
                 </button>
               </div>
             ) : (
@@ -209,3 +192,4 @@ export default function QRModal({ isOpen, onClose, eventName }) {
     </div>
   );
 }
+

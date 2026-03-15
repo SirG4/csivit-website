@@ -21,7 +21,23 @@ const AttendanceSchema = new mongoose.Schema(
       default: Date.now,
     },
     badgeEarned: {
-      type: String,
+      type: String, // Keeping for legacy/general display
+      default: null,
+    },
+    participationBadge: {
+      type: String, // Specifically for the event attendance base64
+      default: null,
+    },
+    milestoneBadge: {
+      type: String, // Specifically for Level/Gamification name (Rookie, etc)
+      default: null,
+    },
+    prizeBadge: {
+      type: String, // Specifically for the Prize base64
+      default: null,
+    },
+    prizeName: {
+      type: String, // Prize rank title (1st Prize, etc)
       default: null,
     },
     pointsEarned: {
@@ -37,5 +53,8 @@ const AttendanceSchema = new mongoose.Schema(
 AttendanceSchema.index({ userId: 1, eventId: 1 }, { unique: true });
 AttendanceSchema.index({ userId: 1, eventKey: 1 }, { unique: true });
 
-export default mongoose.models.Attendance ||
-  mongoose.model("Attendance", AttendanceSchema);
+if (mongoose.models.Attendance) {
+  delete mongoose.models.Attendance;
+}
+
+export default mongoose.model("Attendance", AttendanceSchema);
