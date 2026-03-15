@@ -10,6 +10,43 @@ import QRModal from "@/components/QRModal";
 import RegisterModal from "@/components/RegisterModal";
 import ConfirmKickModal from "@/components/ConfirmKickModal";
 
+// const STATIC_EVENTS = [
+//   {
+//     _id: "6b2f1a2b3c4d5e6f7a8b9c01",
+//     eventName: "CSIVIT Orientation",
+//     eventDate: "2026-03-20T10:00:00.000Z",
+//     description: "Welcome to CSIVIT! Join us for an introductory session.",
+//     poster: "/Profile/steam_poster.jpg", // Using default poster
+//     badgeIcon: "https://api.dicebear.com/7.x/identicon/svg?seed=orientation", // participation badge
+//     winnerBadge1: "https://api.dicebear.com/7.x/identicon/svg?seed=orientation-w1",
+//     winnerBadge2: "https://api.dicebear.com/7.x/identicon/svg?seed=orientation-w2",
+//     winnerBadge3: "https://api.dicebear.com/7.x/identicon/svg?seed=orientation-w3",
+//     isRegistrationLive: true,
+//     isOver: false,
+//     minMembers: 1,
+//     maxMembers: 1,
+//     isStatic: true,
+//     unstopUrl: "https://unstop.com/o/csivit-orientation"
+//   },
+//   {
+//     _id: "6b2f1a2b3c4d5e6f7a8b9c02",
+//     eventName: "Code2Create",
+//     eventDate: "2026-03-25T09:00:00.000Z",
+//     description: "CSI-VIT's flagship hackathon. Innovation at its best.",
+//     poster: "/Profile/steam_poster.jpg", // Using default poster
+//     badgeIcon: "https://api.dicebear.com/7.x/identicon/svg?seed=c2c", // participation badge
+//     winnerBadge1: "https://api.dicebear.com/7.x/identicon/svg?seed=c2c-w1",
+//     winnerBadge2: "https://api.dicebear.com/7.x/identicon/svg?seed=c2c-w2",
+//     winnerBadge3: "https://api.dicebear.com/7.x/identicon/svg?seed=c2c-w3",
+//     isRegistrationLive: true,
+//     isOver: false,
+//     minMembers: 1,
+//     maxMembers: 1,
+//     isStatic: true,
+//     unstopUrl: "https://unstop.com/o/code2create"
+//   }
+// ];
+
 export default function Page() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -73,21 +110,44 @@ export default function Page() {
   const fetchEvents = async () => {
     try {
       setLoadingEvents(true);
-      const response = await fetch("/api/events");
-      if (response.ok) {
-        const data = await response.json();
-        const events = data.data || [];
+        const response = await fetch("/api/events");
+        if (response.ok) {
+          const data = await response.json();
+          const dbEvents = data.data || [];
 
-        // Split events into upcoming and past based on current date
-        const now = new Date();
-        const upcoming = events.filter(
-          (event) => !event.isOver,
-        );
-        const past = events.filter((event) => event.isOver);
+          // Identify and mark static events, merge them with DB events
+          const processedDbEvents = dbEvents.map(dbEvent => {
+            const dbId = dbEvent._id?.toString();
+            const staticMatch = STATIC_EVENTS.find(s => 
+              s._id.toString() === dbId || s.eventName === dbEvent.eventName
+            );
+            if (staticMatch) {
+              // Ensure static properties (like isStatic, unstopUrl) are preserved/added
+              return { ...dbEvent, ...staticMatch };
+            }
+            return dbEvent;
+          });
 
-        setUpcomingEvents(upcoming);
-        setPastEvents(past);
-      }
+          // Add static events that aren't in the DB yet
+          const missingStaticEvents = STATIC_EVENTS.filter(staticEvent => {
+            const staticId = staticEvent._id.toString();
+            return !dbEvents.some(dbEvent => 
+              (dbEvent._id?.toString() === staticId) || (dbEvent.eventName === staticEvent.eventName)
+            );
+          });
+
+          const mergedEvents = [...processedDbEvents, ...missingStaticEvents];
+
+          // Split events into upcoming and past based on current date
+          const now = new Date();
+          const upcoming = mergedEvents.filter(
+            (event) => !event.isOver,
+          );
+          const past = mergedEvents.filter((event) => event.isOver);
+
+          setUpcomingEvents(upcoming);
+          setPastEvents(past);
+        }
     } catch (error) {
       console.error("Error fetching events:", error);
     } finally {
@@ -111,6 +171,35 @@ export default function Page() {
     setRegisterEventName(eventName);
     setRegisterEventId(eventId);
     setRegisterModalOpen(true);
+  };
+
+  const handleSimplifiedRegister = async (event) => {
+    try {
+      setLoadingEvents(true);
+      const response = await fetch("/api/events/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventId: event._id,
+          simplified: true
+        }),
+      });
+
+      if (response.ok) {
+        // Instant redirect to Unstop
+        if (event.unstopUrl) {
+          window.open(event.unstopUrl, "_blank", "noopener,noreferrer");
+        }
+        fetchUserRegistrations();
+      } else {
+        const data = await response.json();
+        alert(data.error || "Failed to register");
+      }
+    } catch (error) {
+      console.error("Simplified registration error:", error);
+    } finally {
+      setLoadingEvents(false);
+    }
   };
 
   const handleKickClick = (registrationId, memberName) => {
@@ -333,6 +422,16 @@ export default function Page() {
                               );
                             }
                             if (event.isRegistrationLive && !event.isOver) {
+                              if (event.isStatic) {
+                                return (
+                                  <button
+                                    onClick={() => handleSimplifiedRegister(event)}
+                                    className="bg-green-700 text-xs lg:text-sm mt-2 px-3 py-1.5 rounded hover:bg-green-600 transition"
+                                  >
+                                    Register
+                                  </button>
+                                );
+                              }
                               return (
                                 <button
                                   onClick={() => handleRegisterClick(event.eventName, event._id)}
