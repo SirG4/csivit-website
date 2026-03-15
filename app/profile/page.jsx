@@ -10,7 +10,7 @@ import QRModal from "@/components/QRModal";
 import RegisterModal from "@/components/RegisterModal";
 import ConfirmKickModal from "@/components/ConfirmKickModal";
 
-// const STATIC_EVENTS = [
+const STATIC_EVENTS = [
 //   {
 //     _id: "6b2f1a2b3c4d5e6f7a8b9c01",
 //     eventName: "CSIVIT Orientation",
@@ -45,7 +45,7 @@ import ConfirmKickModal from "@/components/ConfirmKickModal";
 //     isStatic: true,
 //     unstopUrl: "https://unstop.com/o/code2create"
 //   }
-// ];
+];
 
 export default function Page() {
   const { data: session, status } = useSession();
