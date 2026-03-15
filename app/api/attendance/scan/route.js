@@ -27,7 +27,7 @@ export async function POST(request) {
 
     // Handle both object payload and legacy string payload
     let eventId, eventKey, timestamp, userId;
-    
+
     if (typeof body === 'string') {
       // If the body is just a string (ID), try to use it as eventId
       eventId = body;
@@ -44,7 +44,7 @@ export async function POST(request) {
 
     // Determination of who to mark attendance for
     let targetUserId = session.user.id;
-    
+
     // If a userId is present in the scan, it's an admin scanning a user
     if (userId) {
       await dbConnect();

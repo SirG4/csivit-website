@@ -7,7 +7,7 @@ export default function RegisterModal({ isOpen, onClose, eventName, eventId, onR
   const [phone, setPhone] = useState("");
   const [teamCode, setTeamCode] = useState("");
   const [generateTeamCode, setGenerateTeamCode] = useState(false);
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -21,15 +21,15 @@ export default function RegisterModal({ isOpen, onClose, eventName, eventId, onR
     try {
       setLoading(true);
       setError("");
-      
-      const response = await fetch("/api/events/register", { 
+
+      const response = await fetch("/api/events/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ eventId, name, phone, teamCode, generateTeamCode })
       });
-      
+
       const data = await response.json();
 
       if (!response.ok) {
@@ -135,8 +135,8 @@ export default function RegisterModal({ isOpen, onClose, eventName, eventId, onR
                       id="generateTeamCode"
                       checked={generateTeamCode}
                       onChange={(e) => {
-                          setGenerateTeamCode(e.target.checked);
-                          if (e.target.checked) setTeamCode("");
+                        setGenerateTeamCode(e.target.checked);
+                        if (e.target.checked) setTeamCode("");
                       }}
                       className="w-4 h-4 text-cyan-400 bg-black border-cyan-800 rounded focus:ring-cyan-500 focus:ring-2"
                     />

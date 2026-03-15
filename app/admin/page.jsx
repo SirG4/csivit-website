@@ -19,7 +19,7 @@ export default function AdminDashboard() {
     if (status === "unauthenticated") {
       router.push("/login");
     } else if (status === "authenticated" && session?.user?.role !== "admin") {
-      router.push("/");
+      router.push("/unauthorized");
     }
   }, [status, session, router]);
 

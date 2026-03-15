@@ -19,11 +19,13 @@ export default function ScannerPage() {
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
+    } else if (status === "authenticated" && session?.user?.role !== "admin") {
+      router.push("/unauthorized");
     } else if (status === "authenticated") {
       setLoading(false);
       startScanner();
     }
-  }, [status, router]);
+  }, [status, session, router]);
 
   const startScanner = async () => {
     try {
@@ -57,8 +59,7 @@ export default function ScannerPage() {
       await codeReader.decodeFromVideoElement(videoRef.current, listener);
     } catch (err) {
       setError(
-        `Camera error: ${
-          err.message || "Could not access camera. Please check permissions."
+        `Camera error: ${err.message || "Could not access camera. Please check permissions."
         }`
       );
       console.error("Scanner error:", err);
