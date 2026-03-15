@@ -11,6 +11,7 @@ export default withAuth(
 
     // If trying to access admin or scanner pages and not an admin
     if ((pathname.startsWith("/admin") || pathname.startsWith("/scanner")) && !isAdmin) {
+      console.log(`Middleware: Blocking user from ${pathname} - isAdmin: ${isAdmin}`);
       return NextResponse.redirect(new URL("/unauthorized", req.url));
     }
 
@@ -27,5 +28,10 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ["/admin/:path*", "/scanner/:path*"],
+  matcher: [
+    "/admin",
+    "/admin/:path*",
+    "/scanner",
+    "/scanner/:path*",
+  ],
 };
