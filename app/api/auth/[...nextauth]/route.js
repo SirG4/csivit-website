@@ -156,20 +156,6 @@ export const authOptions = {
         token.id = user.id;
         token.role = user.role;
       }
-      
-      // Ensure we have the latest role from DB for middleware protection
-      if (token.id) {
-        try {
-          await dbConnect();
-          const dbUser = await User.findById(token.id).select("role");
-          if (dbUser) {
-            token.role = dbUser.role;
-          }
-        } catch (error) {
-          // Fallback to existing token role if DB check fails
-          console.error("JWT role sync error:", error);
-        }
-      }
       return token;
     },
 
