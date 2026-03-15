@@ -35,9 +35,9 @@ export async function POST(request) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
-    if (!event.isActive) {
+    if (event.isOver) {
       return NextResponse.json(
-        { error: "Event is not active" },
+        { error: "This event is over" },
         { status: 400 }
       );
     }
