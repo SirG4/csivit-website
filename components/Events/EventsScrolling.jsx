@@ -30,7 +30,7 @@ const eventDetails = {
   },
   5: {
     title: "Bug Auction",
-    date: "12th March",
+    date: "18th March",
     venue: "VIT Mumbai — Details TBA",
     description: "CSI-VIT Enthusia presents Bug Auction — \"Gotta patch 'em all!\" Hunt bugs, bid your way to the top, and claim your reward. Stay tuned for venue and timing details.",
     sync: 78,
