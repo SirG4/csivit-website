@@ -237,6 +237,28 @@
   text-transform: uppercase;
 }
 
+/* Registration Button */
+.acRegisterButton {
+  display: block;
+  margin-top: 12px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: #9e1b1b;
+  letter-spacing: 2px;
+  padding: 10px;
+  border: 1px solid #9e1b1b;
+  background: rgba(158, 27, 27, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.acRegisterButton:active {
+  background: rgba(158, 27, 27, 0.3);
+  transform: scale(0.98);
+}
+
 /* The Fallback Close Button */
 .acCloseButton {
   margin-top: auto;

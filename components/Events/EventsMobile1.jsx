@@ -26,6 +26,7 @@ const EventsMobile1 = () => {
       collageNumber: 2,
       location: 'VIT Auditorium — 4 PM onwards',
       desc: 'CSI-VIT presents Film Fiesta 5.0! Catch screenings of Arrival, Jojo Rabbit, Ford v Ferrari, and Superman back-to-back. Contact: Gautami Kamble: 75065 63517 | Varun Singh: 75883 05192',
+      registrationLink: null,
     },
     {
       year: '27 SEP 2025',
@@ -36,6 +37,7 @@ const EventsMobile1 = () => {
       collageNumber: 3,
       location: 'VIT Auditorium — 11:00 AM to 3:00 PM',
       desc: 'CSI-VIT in collaboration with Cyberfrat presents a Cybersecurity Symposium: "Securing the Digital Future." Featuring industry leaders from Equifax, SBI, Cyberfrat, LTIMindtree, Cutsight & VIT Mumbai. Contact: Varun Singh: 75883 05192 | Gautami Kamble: 75065 63517',
+      registrationLink: null,
     },
     {
       year: '21 OCT 2025',
@@ -46,6 +48,7 @@ const EventsMobile1 = () => {
       collageNumber: null,
       location: 'Live on YouTube — 4 PM to 6 PM',
       desc: 'A special alumni episode featuring Rujuta Lanke, Data Analyst at American Express, New York — sharing her journey beyond VIT. Contact: Gautami Kamble: 75065 63517 | Varun Singh: 75883 05192',
+      registrationLink: null,
     },
     {
       year: '7 FEB 2026',
@@ -56,18 +59,30 @@ const EventsMobile1 = () => {
       collageNumber: 4,
       location: 'VIT Auditorium, Wadala — 10 AM to 2 PM',
       desc: 'Cloud Native Now in Mumbai! An inaugural meeting: "From Local Trains to Global Code." Empowering developers through hands-on learning and community-driven growth. Contact: Gautami K.: +91 75065 63517 | Varun S.: +91 75883 05192',
+      registrationLink: null,
     },
-    // Bug Auction hidden — uncomment below to restore
-    // {
-    //   year: '12 MAR 2026',
-    //   title: 'BUG AUCTION',
-    //   image: '/Events/poster5.jpeg',
-    //   alt: 'Bug Auction — Enthusia Poster',
-    //   sync: 78,
-    //   collageNumber: null,
-    //   location: 'VIT Mumbai — Details TBA',
-    //   desc: 'CSI-VIT Enthusia presents Bug Auction — "Gotta patch \'em all!" Hunt bugs, bid your way to the top, and claim your reward. Stay tuned for venue and timing details.',
-    // },
+    {
+      year: '18 MAR 2026',
+      title: 'BUG AUCTION',
+      image: '/Events/poster5.jpeg',
+      alt: 'Bug Auction — Enthusia Poster',
+      sync: 78,
+      collageNumber: null,
+      location: 'VIT Mumbai — Details TBA',
+      desc: 'CSI-VIT Enthusia presents Bug Auction — "Gotta patch \'em all!" Hunt bugs, bid your way to the top, and claim your reward. Stay tuned for venue and timing details.',
+      registrationLink: '/profile',
+    },
+    {
+      year: '20 MAR 2026',
+      title: 'DESIGN PARADOX',
+      image: '/Events/poster6.jpeg',
+      alt: 'Design Paradox — Enthusia Poster',
+      sync: 84,
+      collageNumber: null,
+      location: 'VIT Mumbai - Details TBA',
+      desc: 'CSI-VIT Enthusia presents Design Paradox, a two-round UI and Product Design challenge where participants design a landing page for a hypothetical energy drink launched by an unexpected legacy brand. The event highlights brand interpretation, UX design, and visual storytelling to craft a compelling digital launch concept.',
+      registrationLink: 'https://unstop.com/competitions/design-paradox-ui-product-design-challenge-vidyalankar-institute-of-technology-vit-mumbai-1657879',
+    },
   ];
 
   // --- Swipe Gesture Logic ---
@@ -124,6 +139,7 @@ const EventsMobile1 = () => {
   }, []);
 
   const activeMemory = memories[selectedIndex];
+  const isExternalRegistrationLink = activeMemory?.registrationLink?.startsWith('http');
 
   return (
     <div className={styles.pageWrapper}>
@@ -172,7 +188,7 @@ const EventsMobile1 = () => {
                 </div>
 
                 <div className={styles.collageGrid}>
-                  {[1, 2, 3, 4].map((n) => (
+                  {[1, 2, 3, 4, 5].map((n) => (
                     <div key={n} className={styles[`collageImg${n}`]}>
                       <img
                         src={`/Events/collage${activeMemory.collageNumber}-${n}.jpg`}
@@ -237,6 +253,18 @@ const EventsMobile1 = () => {
                     <p className={styles.acSectionData}>{activeMemory.desc}</p>
                   </div>
                   
+                  {/* Registration Button */}
+                  {activeMemory.registrationLink && (
+                    <a
+                      href={activeMemory.registrationLink}
+                      target={isExternalRegistrationLink ? '_blank' : undefined}
+                      rel={isExternalRegistrationLink ? 'noopener noreferrer' : undefined}
+                      className={styles.acRegisterButton}
+                    >
+                      [ REGISTER ]
+                    </a>
+                  )}
+
                   {/* Clickable Fallback Button */}
                   <div 
                     className={styles.acCloseButton}

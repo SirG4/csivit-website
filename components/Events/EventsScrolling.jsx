@@ -12,16 +12,29 @@ import styles from "./EventsScrolling.module.css";
 gsap.registerPlugin(ScrollTrigger);
 
 // Event Details Map - Only for UPCOMING events
-// Events are displayed in reverse order: 5, 4, 3, 2, 1
-// Currently: Events 5 & 4 are UPCOMING (show details), Events 3, 2, 1 are PAST (show collage)
+// Events are displayed in reverse order: 6, 5, 4, 3, 2, 1
+// Currently: Events 6 & 5 are UPCOMING (show details), Events 4, 3, 2, 1 are PAST (show collage)
 // Add your upcoming event information here:
 const eventDetails = {
+  6: {
+    title: "Design Paradox",
+    date: "20th March",
+    venue: "VIT Mumbai - Details TBA",
+    description:
+      "CSI-VIT Enthusia presents Design Paradox, a two-round UI and Product Design challenge where teams craft a landing page concept for a fictional energy drink launched by an unexpected legacy brand. Bring bold brand thinking, UX clarity, and visual storytelling to build a launch experience that feels fresh and convincing.",
+    sync: 84,
+    registrationLink:
+      "https://unstop.com/competitions/design-paradox-ui-product-design-challenge-vidyalankar-institute-of-technology-vit-mumbai-1657879",
+    registrationInfo:
+      "Team-based event. Registration details will be announced soon. Stay tuned on our socials for the registration link and round-wise instructions.",
+  },
   5: {
     title: "Bug Auction",
     date: "12th March",
     venue: "VIT Mumbai — Details TBA",
     description: "CSI-VIT Enthusia presents Bug Auction — \"Gotta patch 'em all!\" Hunt bugs, bid your way to the top, and claim your reward. Stay tuned for venue and timing details.",
     sync: 78,
+    registrationLink: "/profile",
     registrationInfo: "Team-based event. Registration details will be announced soon. Stay tuned on our socials for the registration link and further instructions.",
   },
   4: {
@@ -32,7 +45,7 @@ const eventDetails = {
     sync: 50,
     registrationInfo: "Registration details coming soon.",
   },
-  // Events 3, 2, 1 are past events and will show photo collages instead
+  // Events 4, 3, 2, 1 are past events and will show photo collages instead
 };
 
 const EventsScrolling = () => {
@@ -41,18 +54,17 @@ const EventsScrolling = () => {
   const lenisRef = useRef(null);
   const scrollTriggerRef = useRef(null);
   const [currentPosterIndex, setCurrentPosterIndex] = useState(0);
-  const [registerModal, setRegisterModal] = useState(null);
 
   // 🔹 Refs for cover
   const coverRef = useRef(null);
 
-  // 🔹 Create 20 poster placeholders
-  const posterCount = 8; // Bug Auction (event 5) hidden — set back to 10 to restore
+  // 🔹 Create poster placeholders (2 placeholders per event)
+  const posterCount = 12;
   
   // 🔹 Define event types: 'upcoming' or 'past'
   // Change i < N to mark the first N pairs as upcoming (0 = all past)
   const eventTypes = Array.from({ length: posterCount / 2 }, (_, i) => 
-    i < 0 ? 'upcoming' : 'past'
+    i < 2 ? 'upcoming' : 'past'
   );
 
   // Utility to add refs
@@ -334,7 +346,10 @@ onUpdate: (self) => {
                       {/* Register Button */}
                       <button
                         className={styles.acRegisterButton}
-                        onClick={() => setRegisterModal(pairNumber)}
+                        onClick={() => {
+                          const registrationLink = eventDetails[pairNumber]?.registrationLink || "/profile";
+                          window.location.href = registrationLink;
+                        }}
                       >
                         [ REGISTER ]
                       </button>
@@ -394,45 +409,6 @@ onUpdate: (self) => {
           })}
         </div>
 
-        {/* Registration Modal */}
-        {registerModal !== null && (
-          <div
-            className={styles.modalOverlay}
-            onClick={() => setRegisterModal(null)}
-          >
-            <div
-              className={styles.modalContent}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className={styles.acHeaderContainer}>
-                <div className={styles.acHeaderSmall}>DATA FRAGMENT</div>
-                <div className={styles.acHeaderLarge}>{eventDetails[registerModal]?.title}</div>
-              </div>
-
-              <div className={styles.acContentBox}>
-                <div className={styles.acSection}>
-                  <p className={styles.acSectionTitle}>Registration Info</p>
-                  <p className={styles.acSectionData}>{eventDetails[registerModal]?.registrationInfo}</p>
-                </div>
-
-                <a
-                  href="#"
-                  className={styles.modalRegisterBtn}
-                  onClick={(e) => e.preventDefault()}
-                >
-                  REGISTER NOW
-                </a>
-
-                <button
-                  className={styles.acCloseButton}
-                  onClick={() => setRegisterModal(null)}
-                >
-                  [ CLOSE DATA STREAM ]
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Desktop Scroll Hint */}
         <div className={styles.scrollHint} aria-hidden="true">
@@ -440,7 +416,7 @@ onUpdate: (self) => {
           <ChevronsDown className={styles.scrollHintIcon} size={28} strokeWidth={1.5} />
         </div>
 
-        {/* Mobile Navigation Buttons */}
+        {/* Mobile Navigation Buttons
         <div className={styles.mobileNav}>
           <button 
             className={styles.navButton}
@@ -462,7 +438,7 @@ onUpdate: (self) => {
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
           </button>
-        </div>
+        </div> */}
 
       </section>
 
