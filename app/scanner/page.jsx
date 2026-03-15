@@ -107,208 +107,162 @@ export default function ScannerPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
         <div className="text-center">
-          <div className="text-4xl mb-4 animate-spin">◐</div>
-          <p className="text-cyan-300 font-mono text-lg">INITIALIZING...</p>
+          <div className="inline-block animate-spin rounded-full h-10 w-10 border-2 border-white/20 border-t-white/80"></div>
+          <p className="text-white/50 mt-4 text-sm tracking-wide">Loading scanner...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black text-white relative overflow-hidden">
-      {/* Maze background pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div
-          className="w-full h-full"
-          style={{
-            backgroundImage: `repeating-linear-gradient(90deg, #FFFF00 0px, #FFFF00 1px, transparent 1px, transparent 20px),
-                           repeating-linear-gradient(0deg, #FFFF00 0px, #FFFF00 1px, transparent 1px, transparent 20px)`,
-          }}
-        />
-      </div>
-
+    <div className="min-h-screen bg-[#0a0a0f] text-white relative overflow-hidden">
       <BackButton />
 
       <main className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 pt-20 pb-10">
-        {/* Tomb of the Mask Theme Container */}
-        <div className="w-full max-w-2xl">
+        <div className="w-full max-w-xl">
           {/* Title Section */}
-          <div className="text-center mb-12">
-            <h1 className="text-5xl font-black mb-3 text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-cyan-300 to-purple-400 uppercase tracking-widest">
-              ▶ BADGE SCANNER ◀
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-semibold mb-2 text-white tracking-tight">
+              QR Scanner
             </h1>
-            <div className="flex items-center justify-center gap-2 text-cyan-300 font-mono text-sm">
-              <span>█</span>
-              <span>SCAN MODE ACTIVE</span>
-              <span>█</span>
-            </div>
-            <p className="text-yellow-300 text-xs mt-3 uppercase font-bold tracking-wider">
-              One Scan · One Badge
+            <p className="text-white/40 text-sm">
+              Point your camera at a QR code to scan attendance
             </p>
           </div>
 
-          {/* Scanner Container with Glow */}
-          <div className="relative mb-8">
-            {/* Outer glow */}
-            <div className="absolute -inset-2 bg-gradient-to-r from-yellow-400 via-cyan-400 to-purple-500 rounded-2xl blur-xl opacity-60 animate-pulse" />
-
-            {/* Inner glow effect */}
-            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-48 h-48 bg-cyan-400 rounded-full blur-3xl opacity-30" />
-
-            {/* Main video container */}
-            <div className="relative bg-black rounded-2xl overflow-hidden border-4 border-yellow-400 shadow-2xl shadow-yellow-400/70">
-              <div className="aspect-video bg-black relative">
+          {/* Scanner Container */}
+          <div className="relative mb-6">
+            <div className="relative bg-[#111118] rounded-2xl overflow-hidden border border-white/[0.08]">
+              <div className="aspect-video bg-[#0a0a0f] relative">
                 <video
                   ref={videoRef}
                   className="w-full h-full object-cover"
                   style={{ display: scanning ? "block" : "none" }}
                 />
                 {!scanning && (
-                  <div className="flex items-center justify-center h-full bg-gradient-to-b from-purple-900/20 to-cyan-900/20">
+                  <div className="flex items-center justify-center h-full">
                     <div className="text-center">
-                      <div className="text-6xl mb-4 animate-bounce">📷</div>
-                      <p className="text-yellow-400 mb-4 font-bold text-lg uppercase">
-                        Camera Inactive
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
+                        <svg className="w-7 h-7 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" />
+                        </svg>
+                      </div>
+                      <p className="text-white/40 mb-4 text-sm">
+                        Camera inactive
                       </p>
                       <button
                         onClick={startScanner}
-                        className="relative overflow-hidden rounded-lg font-bold uppercase tracking-wider text-black transition duration-300 px-6 py-3"
-                        style={{
-                          background:
-                            "linear-gradient(135deg, #FFFF00, #00FFFF)",
-                          boxShadow:
-                            "0 0 20px rgba(255, 255, 0, 0.6), 0 0 40px rgba(0, 255, 255, 0.4)",
-                          border: "2px solid #FFFF00",
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.boxShadow =
-                            "0 0 30px rgba(255, 255, 0, 0.9), 0 0 60px rgba(0, 255, 255, 0.7)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.boxShadow =
-                            "0 0 20px rgba(255, 255, 0, 0.6), 0 0 40px rgba(0, 255, 255, 0.4)";
-                        }}
+                        className="px-6 py-2.5 rounded-xl bg-white text-[#0a0a0f] text-sm font-medium hover:bg-white/90 transition-all duration-200"
                       >
-                        ▶ Start Scanner ◀
+                        Start Scanner
                       </button>
                     </div>
                   </div>
                 )}
 
-                {/* Scanning Border Animation */}
+                {/* Scanning overlay */}
                 {scanning && (
                   <>
-                    <div className="absolute inset-0 border-2 border-cyan-400 pointer-events-none animate-pulse" />
-                    <div
-                      className="absolute inset-0 border-4 border-transparent border-t-yellow-400 border-r-purple-400 pointer-events-none animate-spin"
-                      style={{ animationDuration: "3s" }}
-                    />
+                    {/* Corner markers */}
+                    <div className="absolute inset-8 pointer-events-none">
+                      <div className="absolute top-0 left-0 w-6 h-6 border-t-2 border-l-2 border-white/60 rounded-tl-sm"></div>
+                      <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-white/60 rounded-tr-sm"></div>
+                      <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-white/60 rounded-bl-sm"></div>
+                      <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-white/60 rounded-br-sm"></div>
+                    </div>
+                    {/* Scanning line */}
+                    <div className="absolute left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-white/50 to-transparent pointer-events-none animate-scan-line"></div>
                   </>
                 )}
               </div>
 
               {/* Status indicator */}
               {scanning && (
-                <div className="absolute bottom-4 right-4 flex items-center gap-2 bg-black/80 border-2 border-cyan-400 rounded-full px-4 py-2 font-mono text-xs">
-                  <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
-                  <span className="text-cyan-300">SCANNING...</span>
+                <div className="absolute bottom-3 right-3 flex items-center gap-2 bg-[#0a0a0f]/80 backdrop-blur-sm border border-white/[0.08] rounded-full px-3 py-1.5 text-xs">
+                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                  <span className="text-white/60">Scanning</span>
                 </div>
               )}
             </div>
           </div>
 
           {/* Messages Section */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             {error && (
-              <div className="relative">
-                <div className="absolute -inset-1 bg-gradient-to-r from-red-600 to-red-400 rounded-lg blur opacity-60 animate-pulse" />
-                <div className="relative bg-black border-2 border-red-500 rounded-lg p-4">
-                  <div className="flex items-center gap-3">
-                    <span className="text-3xl animate-bounce">❌</span>
-                    <div>
-                      <p className="text-red-300 font-bold uppercase text-sm mb-1">
-                        ERROR STATUS
-                      </p>
-                      <p className="text-red-200 font-mono text-xs">{error}</p>
-                    </div>
+              <div className="bg-red-500/[0.08] border border-red-500/20 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg className="w-3 h-3 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-red-400 text-sm font-medium mb-0.5">Error</p>
+                    <p className="text-red-300/70 text-xs">{error}</p>
                   </div>
                 </div>
               </div>
             )}
 
             {successMessage && (
-              <div className="relative">
-                <div className="absolute -inset-1 bg-gradient-to-r from-green-500 to-cyan-400 rounded-lg blur opacity-60 animate-pulse" />
-                <div className="relative bg-black border-2 border-green-400 rounded-lg p-4">
-                  <div className="flex items-center gap-3">
-                    <span className="text-3xl animate-bounce">✨</span>
-                    <div>
-                      <p className="text-green-300 font-bold uppercase text-sm mb-1">
-                        SUCCESS!
-                      </p>
-                      <p className="text-green-200 font-mono text-xs">
-                        {successMessage}
-                      </p>
-                    </div>
+              <div className="bg-emerald-500/[0.08] border border-emerald-500/20 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <svg className="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-emerald-400 text-sm font-medium mb-0.5">Success</p>
+                    <p className="text-emerald-300/70 text-xs">{successMessage}</p>
                   </div>
                 </div>
               </div>
             )}
 
             {result && (
-              <div className="relative">
-                <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg blur opacity-60 animate-pulse" />
-                <div className="relative bg-black border-2 border-purple-400 rounded-lg p-4">
-                  <div className="text-center">
-                    <p className="text-purple-300 font-mono uppercase text-xs mb-2">
-                      █ {result.badge ? "BADGE ACQUIRED" : "ATTENDANCE VERIFIED"} █
+              <div className="bg-white/[0.03] border border-white/[0.08] rounded-xl p-5">
+                <div className="text-center">
+                  <p className="text-white/40 text-xs uppercase tracking-wider mb-2">
+                    {result.badge ? "Badge Acquired" : "Attendance Verified"}
+                  </p>
+                  <p className="text-xl font-semibold text-white">
+                    {result.badge?.badgeName || result.data?.userName || "Success"}
+                  </p>
+                  {result.badge && result.data?.userName && (
+                    <p className="text-white/30 text-xs mt-1">
+                      Awarded to {result.data.userName}
                     </p>
-                    <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-purple-300">
-                      {result.badge?.badgeName || result.data?.userName || "SUCCESS"}
-                    </p>
-                    {result.badge && result.data?.userName && (
-                                <p className="text-gray-400 text-[10px] mt-1 uppercase font-mono">
-                                    Awarded to {result.data.userName}
-                                </p>
-                            )}
-                    <p className="text-purple-200 text-xs font-mono mt-2">
-                      → REFRESH IN 3 SECONDS ←
-                    </p>
-                  </div>
+                  )}
+                  <p className="text-white/20 text-xs mt-3">
+                    Refreshing in 3 seconds...
+                  </p>
                 </div>
               </div>
             )}
 
           </div>
-          {/* Footer Info */}
-          <div className="mt-12 text-center">
-            <div className="text-cyan-400 font-mono text-xs uppercase tracking-widest mb-4">
-              ═══════════════════════════════════
-            </div>
-            <p className="text-yellow-300/70 text-xs font-mono mb-2">
-              POINT CAMERA AT QR CODE
+
+          {/* Footer */}
+          <div className="mt-10 text-center">
+            <p className="text-white/20 text-xs">
+              Point camera at QR code to mark attendance
             </p>
-            <p className="text-purple-300/70 text-xs font-mono">
-              AWAITING INPUT
-            </p>
-            <div className="text-cyan-400 font-mono text-xs uppercase tracking-widest mt-4">
-              ═══════════════════════════════════
-            </div>
           </div>
         </div>
       </main>
 
-      {/* Global styles */}
+      {/* Scanning animation keyframe */}
       <style jsx>{`
-        @keyframes scan-line {
-          0% {
-            top: 0;
-          }
-          100% {
-            top: 100%;
-          }
+        @keyframes scan-line-move {
+          0% { top: 2rem; }
+          100% { top: calc(100% - 2rem); }
+        }
+        .animate-scan-line {
+          animation: scan-line-move 2s ease-in-out infinite alternate;
         }
       `}</style>
     </div>

@@ -81,9 +81,9 @@ export default function Page() {
         // Split events into upcoming and past based on current date
         const now = new Date();
         const upcoming = events.filter(
-          (event) => new Date(event.eventDate) >= now,
+          (event) => !event.isOver,
         );
-        const past = events.filter((event) => new Date(event.eventDate) < now);
+        const past = events.filter((event) => event.isOver);
 
         setUpcomingEvents(upcoming);
         setPastEvents(past);
@@ -303,6 +303,16 @@ export default function Page() {
                               return regEventId === event._id?.toString();
                             });
                             if (reg) {
+                              if (reg.teamMembers?.length < event.minMembers) {
+                                return (
+                                  <button
+                                    disabled
+                                    className="bg-orange-600/50 text-orange-300 text-xs lg:text-sm mt-2 px-3 py-1.5 rounded cursor-not-allowed border border-orange-500/30"
+                                  >
+                                    Team Incomplete
+                                  </button>
+                                );
+                              }
                               if (reg.hasAttended) {
                                 return (
                                   <button
@@ -322,12 +332,22 @@ export default function Page() {
                                 </button>
                               );
                             }
+                            if (event.isRegistrationLive && !event.isOver) {
+                              return (
+                                <button
+                                  onClick={() => handleRegisterClick(event.eventName, event._id)}
+                                  className="bg-green-700 text-xs lg:text-sm mt-2 px-3 py-1.5 rounded hover:bg-green-600 transition"
+                                >
+                                  Register
+                                </button>
+                              );
+                            }
                             return (
                               <button
-                                onClick={() => handleRegisterClick(event.eventName, event._id)}
-                                className="bg-green-700 text-xs lg:text-sm mt-2 px-3 py-1.5 rounded hover:bg-green-600 transition"
+                                disabled
+                                className="bg-gray-700/50 text-gray-400 text-xs lg:text-sm mt-2 px-3 py-1.5 rounded cursor-not-allowed border border-gray-600/30"
                               >
-                                Register
+                                {event.isOver ? "Event Over" : "Registration Closed"}
                               </button>
                             );
                           })()}
@@ -413,15 +433,22 @@ export default function Page() {
                               TEAM CODE: <span className="text-yellow-400 select-all">{reg.teamCode}</span>
                             </p>
                           </div>
-                          {reg.isTeamLeader && (
-                            <span className="bg-yellow-500/20 text-yellow-300 text-xs border border-yellow-500/50 px-2 py-1 rounded">
-                              Team Leader
-                            </span>
-                          )}
+                          <div className="flex gap-2 items-center flex-wrap justify-end">
+                            {reg.isTeamLeader && (
+                              <span className="bg-yellow-500/20 text-yellow-300 text-xs border border-yellow-500/50 px-2 py-1 rounded">
+                                Team Leader
+                              </span>
+                            )}
+                            {reg.teamMembers?.length < reg.eventId?.minMembers && (
+                              <span className="bg-orange-500/20 text-orange-300 text-xs border border-orange-500/50 px-2 py-1 rounded">
+                                Team Incomplete
+                              </span>
+                            )}
+                          </div>
                         </div>
                         
                         <div className="mt-2 bg-black/30 p-3 rounded">
-                          <h5 className="text-xs text-gray-400 mb-2 uppercase tracking-wider font-semibold">Team Members</h5>
+                          <h5 className="text-xs text-gray-400 mb-2 uppercase tracking-wider font-semibold">Team Members ({reg.teamMembers?.length || 0}/{reg.eventId?.maxMembers || "?"})</h5>
                           <div className="space-y-2">
                             {reg.teamMembers?.map((memberReg) => (
                               <div key={memberReg._id} className="flex justify-between items-center bg-gray-900/50 p-2 rounded">

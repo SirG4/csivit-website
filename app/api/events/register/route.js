@@ -27,6 +27,15 @@ export async function POST(request) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
+    // Check if registration is live and event is not over
+    if (!event.isRegistrationLive) {
+      return NextResponse.json({ error: "Registrations are not live for this event" }, { status: 400 });
+    }
+
+    if (event.isOver) {
+      return NextResponse.json({ error: "This event is over" }, { status: 400 });
+    }
+
     // Check if already registered
     const existingRegistration = await Registration.findOne({
       userId: session.user.id,
@@ -49,13 +58,22 @@ export async function POST(request) {
         return NextResponse.json({ error: "Team code is required if not generating one" }, { status: 400 });
       }
       // Check if team code exists for this event
-      const teamExists = await Registration.findOne({
+      const existingTeamMembers = await Registration.find({
         eventId: eventId,
         teamCode: teamCode
       });
 
-      if (!teamExists) {
+      if (existingTeamMembers.length === 0) {
         return NextResponse.json({ error: "Invalid team code" }, { status: 400 });
+      }
+
+      const teamLeader = existingTeamMembers.find((m) => m.isTeamLeader);
+      if (!teamLeader) {
+        return NextResponse.json({ error: "Invalid team code" }, { status: 400 });
+      }
+
+      if (existingTeamMembers.length >= event.maxMembers) {
+        return NextResponse.json({ error: "Team is full" }, { status: 400 });
       }
     }
 

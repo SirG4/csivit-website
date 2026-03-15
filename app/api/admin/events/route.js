@@ -45,6 +45,7 @@ export async function POST(request) {
       winnerBadge3,
       isRegistrationLive,
       isHidden,
+      isOver,
     } = body;
 
     console.log("EVENT CREATION PAYLOAD SIZES:");
@@ -76,6 +77,7 @@ export async function POST(request) {
       winnerBadge3: winnerBadge3 || "",
       isRegistrationLive: isRegistrationLive || false,
       isHidden: isHidden || false,
+      isOver: isOver || false,
     });
 
     await event.save();

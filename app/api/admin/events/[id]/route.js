@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import Event from "@/models/Event";
+import Registration from "@/models/Registration";
+import Attendance from "@/models/Attendance";
+import User from "@/models/User";
 import { requireAdmin } from "@/lib/adminAuth";
 
 export async function PUT(request, { params }) {
@@ -22,7 +25,8 @@ export async function PUT(request, { params }) {
     if (body.description !== undefined) event.description = body.description;
     if (body.pointsPerAttendance !== undefined)
       event.pointsPerAttendance = body.pointsPerAttendance;
-    if (body.isActive !== undefined) event.isActive = body.isActive;
+    if (body.isActive !== undefined) event.isOver = !body.isActive; // Fallback for old clients
+    if (body.isOver !== undefined) event.isOver = body.isOver;
     if (body.poster !== undefined) event.poster = body.poster;
     if (body.badgeIcon !== undefined) event.badgeIcon = body.badgeIcon;
     if (body.winnerBadge1 !== undefined) event.winnerBadge1 = body.winnerBadge1;
@@ -30,6 +34,11 @@ export async function PUT(request, { params }) {
     if (body.winnerBadge3 !== undefined) event.winnerBadge3 = body.winnerBadge3;
     if (body.isRegistrationLive !== undefined) event.isRegistrationLive = body.isRegistrationLive;
     if (body.isHidden !== undefined) event.isHidden = body.isHidden;
+
+    // Server-side logic: if event over, close registration
+    if (event.isOver) {
+      event.isRegistrationLive = false;
+    }
 
     await event.save();
 
@@ -61,14 +70,22 @@ export async function DELETE(request, { params }) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
-    event.isActive = false;
-    await event.save();
+    // Hard delete: Remove event and all associated registrations/attendance/badges
+    const eventId = event._id;
+    const eventKey = event.eventKey;
+    
+    await Registration.deleteMany({ eventId });
+    await Attendance.deleteMany({ eventId });
+    await User.updateMany(
+      { "badges.eventKey": eventKey },
+      { $pull: { badges: { eventKey: eventKey } } }
+    );
+    await Event.findByIdAndDelete(id);
 
     return NextResponse.json(
       {
         success: true,
-        message: "Event soft deleted",
-        data: event,
+        message: "Event and all related records deleted successfully",
       },
       { status: 200 }
     );

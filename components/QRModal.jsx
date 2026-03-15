@@ -55,141 +55,78 @@ export default function QRModal({ isOpen, onClose, eventName, eventId }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      {/* Maze background pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div
-          className="w-full h-full"
-          style={{
-            backgroundImage: `repeating-linear-gradient(90deg, #FFFF00 0px, #FFFF00 1px, transparent 1px, transparent 20px),
-                           repeating-linear-gradient(0deg, #FFFF00 0px, #FFFF00 1px, transparent 1px, transparent 20px)`,
-          }}
-        />
-      </div>
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4">
+      <div className="relative max-w-sm w-full">
+        {/* Main container */}
+        <div className="bg-[#111118] rounded-2xl p-6 border border-white/[0.08] shadow-2xl shadow-black/50">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-lg font-semibold text-white">
+                {eventName}
+              </h2>
+              <p className="text-white/30 text-xs mt-0.5">
+                Entry Pass
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-white/40 hover:text-white/70 hover:bg-white/[0.08] transition-all duration-200"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
 
-      <div className="relative">
-        {/* Glowing border container with neon effect */}
-        <div className="relative max-w-md w-full">
-          {/* Outer glow - Yellow */}
-          <div className="absolute -inset-1 bg-gradient-to-r from-yellow-400 via-cyan-400 to-purple-500 rounded-2xl blur-lg opacity-75 animate-pulse" />
-
-          {/* Main container */}
-          <div className="relative bg-black rounded-2xl p-6 border-2 border-yellow-400 shadow-2xl shadow-yellow-400/50">
-            {/* Inner glow effect */}
-            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-32 bg-cyan-400 rounded-full blur-3xl opacity-20" />
-
-            {/* Header */}
-            <div className="relative z-10 flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-cyan-300 to-purple-400">
-                  {eventName}
-                </h2>
-                <div className="text-xs text-cyan-300 font-mono mt-1">
-                  █ STATIC ENTRY PASS █
+          {/* Content */}
+          {error ? (
+            <div className="bg-red-500/[0.08] border border-red-500/20 rounded-xl p-4">
+              <p className="text-red-400 text-sm font-medium mb-1">Error</p>
+              <p className="text-red-300/70 text-xs">{error}</p>
+            </div>
+          ) : qrPayload ? (
+            <div className="space-y-5">
+              {/* QR Code */}
+              <div className="flex justify-center">
+                <div className="p-4 bg-white rounded-xl">
+                  <QRCodeCanvas
+                    value={qrPayload}
+                    size={220}
+                    level="H"
+                    includeMargin={true}
+                  />
                 </div>
               </div>
+
+              {/* Instructions */}
+              <div className="text-center space-y-1.5">
+                <p className="text-white/50 text-sm">
+                  Present this at the registration desk
+                </p>
+                <p className="text-white/25 text-xs">
+                  This QR code is unique to you and the event
+                </p>
+              </div>
+
+              {/* Close Button */}
               <button
                 onClick={onClose}
-                className="text-yellow-400 hover:text-cyan-300 transition text-3xl font-bold hover:drop-shadow-lg hover:shadow-cyan-400/50"
+                className="w-full py-2.5 rounded-xl bg-white text-[#0a0a0f] text-sm font-medium hover:bg-white/90 transition-all duration-200"
               >
-                ✕
+                Done
               </button>
             </div>
-
-            {/* Content */}
-            {error ? (
-              <div className="relative z-10 bg-red-900/60 border-2 border-red-500 rounded-lg p-4 text-red-200 text-sm font-mono">
-                <span className="text-red-400">▼ ERROR ▼</span>
-                <p className="mt-2">{error}</p>
-              </div>
-            ) : qrPayload ? (
-              <div className="relative z-10 space-y-4">
-                {/* QR Code with glow */}
-                <div className="flex justify-center">
-                  <div className="relative p-4 bg-white rounded-lg border-2 border-cyan-400 shadow-2xl shadow-cyan-400/50">
-                    {/* Pulsing glow background */}
-                    <div className="absolute -inset-2 bg-gradient-to-r from-yellow-400 to-cyan-400 rounded-lg blur opacity-30 animate-pulse -z-10" />
-                    <QRCodeCanvas
-                      value={qrPayload}
-                      size={256}
-                      level="H"
-                      includeMargin={true}
-                      className="relative"
-                    />
-                  </div>
-                </div>
-
-                {/* Instructions */}
-                <div className="text-center space-y-2 border-t-2 border-yellow-400 pt-4">
-                  <p className="text-yellow-300 text-sm font-bold uppercase tracking-widest">
-                    ► Present at registration ◄
-                  </p>
-                  <p className="text-cyan-300 text-xs font-mono">
-                    YOUR PERSONAL ENTRY PASS
-                  </p>
-                </div>
-
-                {/* Support Text */}
-                <div className="bg-gradient-to-r from-purple-900/40 to-cyan-900/40 border-2 border-purple-500 rounded-lg p-3 font-mono text-center">
-                  <p className="text-purple-300 text-[10px] uppercase">
-                    This QR code is unique to you and the event
-                  </p>
-                </div>
-
-                {/* Close Button */}
-                <button
-                  onClick={onClose}
-                  className="w-full relative overflow-hidden rounded-lg font-bold uppercase tracking-wider text-black transition duration-300"
-                  style={{
-                    background: "linear-gradient(135deg, #FFFF00, #00FFFF)",
-                    boxShadow: "0 0 20px rgba(255, 255, 0, 0.5), 0 0 40px rgba(0, 255, 255, 0.3)",
-                    border: "2px solid #FFFF00",
-                    padding: "0.75rem",
-                    cursor: "pointer",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.boxShadow =
-                      "0 0 30px rgba(255, 255, 0, 0.8), 0 0 60px rgba(0, 255, 255, 0.6)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.boxShadow =
-                      "0 0 20px rgba(255, 255, 0, 0.5), 0 0 40px rgba(0, 255, 255, 0.3)";
-                  }}
-                >
-                  DONE
-                </button>
-              </div>
-            ) : (
-              <div className="relative z-10 text-center py-8">
-                <div className="inline-block">
-                  <div className="text-cyan-300 text-4xl mb-2 animate-spin">
-                    ◐
-                  </div>
-                  <p className="text-cyan-300 font-mono text-sm">
-                    {loading ? "⟳ GENERATING QR..." : "⟳ LOADING..."}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
+          ) : (
+            <div className="text-center py-10">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-white/10 border-t-white/60"></div>
+              <p className="text-white/30 text-sm mt-3">
+                {loading ? "Generating QR code..." : "Loading..."}
+              </p>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Add global styles for animations */}
-      <style jsx>{`
-        @keyframes neon-glow {
-          0%,
-          100% {
-            box-shadow: 0 0 20px rgba(255, 255, 0, 0.5),
-              0 0 40px rgba(0, 255, 255, 0.3);
-          }
-          50% {
-            box-shadow: 0 0 30px rgba(255, 255, 0, 0.8),
-              0 0 60px rgba(0, 255, 255, 0.6);
-          }
-        }
-      `}</style>
     </div>
   );
 }
-

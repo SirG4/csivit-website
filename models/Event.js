@@ -18,9 +18,9 @@ const EventSchema = new mongoose.Schema(
       lowercase: true,
       sparse: true,
     },
-    isActive: {
+    isOver: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     pointsPerAttendance: {
       type: Number,
