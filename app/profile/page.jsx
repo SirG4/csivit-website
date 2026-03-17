@@ -8,44 +8,28 @@ import { useRouter } from "next/navigation";
 import BackButton from "@/components/BackButton/BackButton";
 import QRModal from "@/components/QRModal";
 import RegisterModal from "@/components/RegisterModal";
+import EditRegistrationModal from "@/components/EditRegistrationModal";
 import ConfirmKickModal from "@/components/ConfirmKickModal";
 
-// const STATIC_EVENTS = [
-//   {
-//     _id: "6b2f1a2b3c4d5e6f7a8b9c01",
-//     eventName: "CSIVIT Orientation",
-//     eventDate: "2026-03-20T10:00:00.000Z",
-//     description: "Welcome to CSIVIT! Join us for an introductory session.",
-//     poster: "/Profile/steam_poster.jpg", // Using default poster
-//     badgeIcon: "https://api.dicebear.com/7.x/identicon/svg?seed=orientation", // participation badge
-//     winnerBadge1: "https://api.dicebear.com/7.x/identicon/svg?seed=orientation-w1",
-//     winnerBadge2: "https://api.dicebear.com/7.x/identicon/svg?seed=orientation-w2",
-//     winnerBadge3: "https://api.dicebear.com/7.x/identicon/svg?seed=orientation-w3",
-//     isRegistrationLive: true,
-//     isOver: false,
-//     minMembers: 1,
-//     maxMembers: 1,
-//     isStatic: true,
-//     unstopUrl: "https://unstop.com/o/csivit-orientation"
-//   },
-//   {
-//     _id: "6b2f1a2b3c4d5e6f7a8b9c02",
-//     eventName: "Code2Create",
-//     eventDate: "2026-03-25T09:00:00.000Z",
-//     description: "CSI-VIT's flagship hackathon. Innovation at its best.",
-//     poster: "/Profile/steam_poster.jpg", // Using default poster
-//     badgeIcon: "https://api.dicebear.com/7.x/identicon/svg?seed=c2c", // participation badge
-//     winnerBadge1: "https://api.dicebear.com/7.x/identicon/svg?seed=c2c-w1",
-//     winnerBadge2: "https://api.dicebear.com/7.x/identicon/svg?seed=c2c-w2",
-//     winnerBadge3: "https://api.dicebear.com/7.x/identicon/svg?seed=c2c-w3",
-//     isRegistrationLive: true,
-//     isOver: false,
-//     minMembers: 1,
-//     maxMembers: 1,
-//     isStatic: true,
-//     unstopUrl: "https://unstop.com/o/code2create"
-//   }
-// ];
+const STATIC_EVENTS = [
+  {
+    _id: "6b2f1a2b3c4d5e6f7a8b9c01",
+    eventName: "Design Paradox",
+    eventDate: "2026-03-20T16:00:00.000+00:00",
+    description: "UI and Product Design challenge where teams craft a landing page concept for a fictional energy drink launched by an unexpected legacy brand.",
+    poster: "/Profile/parapost.png", // Using default poster
+    badgeIcon: "/Profile/parap.png", // participation badge
+    winnerBadge1: "/Profile/para1.png",
+    winnerBadge2: "/Profile/para2.png",
+    winnerBadge3: "/Profile/para3.png",
+    isRegistrationLive: true,
+    isOver: false,
+    minMembers: 1,
+    maxMembers: 1,
+    isStatic: true,
+    unstopUrl: "https://unstop.com/p/design-paradox-ui-product-design-challenge-vidyalankar-institute-of-technology-vit-mumbai-1657879"
+  },
+];
 
 export default function Page() {
   const { data: session, status } = useSession();
@@ -68,6 +52,10 @@ export default function Page() {
   // Kick modal state
   const [kickModalOpen, setKickModalOpen] = useState(false);
   const [kickTarget, setKickTarget] = useState(null);
+
+  // Edit registration modal state
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingRegistration, setEditingRegistration] = useState(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -226,6 +214,17 @@ export default function Page() {
     } finally {
       setKickTarget(null);
     }
+  };
+
+  const handleEditClick = (reg) => {
+    setEditingRegistration(reg);
+    setEditModalOpen(true);
+  };
+
+  const handleEditSuccess = () => {
+    setEditModalOpen(false);
+    setEditingRegistration(null);
+    fetchUserRegistrations();
   };
 
   if (status === "loading") {
@@ -520,7 +519,7 @@ export default function Page() {
                   userRegistrations.map((reg) => (
                     <div
                       key={reg._id}
-                      className="bg-black/50 m-3 p-4 hover:bg-white/20 transition border-l-4 border-cyan-500"
+                      className="bg-black/50 m-3 p-4 hover:bg-white/5 transition border-l-4 border-cyan-500 relative"
                     >
                       <div className="flex flex-col gap-2">
                         <div className="flex justify-between items-start">
@@ -533,6 +532,15 @@ export default function Page() {
                             </p>
                           </div>
                           <div className="flex gap-2 items-center flex-wrap justify-end">
+                            <button
+                              onClick={() => handleEditClick(reg)}
+                              className="bg-cyan-600/20 text-cyan-300 text-xs border border-cyan-500/50 px-2 py-1 rounded hover:bg-cyan-600/40 transition flex items-center gap-1"
+                            >
+                              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                              </svg>
+                              Edit
+                            </button>
                             {reg.isTeamLeader && (
                               <span className="bg-yellow-500/20 text-yellow-300 text-xs border border-yellow-500/50 px-2 py-1 rounded">
                                 Team Leader
@@ -646,6 +654,17 @@ export default function Page() {
         }}
         onConfirm={executeKick}
         memberName={kickTarget?.memberName || "this member"}
+      />
+
+      {/* Edit Registration Modal */}
+      <EditRegistrationModal
+        isOpen={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setEditingRegistration(null);
+        }}
+        registration={editingRegistration}
+        onUpdateSuccess={handleEditSuccess}
       />
     </div>
   );

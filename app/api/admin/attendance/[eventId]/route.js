@@ -13,19 +13,24 @@ export async function GET(request, { params }) {
 
     const { eventId } = await params;
 
-    const event = await Event.findById(eventId);
+    const [event, registrations, attendanceRecords] = await Promise.all([
+      Event.findById(eventId)
+        .select("-poster -badgeIcon -winnerBadge1 -winnerBadge2 -winnerBadge3")
+        .lean(),
+      Registration.find({ eventId })
+        .populate("userId", "name email image")
+        .sort({ createdAt: -1 })
+        .lean(),
+      Attendance.find({ eventId })
+        .populate("userId", "_id")
+        .sort({ scannedAt: -1 })
+        .lean()
+    ]);
 
     if (!event) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
-    const registrations = await Registration.find({ eventId })
-      .populate("userId", "name email image badges")
-      .sort({ createdAt: -1 });
-
-    const attendanceRecords = await Attendance.find({ eventId })
-      .populate("userId", "name email image badges")
-      .sort({ scannedAt: -1 });
 
     const attendanceMap = {};
     attendanceRecords.forEach((record) => {
@@ -36,11 +41,9 @@ export async function GET(request, { params }) {
 
     const mergedRegistrations = registrations.map((reg) => {
       const att = reg.userId ? attendanceMap[reg.userId._id.toString()] : null;
-      // Get all badges for this event from the user record
-      const eventBadges = reg.userId?.badges?.filter(b => b.eventKey === event.eventKey) || [];
       
       return {
-        ...reg.toObject(),
+        ...reg,
         hasAttended: !!att,
         scannedAt: att ? att.scannedAt : null,
         badgeEarned: att ? att.badgeEarned : null,
@@ -49,7 +52,6 @@ export async function GET(request, { params }) {
         milestoneBadge: att ? att.milestoneBadge : null,
         prizeBadge: att ? att.prizeBadge : null,
         prizeName: att ? att.prizeName : null,
-        eventBadges: eventBadges,
       };
     });
 
@@ -70,10 +72,9 @@ export async function GET(request, { params }) {
         success: true,
         data: {
           event,
-          attendees: attendanceRecords,
+          totalAttendees,
           registrations: mergedRegistrations,
           teams,
-          totalAttendees,
           totalRegistrations,
           eventKey: event.eventKey,
         },
