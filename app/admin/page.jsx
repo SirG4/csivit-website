@@ -828,7 +828,8 @@ function AttendanceViewer({ event, attendeesCount, registrations, teams, onBack,
     (r) =>
       r.userId?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       r.userId?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      r.teamCode?.toLowerCase().includes(searchTerm.toLowerCase()),
+      r.teamCode?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      r.phone?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   // Group registrations by team code for better visualization
@@ -928,7 +929,7 @@ function AttendanceViewer({ event, attendeesCount, registrations, teams, onBack,
                     Prize
                   </th>
                   <th className="px-4 py-3 text-left text-white/30 text-xs font-medium uppercase tracking-wider">
-                    Scanned At
+                    Phone
                   </th>
                   <th className="px-4 py-3 text-left text-white/30 text-xs font-medium uppercase tracking-wider">
                     Points
@@ -1029,7 +1030,7 @@ function AttendanceViewer({ event, attendeesCount, registrations, teams, onBack,
                           )}
                         </td>
                         <td className="px-4 py-3 text-white/30 text-xs">
-                          {record.scannedAt ? new Date(record.scannedAt).toLocaleString() : "—"}
+                          {record.phone || "—"}
                         </td>
                         <td className="px-4 py-3">
                           <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400/70 text-xs font-medium">
