@@ -8,7 +8,10 @@ export async function GET(request) {
     await requireAdmin();
     await dbConnect();
 
-    const events = await Event.find().sort({ createdAt: -1 });
+    const events = await Event.find()
+      .select("-poster -badgeIcon -winnerBadge1 -winnerBadge2 -winnerBadge3")
+      .sort({ createdAt: -1 })
+      .lean();
 
     return NextResponse.json(
       {

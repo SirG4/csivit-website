@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
@@ -10,7 +10,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [attendees, setAttendees] = useState([]);
+  const [attendeesCount, setAttendeesCount] = useState(0);
   const [registrations, setRegistrations] = useState([]);
   const [teams, setTeams] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -53,7 +53,7 @@ export default function AdminDashboard() {
 
       if (data.success) {
         setSelectedEvent(data.data.event);
-        setAttendees(data.data.attendees || []);
+        setAttendeesCount(data.data.totalAttendees || 0);
         setRegistrations(data.data.registrations || []);
         setTeams(data.data.teams || null);
       }
@@ -161,7 +161,7 @@ export default function AdminDashboard() {
             />
             <DashboardStat
               title="Total Attendees"
-              value={attendees.length}
+              value={attendeesCount}
             />
             <DashboardStat
               title="Active Events"
@@ -188,16 +188,17 @@ export default function AdminDashboard() {
             {selectedEvent ? (
               <AttendanceViewer
                 event={selectedEvent}
-                attendees={attendees}
+                attendeesCount={attendeesCount}
                 registrations={registrations}
                 teams={teams}
                 onBack={() => {
                   setSelectedEvent(null);
-                  setAttendees([]);
+                  setAttendeesCount(0);
                   setRegistrations([]);
                   setTeams(null);
                 }}
                 loading={loading}
+                setLoading={setLoading}
                 fetchAttendees={fetchAttendees}
               />
             ) : (
@@ -728,7 +729,7 @@ function StatusToggle({ label, checked, onChange, color }) {
   );
 }
 
-function AttendanceViewer({ event, attendees, registrations, teams, onBack, loading, fetchAttendees }) {
+function AttendanceViewer({ event, attendeesCount, registrations, teams, onBack, loading, setLoading, fetchAttendees }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [awardingPrize, setAwardingPrize] = useState(false);
 
@@ -799,12 +800,44 @@ function AttendanceViewer({ event, attendees, registrations, teams, onBack, load
     }
   };
 
+  const handleDeleteRegistration = async (registration) => {
+    if (!confirm(`Are you sure you want to delete registration for ${registration.userId?.name || 'this user'}? This will also remove their attendance and badges for this event.`)) return;
+
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/admin/registrations/${registration._id}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        alert("Registration deleted successfully");
+        fetchAttendees(event._id); // Refresh data
+      } else {
+        alert(data.error || "Failed to delete registration");
+      }
+    } catch (error) {
+      console.error("Error deleting registration:", error);
+      alert("Error deleting registration");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredRegistrations = (registrations || []).filter(
     (r) =>
       r.userId?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       r.userId?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       r.teamCode?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
+
+  // Group registrations by team code for better visualization
+  const groupedRegistrations = filteredRegistrations.reduce((acc, reg) => {
+    const code = reg.teamCode || "SOLO";
+    if (!acc[code]) acc[code] = [];
+    acc[code].push(reg);
+    return acc;
+  }, {});
 
   return (
     <div className="space-y-6">
@@ -831,7 +864,7 @@ function AttendanceViewer({ event, attendees, registrations, teams, onBack, load
           <div className="p-3 rounded-lg bg-white/[0.03] border border-white/[0.06]">
             <p className="text-white/30 text-xs mb-1">Scanned</p>
             <p className="text-2xl font-semibold text-white">
-              {attendees?.length || 0}
+              {attendeesCount}
             </p>
           </div>
           <div className="p-3 rounded-lg bg-white/[0.03] border border-white/[0.06]">
@@ -906,127 +939,151 @@ function AttendanceViewer({ event, attendees, registrations, teams, onBack, load
                 </tr>
               </thead>
               <tbody>
-                {filteredRegistrations.map((record) => (
-                  <tr
-                    key={record._id}
-                    className={`border-b border-white/[0.04] hover:bg-white/[0.02] transition-all ${!record.hasAttended ? 'opacity-50' : ''}`}
-                  >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2.5">
-                        {record.userId?.image && (
-                          <img
-                            src={record.userId.image}
-                            alt={record.userId.name}
-                            className="w-7 h-7 rounded-full"
-                          />
-                        )}
-                        <span className="text-sm font-medium text-white/80">
-                          {record.userId?.name || "Unknown"}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-white/30 text-xs">
-                      {record.userId?.email || "-"}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="px-2 py-0.5 bg-white/[0.04] text-white/40 rounded text-xs font-mono">
-                        {record.teamCode}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      {record.hasAttended ? (
-                        <div className="flex flex-col items-center gap-1">
-                          <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-medium border border-emerald-500/20">
-                            YES
-                          </span>
-                          {record.participationBadge && (
-                            <img src={record.participationBadge} alt="P" className="w-5 h-5 rounded-full object-cover border border-white/[0.08]" />
-                          )}
+                {Object.entries(groupedRegistrations).map(([teamCode, members]) => (
+                  <Fragment key={teamCode}>
+                    {/* Team Header Row */}
+                    <tr className="bg-white/[0.04] border-b border-white/[0.06]">
+                      <td colSpan="9" className="px-4 py-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">Team:</span>
+                          <span className="text-sm font-mono text-white/90 font-bold">{teamCode}</span>
+                          <span className="text-[10px] text-white/30 ml-2">({members.length} members)</span>
                         </div>
-                      ) : (
-                        <span className="text-white/20 text-xs">NO</span>
-                      )}
-                    </td>
-
-                    <td className="px-4 py-3">
-                      {record.milestoneBadge ? (
-                        <span className="px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400 text-[10px] font-medium border border-violet-500/20">
-                          {record.milestoneBadge}
-                        </span>
-                      ) : (
-                        <span className="text-white/20 text-xs">-</span>
-                      )}
-                    </td>
-
-                    <td className="px-4 py-3 text-center">
-                      {(record.prizeName || record.prizeBadge) ? (
-                        <div className="flex flex-col items-center gap-1">
-                          {record.prizeBadge && (
-                            <div className="relative group">
-                              <img src={record.prizeBadge} alt="Prize" className="w-7 h-7 rounded-full border border-amber-500/30 object-cover" />
-                              <button
-                                onClick={() => handleRemovePrize(record, record.prizeName?.includes("1st") ? 1 : record.prizeName?.includes("2nd") ? 2 : 3)}
-                                className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-3.5 h-3.5 flex items-center justify-center text-[8px] hover:bg-red-400 transition-colors opacity-0 group-hover:opacity-100"
-                              >
-                                ✕
-                              </button>
+                      </td>
+                    </tr>
+                    
+                    {/* Team Members */}
+                    {members.map((record) => (
+                      <tr
+                        key={record._id}
+                        className={`border-b border-white/[0.04] hover:bg-white/[0.02] transition-all ${!record.hasAttended ? 'opacity-50' : ''}`}
+                      >
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2.5">
+                            {record.userId?.image && (
+                              <img
+                                src={record.userId.image}
+                                alt={record.userId.name}
+                                className="w-7 h-7 rounded-full"
+                              />
+                            )}
+                            <span className="text-sm font-medium text-white/80">
+                              {record.userId?.name || "Unknown"}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-white/30 text-xs">
+                          {record.userId?.email || "-"}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-0.5 rounded text-xs font-mono ${record.isTeamLeader ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' : 'bg-white/[0.04] text-white/40'}`}>
+                            {record.teamCode}
+                            {record.isTeamLeader && " (L)"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          {record.hasAttended ? (
+                            <div className="flex flex-col items-center gap-1">
+                              <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-medium border border-emerald-500/20">
+                                YES
+                              </span>
+                              {record.participationBadge && (
+                                <img src={record.participationBadge} alt="P" className="w-5 h-5 rounded-full object-cover border border-white/[0.08]" />
+                              )}
                             </div>
+                          ) : (
+                            <span className="text-white/20 text-xs">NO</span>
                           )}
-                          <span className="text-[9px] font-medium text-amber-400/70 uppercase tracking-tight truncate max-w-[60px]">
-                            {record.prizeName?.split(":")[0] || "Prize"}
+                        </td>
+
+                        <td className="px-4 py-3">
+                          {record.milestoneBadge ? (
+                            <span className="px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400 text-[10px] font-medium border border-violet-500/20">
+                              {record.milestoneBadge}
+                            </span>
+                          ) : (
+                            <span className="text-white/20 text-xs">-</span>
+                          )}
+                        </td>
+
+                        <td className="px-4 py-3 text-center">
+                          {(record.prizeName || record.prizeBadge) ? (
+                            <div className="flex flex-col items-center gap-1">
+                              {record.prizeBadge && (
+                                <div className="relative group">
+                                  <img src={record.prizeBadge} alt="Prize" className="w-7 h-7 rounded-full border border-amber-500/30 object-cover" />
+                                  <button
+                                    onClick={() => handleRemovePrize(record, record.prizeName?.includes("1st") ? 1 : record.prizeName?.includes("2nd") ? 2 : 3)}
+                                    className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-3.5 h-3.5 flex items-center justify-center text-[8px] hover:bg-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              )}
+                              <span className="text-[9px] font-medium text-amber-400/70 uppercase tracking-tight truncate max-w-[60px]">
+                                {record.prizeName?.split(":")[0] || "Prize"}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-white/20 text-xs">-</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-white/30 text-xs">
+                          {record.scannedAt ? new Date(record.scannedAt).toLocaleString() : "—"}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400/70 text-xs font-medium">
+                            +{record.pointsEarned || 0}
                           </span>
-                        </div>
-                      ) : (
-                        <span className="text-white/20 text-xs">-</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-white/30 text-xs">
-                      {record.scannedAt ? new Date(record.scannedAt).toLocaleString() : "—"}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400/70 text-xs font-medium">
-                        +{record.pointsEarned || 0}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-1">
-                        <button
-                          onClick={() => handleAwardPrize(record, 1, "individual")}
-                          disabled={awardingPrize}
-                          className="px-2 py-1 rounded-md bg-amber-500/[0.08] text-amber-400/60 text-[10px] font-medium border border-amber-500/10 hover:bg-amber-500/[0.15] hover:text-amber-400 transition-all"
-                          title="Award 1st Prize"
-                        >
-                          1st
-                        </button>
-                        <button
-                          onClick={() => handleAwardPrize(record, 2, "individual")}
-                          disabled={awardingPrize}
-                          className="px-2 py-1 rounded-md bg-white/[0.04] text-white/30 text-[10px] font-medium border border-white/[0.06] hover:bg-white/[0.08] hover:text-white/50 transition-all"
-                          title="Award 2nd Prize"
-                        >
-                          2nd
-                        </button>
-                        <button
-                          onClick={() => handleAwardPrize(record, 3, "individual")}
-                          disabled={awardingPrize}
-                          className="px-2 py-1 rounded-md bg-orange-500/[0.08] text-orange-400/60 text-[10px] font-medium border border-orange-500/10 hover:bg-orange-500/[0.15] hover:text-orange-400 transition-all"
-                          title="Award 3rd Prize"
-                        >
-                          3rd
-                        </button>
-                        {record.teamCode !== "SOLO" && (
-                          <button
-                            onClick={() => handleAwardPrize(record, 1, "team")}
-                            disabled={awardingPrize}
-                            className="ml-1 px-2 py-1 rounded-md bg-violet-500/[0.08] text-violet-400/60 text-[10px] font-medium border border-violet-500/10 hover:bg-violet-500/[0.15] hover:text-violet-400 transition-all"
-                            title="Award 1st Prize to Team"
-                          >
-                            Team 1st
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => handleAwardPrize(record, 1, "individual")}
+                              disabled={awardingPrize}
+                              className="px-2 py-1 rounded-md bg-amber-500/[0.08] text-amber-400/60 text-[10px] font-medium border border-amber-500/10 hover:bg-amber-500/[0.15] hover:text-amber-400 transition-all"
+                              title="Award 1st Prize"
+                            >
+                              1st
+                            </button>
+                            <button
+                              onClick={() => handleAwardPrize(record, 2, "individual")}
+                              disabled={awardingPrize}
+                              className="px-2 py-1 rounded-md bg-white/[0.04] text-white/30 text-[10px] font-medium border border-white/[0.06] hover:bg-white/[0.08] hover:text-white/50 transition-all"
+                              title="Award 2nd Prize"
+                            >
+                              2nd
+                            </button>
+                            <button
+                              onClick={() => handleAwardPrize(record, 3, "individual")}
+                              disabled={awardingPrize}
+                              className="px-2 py-1 rounded-md bg-orange-500/[0.08] text-orange-400/60 text-[10px] font-medium border border-orange-500/10 hover:bg-orange-500/[0.15] hover:text-orange-400 transition-all"
+                              title="Award 3rd Prize"
+                            >
+                              3rd
+                            </button>
+                            {record.teamCode !== "SOLO" && (
+                              <button
+                                onClick={() => handleAwardPrize(record, 1, "team")}
+                                disabled={awardingPrize}
+                                className="ml-1 px-2 py-1 rounded-md bg-violet-500/[0.08] text-violet-400/60 text-[10px] font-medium border border-violet-500/10 hover:bg-violet-500/[0.15] hover:text-violet-400 transition-all"
+                                title="Award 1st Prize to Team"
+                              >
+                                Team 1st
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleDeleteRegistration(record)}
+                              className="ml-auto p-1 rounded-md bg-red-500/[0.08] text-red-400/60 hover:bg-red-500/[0.15] hover:text-red-400 transition-all"
+                              title="Delete Registration"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </Fragment>
                 ))}
               </tbody>
             </table>
