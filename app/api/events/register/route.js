@@ -153,3 +153,84 @@ export async function POST(request) {
     );
   }
 }
+
+export async function PATCH(request) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { registrationId, name, phone, teamCode, generateTeamCode } = await request.json();
+
+    if (!registrationId || !name || !phone) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    await dbConnect();
+
+    // Find registration and verify ownership
+    const registration = await Registration.findOne({
+      _id: registrationId,
+      userId: session.user.id
+    });
+
+    if (!registration) {
+      return NextResponse.json({ error: "Registration not found" }, { status: 404 });
+    }
+
+    // Check if event is over
+    const event = await Event.findById(registration.eventId);
+    if (event && event.isOver) {
+      return NextResponse.json({ error: "Cannot edit registration for a past event" }, { status: 400 });
+    }
+
+    // Update fields
+    registration.name = name;
+    registration.phone = phone;
+
+    // Handle teamCode change or generation
+    if (generateTeamCode) {
+      // Generate random 6-character alphanumeric string
+      registration.teamCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+      registration.isTeamLeader = true;
+    } else if (teamCode && teamCode !== registration.teamCode) {
+      // Check if the new team code exists for this event
+      const teamExists = await Registration.findOne({
+        eventId: registration.eventId,
+        teamCode: teamCode
+      });
+
+      if (!teamExists) {
+        return NextResponse.json({ error: "Invalid team code" }, { status: 400 });
+      }
+
+      // Check if team is full
+      const teamMembersCount = await Registration.countDocuments({
+        eventId: registration.eventId,
+        teamCode: teamCode
+      });
+
+      if (teamMembersCount >= event.maxMembers) {
+        return NextResponse.json({ error: "Team is full" }, { status: 400 });
+      }
+
+      registration.teamCode = teamCode.toUpperCase();
+      registration.isTeamLeader = false; // Joining an existing team
+    }
+
+    await registration.save();
+
+    return NextResponse.json(
+      { message: "Registration updated successfully", registration },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Update registration error:", error);
+    return NextResponse.json(
+      { error: error.message || "Failed to update registration" },
+      { status: 500 }
+    );
+  }
+}

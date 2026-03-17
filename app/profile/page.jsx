@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import BackButton from "@/components/BackButton/BackButton";
 import QRModal from "@/components/QRModal";
 import RegisterModal from "@/components/RegisterModal";
+import EditRegistrationModal from "@/components/EditRegistrationModal";
 import ConfirmKickModal from "@/components/ConfirmKickModal";
 
 const STATIC_EVENTS = [
@@ -51,6 +52,10 @@ export default function Page() {
   // Kick modal state
   const [kickModalOpen, setKickModalOpen] = useState(false);
   const [kickTarget, setKickTarget] = useState(null);
+
+  // Edit registration modal state
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingRegistration, setEditingRegistration] = useState(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -209,6 +214,17 @@ export default function Page() {
     } finally {
       setKickTarget(null);
     }
+  };
+
+  const handleEditClick = (reg) => {
+    setEditingRegistration(reg);
+    setEditModalOpen(true);
+  };
+
+  const handleEditSuccess = () => {
+    setEditModalOpen(false);
+    setEditingRegistration(null);
+    fetchUserRegistrations();
   };
 
   if (status === "loading") {
@@ -503,7 +519,7 @@ export default function Page() {
                   userRegistrations.map((reg) => (
                     <div
                       key={reg._id}
-                      className="bg-black/50 m-3 p-4 hover:bg-white/20 transition border-l-4 border-cyan-500"
+                      className="bg-black/50 m-3 p-4 hover:bg-white/5 transition border-l-4 border-cyan-500 relative"
                     >
                       <div className="flex flex-col gap-2">
                         <div className="flex justify-between items-start">
@@ -516,6 +532,15 @@ export default function Page() {
                             </p>
                           </div>
                           <div className="flex gap-2 items-center flex-wrap justify-end">
+                            <button
+                              onClick={() => handleEditClick(reg)}
+                              className="bg-cyan-600/20 text-cyan-300 text-xs border border-cyan-500/50 px-2 py-1 rounded hover:bg-cyan-600/40 transition flex items-center gap-1"
+                            >
+                              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                              </svg>
+                              Edit
+                            </button>
                             {reg.isTeamLeader && (
                               <span className="bg-yellow-500/20 text-yellow-300 text-xs border border-yellow-500/50 px-2 py-1 rounded">
                                 Team Leader
@@ -629,6 +654,17 @@ export default function Page() {
         }}
         onConfirm={executeKick}
         memberName={kickTarget?.memberName || "this member"}
+      />
+
+      {/* Edit Registration Modal */}
+      <EditRegistrationModal
+        isOpen={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setEditingRegistration(null);
+        }}
+        registration={editingRegistration}
+        onUpdateSuccess={handleEditSuccess}
       />
     </div>
   );
