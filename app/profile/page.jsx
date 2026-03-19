@@ -62,21 +62,38 @@ export default function Page() {
       router.push("/login");
     } else if (session?.user?.name) {
       setSelectedUser(session.user.name);
-      // Fetch user badges
-      fetchUserData();
-      // Fetch events
-      fetchEvents();
-      // Fetch registrations
-      fetchUserRegistrations();
+      // Run all three fetches in parallel instead of sequentially
+      fetchAllData();
     }
   }, [status, session, router]);
 
+  const fetchAllData = async () => {
+    try {
+      setLoadingEvents(true);
+      const startTime = performance.now();
+      
+      // Parallelize all three API calls for faster loading
+      const results = await Promise.all([
+        fetchUserData(),
+        fetchEvents(),
+        fetchUserRegistrations(),
+      ]);
+      
+      const totalTime = (performance.now() - startTime).toFixed(0);
+      console.log(`✅ All data loaded in ${totalTime}ms`);
+    } finally {
+      setLoadingEvents(false);
+    }
+  };
+
   const fetchUserData = async () => {
+    const t = performance.now();
     try {
       const response = await fetch("/api/user/badges");
       if (response.ok) {
         const data = await response.json();
         setUserBadges(data.badges || []);
+        console.log(`⏱ Badges: ${(performance.now() - t).toFixed(0)}ms`);
       }
     } catch (error) {
       console.error("Error fetching badges:", error);
@@ -84,11 +101,13 @@ export default function Page() {
   };
 
   const fetchUserRegistrations = async () => {
+    const t = performance.now();
     try {
       const response = await fetch("/api/user/registrations");
       if (response.ok) {
         const data = await response.json();
         setUserRegistrations(data.data || []);
+        console.log(`⏱ Registrations: ${(performance.now() - t).toFixed(0)}ms`);
       }
     } catch (error) {
       console.error("Error fetching registrations:", error);
@@ -96,50 +115,55 @@ export default function Page() {
   };
 
   const fetchEvents = async () => {
+    const t = performance.now();
     try {
-      setLoadingEvents(true);
-        const response = await fetch("/api/events");
-        if (response.ok) {
-          const data = await response.json();
-          const dbEvents = data.data || [];
+      // Request only upcoming events from the API (filter at server-side)
+      const response = await fetch("/api/events?upcoming=true");
+      if (response.ok) {
+        const data = await response.json();
+        const dbEvents = data.data || [];
 
-          // Identify and mark static events, merge them with DB events
-          const processedDbEvents = dbEvents.map(dbEvent => {
-            const dbId = dbEvent._id?.toString();
-            const staticMatch = STATIC_EVENTS.find(s => 
-              s._id.toString() === dbId || s.eventName === dbEvent.eventName
-            );
-            if (staticMatch) {
-              // Ensure static properties (like isStatic, unstopUrl) are preserved/added
-              return { ...dbEvent, ...staticMatch };
-            }
-            return dbEvent;
-          });
+        // Create a Map for O(1) lookup of static events by id or name
+        const staticEventMap = new Map(
+          STATIC_EVENTS.map(s => [s._id.toString(), s])
+        );
+        const staticByName = new Map(
+          STATIC_EVENTS.map(s => [s.eventName, s])
+        );
 
-          // Add static events that aren't in the DB yet
-          const missingStaticEvents = STATIC_EVENTS.filter(staticEvent => {
-            const staticId = staticEvent._id.toString();
-            return !dbEvents.some(dbEvent => 
-              (dbEvent._id?.toString() === staticId) || (dbEvent.eventName === staticEvent.eventName)
-            );
-          });
+        // Efficiently merge DB events with static event properties
+        const processedDbEvents = dbEvents.map(dbEvent => {
+          const staticEvent = 
+            staticEventMap.get(dbEvent._id?.toString()) ||
+            staticByName.get(dbEvent.eventName);
+          
+          return staticEvent 
+            ? { ...dbEvent, ...staticEvent }
+            : dbEvent;
+        });
 
-          const mergedEvents = [...processedDbEvents, ...missingStaticEvents];
+        // Add only the static events that aren't in DB
+        const dbEventIds = new Set(dbEvents.map(e => e._id?.toString()));
+        const dbEventNames = new Set(dbEvents.map(e => e.eventName));
+        
+        const missingStaticEvents = STATIC_EVENTS.filter(staticEvent => 
+          !dbEventIds.has(staticEvent._id.toString()) &&
+          !dbEventNames.has(staticEvent.eventName)
+        );
 
-          // Split events into upcoming and past based on current date
-          const now = new Date();
-          const upcoming = mergedEvents.filter(
-            (event) => !event.isOver,
-          );
-          const past = mergedEvents.filter((event) => event.isOver);
+        const mergedEvents = [...processedDbEvents, ...missingStaticEvents];
+        
+        // Filter into upcoming and past
+        const now = new Date();
+        const upcoming = mergedEvents.filter(e => !e.isOver);
+        const past = mergedEvents.filter(e => e.isOver);
 
-          setUpcomingEvents(upcoming);
-          setPastEvents(past);
-        }
+        setUpcomingEvents(upcoming);
+        setPastEvents(past);
+        console.log(`⏱ Events: ${(performance.now() - t).toFixed(0)}ms`);
+      }
     } catch (error) {
       console.error("Error fetching events:", error);
-    } finally {
-      setLoadingEvents(false);
     }
   };
 

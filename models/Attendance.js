@@ -52,6 +52,7 @@ const AttendanceSchema = new mongoose.Schema(
 
 AttendanceSchema.index({ userId: 1, eventId: 1 }, { unique: true });
 AttendanceSchema.index({ userId: 1, eventKey: 1 }, { unique: true });
+AttendanceSchema.index({ userId: 1 });          // For fetching user's attendances
 
 if (mongoose.models.Attendance) {
   delete mongoose.models.Attendance;

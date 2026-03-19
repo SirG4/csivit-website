@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
+import mongoose from "mongoose";
 import dbConnect from "@/lib/db";
 import Registration from "@/models/Registration";
 import Event from "@/models/Event";
@@ -16,42 +17,75 @@ export async function GET(request) {
     }
 
     await dbConnect();
+    const userId = session.user.id;
 
-    // Fetch user's registrations populated with event details
-    const registrations = await Registration.find({ userId: session.user.id })
-      .populate("eventId")
-      .lean();
+    // Simple, fast query: get registrations with populated event
+    const registrations = await Registration.find({ userId })
+      .populate("eventId", "_id eventName eventDate description poster badgeIcon winnerBadge1 winnerBadge2 winnerBadge3 isRegistrationLive isOver minMembers maxMembers")
+      .select("_id userId eventId name phone teamCode isTeamLeader")
+      .lean()
+      .maxTimeMS(5000); // 5 second timeout
 
-    // Filter out registrations where eventId is null (orphaned registrations if event was deleted)
-    const validRegistrations = registrations.filter(reg => reg.eventId);
+    if (!registrations.length) {
+      const response = NextResponse.json(
+        { data: [] },
+        { status: 200 }
+      );
+      response.headers.set("Cache-Control", "private, max-age=300");
+      return response;
+    }
 
-    // For each registration, fetch team members
-    const registrationsWithTeam = await Promise.all(
-      validRegistrations.map(async (reg) => {
-        const teamMembers = await Registration.find({
-          eventId: reg.eventId._id,
-          teamCode: reg.teamCode,
-        })
-          .populate("userId", "name email image")
-          .lean();
-
-        return { ...reg, teamMembers };
+    // Parallel fetch for team members and attendance data
+    const [teamMembersData, attendanceData] = await Promise.all([
+      // Get all team members for these registrations
+      Registration.find({
+        eventId: { $in: registrations.map(r => r.eventId._id) },
+        teamCode: { $in: registrations.map(r => r.teamCode) }
       })
-    );
+        .populate("userId", "name email image")
+        .select("userId eventId teamCode")
+        .lean()
+        .maxTimeMS(4000),
 
-    // Fetch user's attendances to see if they've attended these events
-    const attendances = await Attendance.find({ userId: session.user.id }).lean();
-    const attendedEventIds = new Set(attendances.map(a => a.eventId.toString()));
+      // Get attendance records
+      Attendance.find({ userId })
+        .select("eventId")
+        .lean()
+        .maxTimeMS(4000)
+    ]);
 
-    const registrationsWithAttendance = registrationsWithTeam.map(reg => ({
-      ...reg,
-      hasAttended: attendedEventIds.has(reg.eventId._id.toString())
-    }));
+    // Create lookup maps for fast O(1) access
+    const attendanceMap = new Set(attendanceData.map(a => a.eventId.toString()));
+    const teamMemberMap = new Map();
+    teamMembersData.forEach(member => {
+      const key = `${member.eventId}-${member.teamCode}`;
+      if (!teamMemberMap.has(key)) {
+        teamMemberMap.set(key, []);
+      }
+      teamMemberMap.get(key).push(member.userId);
+    });
 
-    return NextResponse.json(
-      { data: registrationsWithAttendance },
+    // Enrich registrations with team members and attendance
+    const enrichedRegistrations = registrations.map(reg => {
+      const key = `${reg.eventId._id}-${reg.teamCode}`;
+      const teamMembers = teamMemberMap.get(key) || [];
+      const hasAttended = attendanceMap.has(reg.eventId._id.toString());
+
+      return {
+        ...reg,
+        teamMembers,
+        hasAttended
+      };
+    });
+
+    const response = NextResponse.json(
+      { data: enrichedRegistrations },
       { status: 200 }
     );
+
+    // Cache registrations for 5 minutes (user-specific data, medium TTL)
+    response.headers.set("Cache-Control", "private, max-age=300");
+    return response;
   } catch (error) {
     console.error("Error fetching registrations:", error);
     return NextResponse.json(
