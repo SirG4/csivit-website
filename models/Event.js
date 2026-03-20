@@ -78,9 +78,10 @@ const EventSchema = new mongoose.Schema(
 
 // Add indexes for faster queries
 EventSchema.index({ isHidden: 1, eventDate: 1 }); // Most common query pattern
-EventSchema.index({ isOver: 1, eventDate: 1 });   // For filtering past/upcoming events
-EventSchema.index({ eventName: 1 });              // For event lookups by name
-EventSchema.index({ isHidden: 1 });               // Filter non-hidden events
+EventSchema.index({ isOver: 1, eventDate: 1 }); // For filtering past/upcoming events
+EventSchema.index({ isHidden: 1, isOver: 1, eventDate: 1 }); // Exact match for profile upcoming-events query
+EventSchema.index({ eventName: 1 }); // For event lookups by name
+EventSchema.index({ isHidden: 1 }); // Filter non-hidden events
 
 EventSchema.pre("save", async function () {
   if (!this.eventKey) {

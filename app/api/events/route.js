@@ -21,7 +21,9 @@ export async function GET(request) {
     // Fetch events with selected fields only, sorted by event date
     // Only select fields needed for profile display
     const events = await Event.find(filter)
-      .select("_id eventName eventDate description poster badgeIcon winnerBadge1 winnerBadge2 winnerBadge3 isRegistrationLive isOver minMembers maxMembers eventKey")
+      .select(
+        "_id eventName eventDate description poster badgeIcon winnerBadge1 winnerBadge2 winnerBadge3 isRegistrationLive isOver minMembers maxMembers eventKey",
+      )
       .sort({ eventDate: 1 })
       .limit(limit)
       .skip(skip)
@@ -38,7 +40,10 @@ export async function GET(request) {
     );
 
     // Set cache headers for better performance
-    response.headers.set("Cache-Control", "public, s-maxage=300, stale-while-revalidate=600");
+    response.headers.set(
+      "Cache-Control",
+      "public, s-maxage=300, stale-while-revalidate=600",
+    );
     return response;
   } catch (error) {
     console.error("Error fetching events:", error.message);

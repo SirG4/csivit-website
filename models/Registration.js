@@ -34,14 +34,14 @@ const RegistrationSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 RegistrationSchema.index({ userId: 1, eventId: 1 }, { unique: true });
-RegistrationSchema.index({ userId: 1 });         // For fetching user's registrations
-RegistrationSchema.index({ eventId: 1 });        // For fetching event registrations
+RegistrationSchema.index({ userId: 1 }); // For fetching user's registrations
+RegistrationSchema.index({ eventId: 1 }); // For fetching event registrations
 RegistrationSchema.index({ eventId: 1, teamCode: 1 }); // For fetching team members
-RegistrationSchema.index({ teamCode: 1 });      // For team lookups
+RegistrationSchema.index({ teamCode: 1 }); // For team lookups
 
 if (mongoose.models.Registration) {
   delete mongoose.models.Registration;

@@ -9,10 +9,7 @@ export async function GET(request) {
     const session = await getServerSession(authOptions);
 
     if (!session?.user?.email) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     await dbConnect();
@@ -24,15 +21,12 @@ export async function GET(request) {
       .maxTimeMS(2000); // 2 second timeout
 
     if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const response = NextResponse.json(
       { badges: user.badges || [] },
-      { status: 200 }
+      { status: 200 },
     );
 
     // Cache badges for 10 minutes (user-specific, shorter TTL for personalization)
@@ -42,7 +36,7 @@ export async function GET(request) {
     console.error("Error fetching badges:", error.message);
     return NextResponse.json(
       { error: error.message || "Failed to fetch badges" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

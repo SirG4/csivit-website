@@ -16,7 +16,8 @@ const STATIC_EVENTS = [
     _id: "6b2f1a2b3c4d5e6f7a8b9c01",
     eventName: "Design Paradox",
     eventDate: "2026-03-20T16:00:00.000+00:00",
-    description: "UI and Product Design challenge where teams craft a landing page concept for a fictional energy drink launched by an unexpected legacy brand.",
+    description:
+      "UI and Product Design challenge where teams craft a landing page concept for a fictional energy drink launched by an unexpected legacy brand.",
     poster: "/Profile/parapost.png", // Using default poster
     badgeIcon: "/Profile/parap.png", // participation badge
     winnerBadge1: "/Profile/para1.png",
@@ -27,7 +28,8 @@ const STATIC_EVENTS = [
     minMembers: 1,
     maxMembers: 1,
     isStatic: true,
-    unstopUrl: "https://unstop.com/p/design-paradox-ui-product-design-challenge-vidyalankar-institute-of-technology-vit-mumbai-1657879"
+    unstopUrl:
+      "https://unstop.com/p/design-paradox-ui-product-design-challenge-vidyalankar-institute-of-technology-vit-mumbai-1657879",
   },
 ];
 
@@ -42,6 +44,7 @@ export default function Page() {
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [pastEvents, setPastEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
+  const [loadingRegistrations, setLoadingRegistrations] = useState(true);
 
   // Registration related states
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
@@ -62,29 +65,13 @@ export default function Page() {
       router.push("/login");
     } else if (session?.user?.name) {
       setSelectedUser(session.user.name);
-      // Run all three fetches in parallel instead of sequentially
-      fetchAllData();
+      // Fire all requests in parallel, but keep loading states independent.
+      // This lets events render even if registrations are slower.
+      fetchUserData();
+      fetchEvents();
+      fetchUserRegistrations();
     }
   }, [status, session, router]);
-
-  const fetchAllData = async () => {
-    try {
-      setLoadingEvents(true);
-      const startTime = performance.now();
-      
-      // Parallelize all three API calls for faster loading
-      const results = await Promise.all([
-        fetchUserData(),
-        fetchEvents(),
-        fetchUserRegistrations(),
-      ]);
-      
-      const totalTime = (performance.now() - startTime).toFixed(0);
-      console.log(`✅ All data loaded in ${totalTime}ms`);
-    } finally {
-      setLoadingEvents(false);
-    }
-  };
 
   const fetchUserData = async () => {
     const t = performance.now();
@@ -103,6 +90,7 @@ export default function Page() {
   const fetchUserRegistrations = async () => {
     const t = performance.now();
     try {
+      setLoadingRegistrations(true);
       const response = await fetch("/api/user/registrations");
       if (response.ok) {
         const data = await response.json();
@@ -111,52 +99,56 @@ export default function Page() {
       }
     } catch (error) {
       console.error("Error fetching registrations:", error);
+    } finally {
+      setLoadingRegistrations(false);
     }
   };
 
   const fetchEvents = async () => {
     const t = performance.now();
     try {
+      setLoadingEvents(true);
       // Request only upcoming events from the API (filter at server-side)
-      const response = await fetch("/api/events?upcoming=true");
+      const response = await fetch("/api/events?upcoming=true", {
+        cache: "force-cache",
+      });
       if (response.ok) {
         const data = await response.json();
         const dbEvents = data.data || [];
 
         // Create a Map for O(1) lookup of static events by id or name
         const staticEventMap = new Map(
-          STATIC_EVENTS.map(s => [s._id.toString(), s])
+          STATIC_EVENTS.map((s) => [s._id.toString(), s]),
         );
         const staticByName = new Map(
-          STATIC_EVENTS.map(s => [s.eventName, s])
+          STATIC_EVENTS.map((s) => [s.eventName, s]),
         );
 
         // Efficiently merge DB events with static event properties
-        const processedDbEvents = dbEvents.map(dbEvent => {
-          const staticEvent = 
+        const processedDbEvents = dbEvents.map((dbEvent) => {
+          const staticEvent =
             staticEventMap.get(dbEvent._id?.toString()) ||
             staticByName.get(dbEvent.eventName);
-          
-          return staticEvent 
-            ? { ...dbEvent, ...staticEvent }
-            : dbEvent;
+
+          return staticEvent ? { ...dbEvent, ...staticEvent } : dbEvent;
         });
 
         // Add only the static events that aren't in DB
-        const dbEventIds = new Set(dbEvents.map(e => e._id?.toString()));
-        const dbEventNames = new Set(dbEvents.map(e => e.eventName));
-        
-        const missingStaticEvents = STATIC_EVENTS.filter(staticEvent => 
-          !dbEventIds.has(staticEvent._id.toString()) &&
-          !dbEventNames.has(staticEvent.eventName)
+        const dbEventIds = new Set(dbEvents.map((e) => e._id?.toString()));
+        const dbEventNames = new Set(dbEvents.map((e) => e.eventName));
+
+        const missingStaticEvents = STATIC_EVENTS.filter(
+          (staticEvent) =>
+            !dbEventIds.has(staticEvent._id.toString()) &&
+            !dbEventNames.has(staticEvent.eventName),
         );
 
         const mergedEvents = [...processedDbEvents, ...missingStaticEvents];
-        
+
         // Filter into upcoming and past
         const now = new Date();
-        const upcoming = mergedEvents.filter(e => !e.isOver);
-        const past = mergedEvents.filter(e => e.isOver);
+        const upcoming = mergedEvents.filter((e) => !e.isOver);
+        const past = mergedEvents.filter((e) => e.isOver);
 
         setUpcomingEvents(upcoming);
         setPastEvents(past);
@@ -164,6 +156,8 @@ export default function Page() {
       }
     } catch (error) {
       console.error("Error fetching events:", error);
+    } finally {
+      setLoadingEvents(false);
     }
   };
 
@@ -193,7 +187,7 @@ export default function Page() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           eventId: event._id,
-          simplified: true
+          simplified: true,
         }),
       });
 
@@ -225,7 +219,9 @@ export default function Page() {
       const response = await fetch("/api/events/team/kick", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ targetRegistrationId: kickTarget.registrationId }),
+        body: JSON.stringify({
+          targetRegistrationId: kickTarget.registrationId,
+        }),
       });
       if (response.ok) {
         fetchUserRegistrations();
@@ -411,7 +407,9 @@ export default function Page() {
                           )}
                           {(() => {
                             const reg = userRegistrations.find((r) => {
-                              const regEventId = r.eventId?._id?.toString() || r.eventId?.toString();
+                              const regEventId =
+                                r.eventId?._id?.toString() ||
+                                r.eventId?.toString();
                               return regEventId === event._id?.toString();
                             });
                             if (reg) {
@@ -437,7 +435,9 @@ export default function Page() {
                               }
                               return (
                                 <button
-                                  onClick={() => handleQRClick(event.eventName, event._id)}
+                                  onClick={() =>
+                                    handleQRClick(event.eventName, event._id)
+                                  }
                                   className="bg-indigo-700 text-xs lg:text-sm mt-2 px-3 py-1.5 rounded hover:bg-indigo-600 transition"
                                 >
                                   QR for Entry
@@ -448,7 +448,9 @@ export default function Page() {
                               if (event.isStatic) {
                                 return (
                                   <button
-                                    onClick={() => handleSimplifiedRegister(event)}
+                                    onClick={() =>
+                                      handleSimplifiedRegister(event)
+                                    }
                                     className="bg-green-700 text-xs lg:text-sm mt-2 px-3 py-1.5 rounded hover:bg-green-600 transition"
                                   >
                                     Register
@@ -457,7 +459,12 @@ export default function Page() {
                               }
                               return (
                                 <button
-                                  onClick={() => handleRegisterClick(event.eventName, event._id)}
+                                  onClick={() =>
+                                    handleRegisterClick(
+                                      event.eventName,
+                                      event._id,
+                                    )
+                                  }
                                   className="bg-green-700 text-xs lg:text-sm mt-2 px-3 py-1.5 rounded hover:bg-green-600 transition"
                                 >
                                   Register
@@ -469,7 +476,9 @@ export default function Page() {
                                 disabled
                                 className="bg-gray-700/50 text-gray-400 text-xs lg:text-sm mt-2 px-3 py-1.5 rounded cursor-not-allowed border border-gray-600/30"
                               >
-                                {event.isOver ? "Event Over" : "Registration Closed"}
+                                {event.isOver
+                                  ? "Event Over"
+                                  : "Registration Closed"}
                               </button>
                             );
                           })()}
@@ -534,8 +543,14 @@ export default function Page() {
 
               {/* Registered Events */}
               <div className="mt-6">
-                <h3 className="font-medium bg-black/30 p-3">Registered Events & Teams</h3>
-                {userRegistrations.length === 0 ? (
+                <h3 className="font-medium bg-black/30 p-3">
+                  Registered Events & Teams
+                </h3>
+                {loadingRegistrations ? (
+                  <div className="text-center py-8 text-gray-400">
+                    Loading registrations...
+                  </div>
+                ) : userRegistrations.length === 0 ? (
                   <div className="text-center py-8 text-gray-400">
                     No registered events yet
                   </div>
@@ -552,7 +567,10 @@ export default function Page() {
                               {reg.eventId?.eventName || "Unknown Event"}
                             </h4>
                             <p className="text-sm font-mono mt-1 text-gray-300">
-                              TEAM CODE: <span className="text-yellow-400 select-all">{reg.teamCode}</span>
+                              TEAM CODE:{" "}
+                              <span className="text-yellow-400 select-all">
+                                {reg.teamCode}
+                              </span>
                             </p>
                           </div>
                           <div className="flex gap-2 items-center flex-wrap justify-end">
@@ -560,8 +578,18 @@ export default function Page() {
                               onClick={() => handleEditClick(reg)}
                               className="bg-cyan-600/20 text-cyan-300 text-xs border border-cyan-500/50 px-2 py-1 rounded hover:bg-cyan-600/40 transition flex items-center gap-1"
                             >
-                              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                              <svg
+                                className="w-3 h-3"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                />
                               </svg>
                               Edit
                             </button>
@@ -570,43 +598,62 @@ export default function Page() {
                                 Team Leader
                               </span>
                             )}
-                            {reg.teamMembers?.length < reg.eventId?.minMembers && (
+                            {reg.teamMembers?.length <
+                              reg.eventId?.minMembers && (
                               <span className="bg-orange-500/20 text-orange-300 text-xs border border-orange-500/50 px-2 py-1 rounded">
                                 Team Incomplete
                               </span>
                             )}
                           </div>
                         </div>
-                        
+
                         <div className="mt-2 bg-black/30 p-3 rounded">
-                          <h5 className="text-xs text-gray-400 mb-2 uppercase tracking-wider font-semibold">Team Members ({reg.teamMembers?.length || 0}/{reg.eventId?.maxMembers || "?"})</h5>
+                          <h5 className="text-xs text-gray-400 mb-2 uppercase tracking-wider font-semibold">
+                            Team Members ({reg.teamMembers?.length || 0}/
+                            {reg.eventId?.maxMembers || "?"})
+                          </h5>
                           <div className="space-y-2">
                             {reg.teamMembers?.map((memberReg) => (
-                              <div key={memberReg._id} className="flex justify-between items-center bg-gray-900/50 p-2 rounded">
+                              <div
+                                key={memberReg._id}
+                                className="flex justify-between items-center bg-gray-900/50 p-2 rounded"
+                              >
                                 <div className="flex items-center gap-2">
                                   <Image
-                                    src={memberReg.userId?.image || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect fill='%23667eea' width='64' height='64'/%3E%3Ctext x='50%25' y='50%25' font-size='24' fill='white' text-anchor='middle' dy='.3em'%3E%3F%3C/text%3E%3C/svg%3E"}
+                                    src={
+                                      memberReg.userId?.image ||
+                                      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect fill='%23667eea' width='64' height='64'/%3E%3Ctext x='50%25' y='50%25' font-size='24' fill='white' text-anchor='middle' dy='.3em'%3E%3F%3C/text%3E%3C/svg%3E"
+                                    }
                                     alt="member avatar"
                                     width={24}
                                     height={24}
                                     className="rounded-full"
                                     unoptimized
                                   />
-                                  <span className="text-sm">{memberReg.userId?.name} {memberReg.isTeamLeader && "👑"}</span>
+                                  <span className="text-sm">
+                                    {memberReg.userId?.name}{" "}
+                                    {memberReg.isTeamLeader && "👑"}
+                                  </span>
                                 </div>
-                                {reg.isTeamLeader && memberReg.userId?._id !== session?.user?.id && (
-                                  <button
-                                    onClick={() => handleKickClick(memberReg._id, memberReg.userId?.name)}
-                                    className="text-xs bg-red-900/50 hover:bg-red-800 text-red-300 px-2 py-1 rounded transition"
-                                  >
-                                    Kick
-                                  </button>
-                                )}
+                                {reg.isTeamLeader &&
+                                  memberReg.userId?._id !==
+                                    session?.user?.id && (
+                                    <button
+                                      onClick={() =>
+                                        handleKickClick(
+                                          memberReg._id,
+                                          memberReg.userId?.name,
+                                        )
+                                      }
+                                      className="text-xs bg-red-900/50 hover:bg-red-800 text-red-300 px-2 py-1 rounded transition"
+                                    >
+                                      Kick
+                                    </button>
+                                  )}
                               </div>
                             ))}
                           </div>
                         </div>
-
                       </div>
                     </div>
                   ))
@@ -630,18 +677,20 @@ export default function Page() {
                 </p>
               ) : (
                 <div className="flex gap-4 overflow-x-auto scrollbar-x pb-2 scroll-smooth snap-x">
-                  {userBadges.filter(b => b.badgeIcon).map((badge, index) => (
-                    <Image
-                      key={`${badge.eventKey}-${index}`}
-                      src={badge.badgeIcon}
-                      alt={badge.badgeName}
-                      width={64}
-                      height={64}
-                      unoptimized
-                      className="snap-start object-contain"
-                      title={badge.badgeName}
-                    />
-                  ))}
+                  {userBadges
+                    .filter((b) => b.badgeIcon)
+                    .map((badge, index) => (
+                      <Image
+                        key={`${badge.eventKey}-${index}`}
+                        src={badge.badgeIcon}
+                        alt={badge.badgeName}
+                        width={64}
+                        height={64}
+                        unoptimized
+                        className="snap-start object-contain"
+                        title={badge.badgeName}
+                      />
+                    ))}
                 </div>
               )}
             </div>
