@@ -10,6 +10,7 @@ import QRModal from "@/components/QRModal";
 import RegisterModal from "@/components/RegisterModal";
 import EditRegistrationModal from "@/components/EditRegistrationModal";
 import ConfirmKickModal from "@/components/ConfirmKickModal";
+import ConfirmCancelTeamModal from "@/components/ConfirmCancelTeamModal";
 
 const STATIC_EVENTS = [
   {
@@ -55,6 +56,10 @@ export default function Page() {
   // Kick modal state
   const [kickModalOpen, setKickModalOpen] = useState(false);
   const [kickTarget, setKickTarget] = useState(null);
+
+  // Cancel team modal state
+  const [cancelTeamModalOpen, setCancelTeamModalOpen] = useState(false);
+  const [cancelTeamTarget, setCancelTeamTarget] = useState(null);
 
   // Edit registration modal state
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -108,8 +113,8 @@ export default function Page() {
     const t = performance.now();
     try {
       setLoadingEvents(true);
-      // Request only upcoming events from the API (filter at server-side)
-      const response = await fetch("/api/events?upcoming=true");
+      // Fetch all events so both upcoming and past sections are accurate.
+      const response = await fetch("/api/events?light=true&limit=200");
       if (response.ok) {
         const data = await response.json();
         const dbEvents = data.data || [];
@@ -135,15 +140,19 @@ export default function Page() {
         const dbEventIds = new Set(dbEvents.map((e) => e._id?.toString()));
         const dbEventNames = new Set(dbEvents.map((e) => e.eventName));
 
-        const missingStaticEvents = STATIC_EVENTS.filter(
-          (staticEvent) =>
-            !dbEventIds.has(staticEvent._id.toString()) &&
-            !dbEventNames.has(staticEvent.eventName),
-        );
+        const missingStaticEvents =
+          dbEvents.length === 0
+            ? STATIC_EVENTS.filter(
+                (staticEvent) =>
+                  !dbEventIds.has(staticEvent._id.toString()) &&
+                  !dbEventNames.has(staticEvent.eventName),
+              )
+            : [];
 
         const mergedEvents = [...processedDbEvents, ...missingStaticEvents];
 
         // Filter into upcoming and past
+        const now = new Date();
         const upcoming = mergedEvents.filter((e) => !e.isOver);
         const past = mergedEvents.filter((e) => e.isOver);
 
@@ -151,15 +160,17 @@ export default function Page() {
         setPastEvents(past);
         console.log(`⏱ Events: ${(performance.now() - t).toFixed(0)}ms`);
       } else {
-        // Fallback to static events if API errors out
-        setUpcomingEvents(STATIC_EVENTS.filter((e) => !e.isOver));
-        setPastEvents(STATIC_EVENTS.filter((e) => e.isOver));
+        const fallbackUpcoming = STATIC_EVENTS.filter((e) => !e.isOver);
+        const fallbackPast = STATIC_EVENTS.filter((e) => e.isOver);
+        setUpcomingEvents(fallbackUpcoming);
+        setPastEvents(fallbackPast);
       }
     } catch (error) {
       console.error("Error fetching events:", error);
-      // Fallback to static events if request fails
-      setUpcomingEvents(STATIC_EVENTS.filter((e) => !e.isOver));
-      setPastEvents(STATIC_EVENTS.filter((e) => e.isOver));
+      const fallbackUpcoming = STATIC_EVENTS.filter((e) => !e.isOver);
+      const fallbackPast = STATIC_EVENTS.filter((e) => e.isOver);
+      setUpcomingEvents(fallbackUpcoming);
+      setPastEvents(fallbackPast);
     } finally {
       setLoadingEvents(false);
     }
@@ -243,6 +254,40 @@ export default function Page() {
   const handleEditClick = (reg) => {
     setEditingRegistration(reg);
     setEditModalOpen(true);
+  };
+
+  const handleCancelTeamClick = (reg) => {
+    setCancelTeamTarget({
+      registrationId: reg._id,
+      eventName: reg.eventId?.eventName || "this event",
+      teamCode: reg.teamCode,
+      memberCount: reg.teamMembers?.length || 1,
+    });
+    setCancelTeamModalOpen(true);
+  };
+
+  const executeCancelTeam = async () => {
+    if (!cancelTeamTarget?.registrationId) return;
+    try {
+      const response = await fetch("/api/events/team/cancel", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          leaderRegistrationId: cancelTeamTarget.registrationId,
+        }),
+      });
+
+      if (response.ok) {
+        fetchUserRegistrations();
+      } else {
+        const data = await response.json();
+        alert(data.error || "Failed to cancel team");
+      }
+    } catch (error) {
+      console.error("Error cancelling team:", error);
+    } finally {
+      setCancelTeamTarget(null);
+    }
   };
 
   const handleEditSuccess = () => {
@@ -598,6 +643,14 @@ export default function Page() {
                               Edit
                             </button>
                             {reg.isTeamLeader && (
+                              <button
+                                onClick={() => handleCancelTeamClick(reg)}
+                                className="bg-red-900/40 text-red-200 text-xs border border-red-500/50 px-2 py-1 rounded hover:bg-red-800/60 transition"
+                              >
+                                Cancel Team
+                              </button>
+                            )}
+                            {reg.isTeamLeader && (
                               <span className="bg-yellow-500/20 text-yellow-300 text-xs border border-yellow-500/50 px-2 py-1 rounded">
                                 Team Leader
                               </span>
@@ -742,6 +795,19 @@ export default function Page() {
         }}
         registration={editingRegistration}
         onUpdateSuccess={handleEditSuccess}
+      />
+
+      {/* Confirm Cancel Team Modal */}
+      <ConfirmCancelTeamModal
+        isOpen={cancelTeamModalOpen}
+        onClose={() => {
+          setCancelTeamModalOpen(false);
+          setCancelTeamTarget(null);
+        }}
+        onConfirm={executeCancelTeam}
+        eventName={cancelTeamTarget?.eventName || "this event"}
+        teamCode={cancelTeamTarget?.teamCode || "-"}
+        memberCount={cancelTeamTarget?.memberCount || 1}
       />
     </div>
   );
