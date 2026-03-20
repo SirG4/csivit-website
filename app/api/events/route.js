@@ -13,9 +13,9 @@ export async function GET(request) {
     const skip = parseInt(searchParams.get("skip") || "0", 10);
 
     // Build filter query
-    const filter = { isHidden: false };
+    const filter = { isHidden: { $ne: true } };
     if (upcoming) {
-      filter.isOver = false;
+      filter.isOver = { $ne: true };
     }
 
     // Fetch events with selected fields only, sorted by event date
@@ -28,7 +28,7 @@ export async function GET(request) {
       .limit(limit)
       .skip(skip)
       .lean()
-      .maxTimeMS(3000); // 3 second timeout for fast fail
+      .maxTimeMS(10000); // Give production queries enough headroom
 
     // Cache events for 5 minutes in CDN/browser (events don't change frequently)
     const response = NextResponse.json(

@@ -109,9 +109,7 @@ export default function Page() {
     try {
       setLoadingEvents(true);
       // Request only upcoming events from the API (filter at server-side)
-      const response = await fetch("/api/events?upcoming=true", {
-        cache: "force-cache",
-      });
+      const response = await fetch("/api/events?upcoming=true");
       if (response.ok) {
         const data = await response.json();
         const dbEvents = data.data || [];
@@ -146,16 +144,22 @@ export default function Page() {
         const mergedEvents = [...processedDbEvents, ...missingStaticEvents];
 
         // Filter into upcoming and past
-        const now = new Date();
         const upcoming = mergedEvents.filter((e) => !e.isOver);
         const past = mergedEvents.filter((e) => e.isOver);
 
         setUpcomingEvents(upcoming);
         setPastEvents(past);
         console.log(`⏱ Events: ${(performance.now() - t).toFixed(0)}ms`);
+      } else {
+        // Fallback to static events if API errors out
+        setUpcomingEvents(STATIC_EVENTS.filter((e) => !e.isOver));
+        setPastEvents(STATIC_EVENTS.filter((e) => e.isOver));
       }
     } catch (error) {
       console.error("Error fetching events:", error);
+      // Fallback to static events if request fails
+      setUpcomingEvents(STATIC_EVENTS.filter((e) => !e.isOver));
+      setPastEvents(STATIC_EVENTS.filter((e) => e.isOver));
     } finally {
       setLoadingEvents(false);
     }
