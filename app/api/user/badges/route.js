@@ -14,26 +14,15 @@ export async function GET(request) {
 
     await dbConnect();
 
-    // Fetch only the badges field using lean() for faster query
-    const user = await User.findById(session.user.id)
-      .select("badges")
-      .lean()
-      .maxTimeMS(2000); // 2 second timeout
+    const user = await User.findById(session.user.id);
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const response = NextResponse.json(
-      { badges: user.badges || [] },
-      { status: 200 },
-    );
-
-    // Cache badges for 10 minutes (user-specific, shorter TTL for personalization)
-    response.headers.set("Cache-Control", "private, max-age=600");
-    return response;
+    return NextResponse.json({ badges: user.badges || [] }, { status: 200 });
   } catch (error) {
-    console.error("Error fetching badges:", error.message);
+    console.error("Error fetching badges:", error);
     return NextResponse.json(
       { error: error.message || "Failed to fetch badges" },
       { status: 500 },

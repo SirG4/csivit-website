@@ -4,6 +4,7 @@ import dbConnect from "@/lib/db";
 import Registration from "@/models/Registration";
 import Event from "@/models/Event";
 import Attendance from "@/models/Attendance";
+import User from "@/models/User";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function DELETE(request) {
@@ -25,6 +26,18 @@ export async function DELETE(request) {
 
     await dbConnect();
 
+    let requesterUserId = session.user.id;
+    if (!requesterUserId && session.user.email) {
+      const requester = await User.findOne({ email: session.user.email })
+        .select("_id")
+        .lean();
+      requesterUserId = requester?._id?.toString();
+    }
+
+    if (!requesterUserId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const leaderRegistration = await Registration.findById(leaderRegistrationId)
       .select("_id userId eventId teamCode isTeamLeader")
       .lean();
@@ -37,7 +50,7 @@ export async function DELETE(request) {
     }
 
     const isOwner =
-      leaderRegistration.userId?.toString() === session.user.id?.toString();
+      leaderRegistration.userId?.toString() === requesterUserId?.toString();
     if (!isOwner || !leaderRegistration.isTeamLeader) {
       return NextResponse.json(
         { error: "Only the team leader can cancel this team" },

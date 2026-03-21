@@ -88,7 +88,7 @@ export default function AdminDashboard() {
   const handleToggleStatus = async (eventId, field, currentValue) => {
     try {
       const updateData = { [field]: !currentValue };
-      
+
       // LOGIC: if admin checked event over, close registration automatically
       if (field === "isOver" && !currentValue === true) {
         updateData.isRegistrationLive = false;
@@ -130,7 +130,9 @@ export default function AdminDashboard() {
           <h1 className="text-3xl font-semibold text-white tracking-tight">
             Admin Panel
           </h1>
-          <p className="text-white/30 text-sm mt-1">Welcome, {session.user.name}</p>
+          <p className="text-white/30 text-sm mt-1">
+            Welcome, {session.user.name}
+          </p>
         </div>
 
         {/* Tabs */}
@@ -139,10 +141,11 @@ export default function AdminDashboard() {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === tab
+              className={`px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                activeTab === tab
                   ? "bg-white text-[#0a0a0f]"
                   : "text-white/40 hover:text-white/70"
-                }`}
+              }`}
             >
               {tab === "dashboard"
                 ? "Dashboard"
@@ -155,14 +158,8 @@ export default function AdminDashboard() {
 
         {activeTab === "dashboard" && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <DashboardStat
-              title="Total Events"
-              value={events.length}
-            />
-            <DashboardStat
-              title="Total Attendees"
-              value={attendeesCount}
-            />
+            <DashboardStat title="Total Events" value={events.length} />
+            <DashboardStat title="Total Attendees" value={attendeesCount} />
             <DashboardStat
               title="Active Events"
               value={events.filter((e) => !e.isOver).length}
@@ -203,7 +200,9 @@ export default function AdminDashboard() {
               />
             ) : (
               <div>
-                <h2 className="text-xl font-semibold mb-4 text-white">Select Event</h2>
+                <h2 className="text-xl font-semibold mb-4 text-white">
+                  Select Event
+                </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {events.map((event) => (
                     <button
@@ -233,9 +232,7 @@ function DashboardStat({ title, value }) {
   return (
     <div className="p-5 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-white/[0.12] transition-all duration-200">
       <p className="text-white/30 text-sm mb-2">{title}</p>
-      <p className="text-3xl font-semibold text-white">
-        {value}
-      </p>
+      <p className="text-3xl font-semibold text-white">{value}</p>
     </div>
   );
 }
@@ -258,11 +255,13 @@ function EventForm({ onEventCreated }) {
     isOver: false,
   });
   const [submitting, setSubmitting] = useState(false);
+  const [posterUploading, setPosterUploading] = useState(false);
+  const [posterPreview, setPosterPreview] = useState("");
   const [posterError, setPosterError] = useState("");
   const [badgeError, setBadgeError] = useState("");
   const [prizeError, setPrizeError] = useState({ 1: "", 2: "", 3: "" });
 
-  const handlePosterChange = (e) => {
+  const handlePosterChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -271,21 +270,37 @@ function EventForm({ onEventCreated }) {
       return;
     }
 
-    // Keep payload size manageable for API + Mongo document size.
-    if (file.size > 2 * 1024 * 1024) {
-      setPosterError("Image must be 2MB or smaller.");
+    if (file.size > 5 * 1024 * 1024) {
+      setPosterError("Image must be 5MB or smaller.");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
+    try {
+      setPosterUploading(true);
       setPosterError("");
-      setFormData((prev) => ({ ...prev, poster: String(reader.result || "") }));
-    };
-    reader.onerror = () => {
-      setPosterError("Failed to read image file.");
-    };
-    reader.readAsDataURL(file);
+      const localPreviewUrl = URL.createObjectURL(file);
+      setPosterPreview(localPreviewUrl);
+
+      const uploadForm = new FormData();
+      uploadForm.append("poster", file);
+
+      const response = await fetch("/api/admin/events/poster-upload", {
+        method: "POST",
+        body: uploadForm,
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to upload poster");
+      }
+
+      setFormData((prev) => ({ ...prev, poster: data.posterUrl }));
+    } catch (error) {
+      setPosterError(error.message || "Failed to upload poster image.");
+      setPosterPreview("");
+    } finally {
+      setPosterUploading(false);
+    }
   };
 
   const handleBadgeChange = (e) => {
@@ -305,7 +320,10 @@ function EventForm({ onEventCreated }) {
     const reader = new FileReader();
     reader.onload = () => {
       setBadgeError("");
-      setFormData((prev) => ({ ...prev, badgeIcon: String(reader.result || "") }));
+      setFormData((prev) => ({
+        ...prev,
+        badgeIcon: String(reader.result || ""),
+      }));
     };
     reader.onerror = () => {
       setBadgeError("Failed to read image file.");
@@ -318,22 +336,34 @@ function EventForm({ onEventCreated }) {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setPrizeError(prev => ({ ...prev, [rank]: "Please select an image file." }));
+      setPrizeError((prev) => ({
+        ...prev,
+        [rank]: "Please select an image file.",
+      }));
       return;
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      setPrizeError(prev => ({ ...prev, [rank]: "Image must be 2MB or smaller." }));
+      setPrizeError((prev) => ({
+        ...prev,
+        [rank]: "Image must be 2MB or smaller.",
+      }));
       return;
     }
 
     const reader = new FileReader();
     reader.onload = () => {
-      setPrizeError(prev => ({ ...prev, [rank]: "" }));
-      setFormData((prev) => ({ ...prev, [`winnerBadge${rank}`]: String(reader.result || "") }));
+      setPrizeError((prev) => ({ ...prev, [rank]: "" }));
+      setFormData((prev) => ({
+        ...prev,
+        [`winnerBadge${rank}`]: String(reader.result || ""),
+      }));
     };
     reader.onerror = () => {
-      setPrizeError(prev => ({ ...prev, [rank]: "Failed to read image file." }));
+      setPrizeError((prev) => ({
+        ...prev,
+        [rank]: "Failed to read image file.",
+      }));
     };
     reader.readAsDataURL(file);
   };
@@ -374,6 +404,7 @@ function EventForm({ onEventCreated }) {
           isHidden: false,
           isOver: false,
         });
+        setPosterPreview("");
         setPosterError("");
         setBadgeError("");
         setPrizeError({ 1: "", 2: "", 3: "" });
@@ -390,9 +421,11 @@ function EventForm({ onEventCreated }) {
     }
   };
 
-  const inputClass = "w-full px-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-white text-sm placeholder:text-white/20 focus:border-white/20 focus:outline-none focus:ring-0 transition-all";
+  const inputClass =
+    "w-full px-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-white text-sm placeholder:text-white/20 focus:border-white/20 focus:outline-none focus:ring-0 transition-all";
   const labelClass = "block text-sm font-medium mb-1.5 text-white/50";
-  const fileInputClass = "w-full text-sm text-white/40 file:mr-3 file:rounded-lg file:border-0 file:bg-white/[0.06] file:border file:border-white/[0.08] file:px-3 file:py-1.5 file:text-sm file:text-white/60 file:font-medium hover:file:bg-white/[0.1] file:transition-all file:cursor-pointer cursor-pointer";
+  const fileInputClass =
+    "w-full text-sm text-white/40 file:mr-3 file:rounded-lg file:border-0 file:bg-white/[0.06] file:border file:border-white/[0.08] file:px-3 file:py-1.5 file:text-sm file:text-white/60 file:font-medium hover:file:bg-white/[0.1] file:transition-all file:cursor-pointer cursor-pointer";
 
   return (
     <div className="p-6 rounded-xl bg-white/[0.02] border border-white/[0.06]">
@@ -450,9 +483,14 @@ function EventForm({ onEventCreated }) {
             {posterError && (
               <p className="text-red-400 text-xs mt-1.5">{posterError}</p>
             )}
-            {formData.poster && (
+            {posterUploading && (
+              <p className="text-cyan-400 text-xs mt-1.5">
+                Uploading poster...
+              </p>
+            )}
+            {(posterPreview || formData.poster) && (
               <img
-                src={formData.poster}
+                src={posterPreview || formData.poster}
                 alt="Poster preview"
                 className="mt-2 w-20 h-20 object-cover rounded-lg border border-white/[0.08]"
               />
@@ -487,9 +525,15 @@ function EventForm({ onEventCreated }) {
               onChange={(e) => handlePrizeBadgeChange(e, 1)}
               className={fileInputClass}
             />
-            {prizeError[1] && <p className="text-red-400 text-xs mt-1">{prizeError[1]}</p>}
+            {prizeError[1] && (
+              <p className="text-red-400 text-xs mt-1">{prizeError[1]}</p>
+            )}
             {formData.winnerBadge1 && (
-              <img src={formData.winnerBadge1} alt="Preview" className="mt-2 w-12 h-12 object-cover rounded-lg border border-white/[0.08]" />
+              <img
+                src={formData.winnerBadge1}
+                alt="Preview"
+                className="mt-2 w-12 h-12 object-cover rounded-lg border border-white/[0.08]"
+              />
             )}
           </div>
 
@@ -501,9 +545,15 @@ function EventForm({ onEventCreated }) {
               onChange={(e) => handlePrizeBadgeChange(e, 2)}
               className={fileInputClass}
             />
-            {prizeError[2] && <p className="text-red-400 text-xs mt-1">{prizeError[2]}</p>}
+            {prizeError[2] && (
+              <p className="text-red-400 text-xs mt-1">{prizeError[2]}</p>
+            )}
             {formData.winnerBadge2 && (
-              <img src={formData.winnerBadge2} alt="Preview" className="mt-2 w-12 h-12 object-cover rounded-lg border border-white/[0.08]" />
+              <img
+                src={formData.winnerBadge2}
+                alt="Preview"
+                className="mt-2 w-12 h-12 object-cover rounded-lg border border-white/[0.08]"
+              />
             )}
           </div>
 
@@ -515,9 +565,15 @@ function EventForm({ onEventCreated }) {
               onChange={(e) => handlePrizeBadgeChange(e, 3)}
               className={fileInputClass}
             />
-            {prizeError[3] && <p className="text-red-400 text-xs mt-1">{prizeError[3]}</p>}
+            {prizeError[3] && (
+              <p className="text-red-400 text-xs mt-1">{prizeError[3]}</p>
+            )}
             {formData.winnerBadge3 && (
-              <img src={formData.winnerBadge3} alt="Preview" className="mt-2 w-12 h-12 object-cover rounded-lg border border-white/[0.08]" />
+              <img
+                src={formData.winnerBadge3}
+                alt="Preview"
+                className="mt-2 w-12 h-12 object-cover rounded-lg border border-white/[0.08]"
+              />
             )}
           </div>
 
@@ -554,13 +610,20 @@ function EventForm({ onEventCreated }) {
                   name="isRegistrationLive"
                   checked={formData.isRegistrationLive}
                   disabled={formData.isOver}
-                  onChange={(e) => setFormData(prev => ({ ...prev, isRegistrationLive: e.target.checked }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      isRegistrationLive: e.target.checked,
+                    }))
+                  }
                   className="sr-only peer"
                 />
                 <div className="w-9 h-5 bg-white/[0.06] border border-white/[0.1] rounded-full peer-checked:bg-emerald-500/20 peer-checked:border-emerald-500/40 transition-all"></div>
                 <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white/20 rounded-full peer-checked:translate-x-4 peer-checked:bg-emerald-400 transition-all"></div>
               </div>
-              <span className="text-sm text-white/40 group-hover:text-white/60 transition-colors">Registration Live</span>
+              <span className="text-sm text-white/40 group-hover:text-white/60 transition-colors">
+                Registration Live
+              </span>
             </label>
 
             <label className="flex items-center gap-2.5 cursor-pointer group">
@@ -571,10 +634,12 @@ function EventForm({ onEventCreated }) {
                   checked={formData.isOver}
                   onChange={(e) => {
                     const checked = e.target.checked;
-                    setFormData(prev => ({ 
-                      ...prev, 
+                    setFormData((prev) => ({
+                      ...prev,
                       isOver: checked,
-                      isRegistrationLive: checked ? false : prev.isRegistrationLive 
+                      isRegistrationLive: checked
+                        ? false
+                        : prev.isRegistrationLive,
                     }));
                   }}
                   className="sr-only peer"
@@ -582,7 +647,9 @@ function EventForm({ onEventCreated }) {
                 <div className="w-9 h-5 bg-white/[0.06] border border-white/[0.1] rounded-full peer-checked:bg-amber-500/20 peer-checked:border-amber-500/40 transition-all"></div>
                 <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white/20 rounded-full peer-checked:translate-x-4 peer-checked:bg-amber-400 transition-all"></div>
               </div>
-              <span className="text-sm text-white/40 group-hover:text-white/60 transition-colors">Event Over</span>
+              <span className="text-sm text-white/40 group-hover:text-white/60 transition-colors">
+                Event Over
+              </span>
             </label>
 
             <label className="flex items-center gap-2.5 cursor-pointer group">
@@ -591,13 +658,20 @@ function EventForm({ onEventCreated }) {
                   type="checkbox"
                   name="isHidden"
                   checked={formData.isHidden}
-                  onChange={(e) => setFormData(prev => ({ ...prev, isHidden: e.target.checked }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      isHidden: e.target.checked,
+                    }))
+                  }
                   className="sr-only peer"
                 />
                 <div className="w-9 h-5 bg-white/[0.06] border border-white/[0.1] rounded-full peer-checked:bg-red-500/20 peer-checked:border-red-500/40 transition-all"></div>
                 <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white/20 rounded-full peer-checked:translate-x-4 peer-checked:bg-red-400 transition-all"></div>
               </div>
-              <span className="text-sm text-white/40 group-hover:text-white/60 transition-colors">Hidden from Users</span>
+              <span className="text-sm text-white/40 group-hover:text-white/60 transition-colors">
+                Hidden from Users
+              </span>
             </label>
           </div>
         </div>
@@ -616,29 +690,39 @@ function EventForm({ onEventCreated }) {
 
         <button
           type="submit"
-          disabled={submitting}
+          disabled={submitting || posterUploading}
           className="w-full py-2.5 rounded-xl bg-white text-[#0a0a0f] text-sm font-medium hover:bg-white/90 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {submitting ? "Creating..." : "Create Event"}
+          {posterUploading
+            ? "Uploading Poster..."
+            : submitting
+              ? "Creating..."
+              : "Create Event"}
         </button>
       </form>
     </div>
   );
 }
 
-function EventsList({ events, onSelectEvent, onDeleteEvent, onToggleStatus, loading }) {
+function EventsList({
+  events,
+  onSelectEvent,
+  onDeleteEvent,
+  onToggleStatus,
+  loading,
+}) {
   return (
     <div className="p-6 rounded-xl bg-white/[0.02] border border-white/[0.06]">
-      <h2 className="text-xl font-semibold mb-6 text-white">
-        Events
-      </h2>
+      <h2 className="text-xl font-semibold mb-6 text-white">Events</h2>
 
       {loading ? (
         <div className="text-center py-8">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-white/10 border-t-white/60"></div>
         </div>
       ) : events.length === 0 ? (
-        <p className="text-white/30 text-center py-8 text-sm">No events found</p>
+        <p className="text-white/30 text-center py-8 text-sm">
+          No events found
+        </p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {events.map((event) => (
@@ -646,13 +730,19 @@ function EventsList({ events, onSelectEvent, onDeleteEvent, onToggleStatus, load
               key={event._id}
               className="p-5 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.12] transition-all duration-200"
             >
-              <h3 className="text-base font-medium mb-3 text-white">{event.eventName}</h3>
+              <h3 className="text-base font-medium mb-3 text-white">
+                {event.eventName}
+              </h3>
 
               <div className="space-y-1 text-sm text-white/30 mb-4">
                 <p>{new Date(event.eventDate).toLocaleDateString()}</p>
-                <p className="font-mono text-xs text-white/20">Key: {event.eventKey}</p>
+                <p className="font-mono text-xs text-white/20">
+                  Key: {event.eventKey}
+                </p>
                 <p>Points: {event.pointsPerAttendance}</p>
-                <p>Team: {event.minMembers || 1}–{event.maxMembers || 1} members</p>
+                <p>
+                  Team: {event.minMembers || 1}–{event.maxMembers || 1} members
+                </p>
               </div>
 
               {/* Status toggles */}
@@ -660,19 +750,29 @@ function EventsList({ events, onSelectEvent, onDeleteEvent, onToggleStatus, load
                 <StatusToggle
                   label="Event Over"
                   checked={event.isOver}
-                  onChange={() => onToggleStatus(event._id, "isOver", event.isOver)}
+                  onChange={() =>
+                    onToggleStatus(event._id, "isOver", event.isOver)
+                  }
                   color="amber"
                 />
                 <StatusToggle
                   label="Registration Live"
                   checked={event.isRegistrationLive}
-                  onChange={() => onToggleStatus(event._id, "isRegistrationLive", event.isRegistrationLive)}
+                  onChange={() =>
+                    onToggleStatus(
+                      event._id,
+                      "isRegistrationLive",
+                      event.isRegistrationLive,
+                    )
+                  }
                   color="emerald"
                 />
                 <StatusToggle
                   label="Hidden"
                   checked={event.isHidden}
-                  onChange={() => onToggleStatus(event._id, "isHidden", event.isHidden)}
+                  onChange={() =>
+                    onToggleStatus(event._id, "isHidden", event.isHidden)
+                  }
                   color="red"
                 />
               </div>
@@ -689,8 +789,18 @@ function EventsList({ events, onSelectEvent, onDeleteEvent, onToggleStatus, load
                   onClick={() => onDeleteEvent(event._id)}
                   className="px-3 py-2 rounded-lg bg-red-500/[0.06] border border-red-500/10 text-red-400/60 text-sm hover:bg-red-500/[0.12] hover:text-red-400 transition-all duration-200"
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                    />
                   </svg>
                 </button>
               </div>
@@ -704,9 +814,24 @@ function EventsList({ events, onSelectEvent, onDeleteEvent, onToggleStatus, load
 
 function StatusToggle({ label, checked, onChange, color }) {
   const colors = {
-    amber: { bg: "bg-amber-500/20", border: "border-amber-500/40", dot: "bg-amber-400", text: "text-amber-400" },
-    emerald: { bg: "bg-emerald-500/20", border: "border-emerald-500/40", dot: "bg-emerald-400", text: "text-emerald-400" },
-    red: { bg: "bg-red-500/20", border: "border-red-500/40", dot: "bg-red-400", text: "text-red-400" },
+    amber: {
+      bg: "bg-amber-500/20",
+      border: "border-amber-500/40",
+      dot: "bg-amber-400",
+      text: "text-amber-400",
+    },
+    emerald: {
+      bg: "bg-emerald-500/20",
+      border: "border-emerald-500/40",
+      dot: "bg-emerald-400",
+      text: "text-emerald-400",
+    },
+    red: {
+      bg: "bg-red-500/20",
+      border: "border-red-500/40",
+      dot: "bg-red-400",
+      text: "text-red-400",
+    },
   };
   const c = colors[color];
 
@@ -719,22 +844,42 @@ function StatusToggle({ label, checked, onChange, color }) {
           onChange={onChange}
           className="sr-only peer"
         />
-        <div className={`w-8 h-[18px] bg-white/[0.06] border border-white/[0.08] rounded-full peer-checked:${c.bg} peer-checked:${c.border} transition-all`}></div>
-        <div className={`absolute top-[3px] left-[3px] w-3 h-3 bg-white/20 rounded-full peer-checked:translate-x-[14px] peer-checked:${c.dot} transition-all`}></div>
+        <div
+          className={`w-8 h-[18px] bg-white/[0.06] border border-white/[0.08] rounded-full peer-checked:${c.bg} peer-checked:${c.border} transition-all`}
+        ></div>
+        <div
+          className={`absolute top-[3px] left-[3px] w-3 h-3 bg-white/20 rounded-full peer-checked:translate-x-[14px] peer-checked:${c.dot} transition-all`}
+        ></div>
       </div>
-      <span className={`text-xs ${checked ? c.text : "text-white/30"} transition-colors`}>
+      <span
+        className={`text-xs ${checked ? c.text : "text-white/30"} transition-colors`}
+      >
         {label}
       </span>
     </label>
   );
 }
 
-function AttendanceViewer({ event, attendeesCount, registrations, teams, onBack, loading, setLoading, fetchAttendees }) {
+function AttendanceViewer({
+  event,
+  attendeesCount,
+  registrations,
+  teams,
+  onBack,
+  loading,
+  setLoading,
+  fetchAttendees,
+}) {
   const [searchTerm, setSearchTerm] = useState("");
   const [awardingPrize, setAwardingPrize] = useState(false);
 
   const handleAwardPrize = async (record, rank, type = "individual") => {
-    if (!confirm(`Award ${rank === 1 ? '1st' : rank === 2 ? '2nd' : '3rd'} Prize to this ${type}?`)) return;
+    if (
+      !confirm(
+        `Award ${rank === 1 ? "1st" : rank === 2 ? "2nd" : "3rd"} Prize to this ${type}?`,
+      )
+    )
+      return;
 
     try {
       setAwardingPrize(true);
@@ -771,7 +916,12 @@ function AttendanceViewer({ event, attendeesCount, registrations, teams, onBack,
   };
 
   const handleRemovePrize = async (record, rank) => {
-    if (!confirm(`Remove ${rank === 1 ? '1st' : rank === 2 ? '2nd' : '3rd'} Prize from this user?`)) return;
+    if (
+      !confirm(
+        `Remove ${rank === 1 ? "1st" : rank === 2 ? "2nd" : "3rd"} Prize from this user?`,
+      )
+    )
+      return;
 
     try {
       setAwardingPrize(true);
@@ -801,13 +951,21 @@ function AttendanceViewer({ event, attendeesCount, registrations, teams, onBack,
   };
 
   const handleDeleteRegistration = async (registration) => {
-    if (!confirm(`Are you sure you want to delete registration for ${registration.userId?.name || 'this user'}? This will also remove their attendance and badges for this event.`)) return;
+    if (
+      !confirm(
+        `Are you sure you want to delete registration for ${registration.userId?.name || "this user"}? This will also remove their attendance and badges for this event.`,
+      )
+    )
+      return;
 
     try {
       setLoading(true);
-      const response = await fetch(`/api/admin/registrations/${registration._id}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `/api/admin/registrations/${registration._id}`,
+        {
+          method: "DELETE",
+        },
+      );
 
       const data = await response.json();
       if (data.success) {
@@ -904,7 +1062,9 @@ function AttendanceViewer({ event, attendeesCount, registrations, teams, onBack,
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-white/10 border-t-white/60"></div>
           </div>
         ) : filteredRegistrations.length === 0 ? (
-          <p className="text-white/30 text-center py-8 text-sm">No registrations found</p>
+          <p className="text-white/30 text-center py-8 text-sm">
+            No registrations found
+          </p>
         ) : (
           <div className="overflow-x-auto rounded-lg border border-white/[0.06]">
             <table className="w-full">
@@ -940,152 +1100,187 @@ function AttendanceViewer({ event, attendeesCount, registrations, teams, onBack,
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(groupedRegistrations).map(([teamCode, members]) => (
-                  <Fragment key={teamCode}>
-                    {/* Team Header Row */}
-                    <tr className="bg-white/[0.04] border-b border-white/[0.06]">
-                      <td colSpan="9" className="px-4 py-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">Team:</span>
-                          <span className="text-sm font-mono text-white/90 font-bold">{teamCode}</span>
-                          <span className="text-[10px] text-white/30 ml-2">({members.length} members)</span>
-                        </div>
-                      </td>
-                    </tr>
-                    
-                    {/* Team Members */}
-                    {members.map((record) => (
-                      <tr
-                        key={record._id}
-                        className={`border-b border-white/[0.04] hover:bg-white/[0.02] transition-all ${!record.hasAttended ? 'opacity-50' : ''}`}
-                      >
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2.5">
-                            {record.userId?.image && (
-                              <img
-                                src={record.userId.image}
-                                alt={record.userId.name}
-                                className="w-7 h-7 rounded-full"
-                              />
-                            )}
-                            <span className="text-sm font-medium text-white/80">
-                              {record.userId?.name || "Unknown"}
+                {Object.entries(groupedRegistrations).map(
+                  ([teamCode, members]) => (
+                    <Fragment key={teamCode}>
+                      {/* Team Header Row */}
+                      <tr className="bg-white/[0.04] border-b border-white/[0.06]">
+                        <td colSpan="9" className="px-4 py-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">
+                              Team:
                             </span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-white/30 text-xs">
-                          {record.userId?.email || "-"}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className={`px-2 py-0.5 rounded text-xs font-mono ${record.isTeamLeader ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20' : 'bg-white/[0.04] text-white/40'}`}>
-                            {record.teamCode}
-                            {record.isTeamLeader && " (L)"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          {record.hasAttended ? (
-                            <div className="flex flex-col items-center gap-1">
-                              <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-medium border border-emerald-500/20">
-                                YES
-                              </span>
-                              {record.participationBadge && (
-                                <img src={record.participationBadge} alt="P" className="w-5 h-5 rounded-full object-cover border border-white/[0.08]" />
-                              )}
-                            </div>
-                          ) : (
-                            <span className="text-white/20 text-xs">NO</span>
-                          )}
-                        </td>
-
-                        <td className="px-4 py-3">
-                          {record.milestoneBadge ? (
-                            <span className="px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400 text-[10px] font-medium border border-violet-500/20">
-                              {record.milestoneBadge}
+                            <span className="text-sm font-mono text-white/90 font-bold">
+                              {teamCode}
                             </span>
-                          ) : (
-                            <span className="text-white/20 text-xs">-</span>
-                          )}
-                        </td>
-
-                        <td className="px-4 py-3 text-center">
-                          {(record.prizeName || record.prizeBadge) ? (
-                            <div className="flex flex-col items-center gap-1">
-                              {record.prizeBadge && (
-                                <div className="relative group">
-                                  <img src={record.prizeBadge} alt="Prize" className="w-7 h-7 rounded-full border border-amber-500/30 object-cover" />
-                                  <button
-                                    onClick={() => handleRemovePrize(record, record.prizeName?.includes("1st") ? 1 : record.prizeName?.includes("2nd") ? 2 : 3)}
-                                    className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-3.5 h-3.5 flex items-center justify-center text-[8px] hover:bg-red-400 transition-colors opacity-0 group-hover:opacity-100"
-                                  >
-                                    ✕
-                                  </button>
-                                </div>
-                              )}
-                              <span className="text-[9px] font-medium text-amber-400/70 uppercase tracking-tight truncate max-w-[60px]">
-                                {record.prizeName?.split(":")[0] || "Prize"}
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="text-white/20 text-xs">-</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-white/30 text-xs">
-                          {record.phone || "—"}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400/70 text-xs font-medium">
-                            +{record.pointsEarned || 0}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex gap-1">
-                            <button
-                              onClick={() => handleAwardPrize(record, 1, "individual")}
-                              disabled={awardingPrize}
-                              className="px-2 py-1 rounded-md bg-amber-500/[0.08] text-amber-400/60 text-[10px] font-medium border border-amber-500/10 hover:bg-amber-500/[0.15] hover:text-amber-400 transition-all"
-                              title="Award 1st Prize"
-                            >
-                              1st
-                            </button>
-                            <button
-                              onClick={() => handleAwardPrize(record, 2, "individual")}
-                              disabled={awardingPrize}
-                              className="px-2 py-1 rounded-md bg-white/[0.04] text-white/30 text-[10px] font-medium border border-white/[0.06] hover:bg-white/[0.08] hover:text-white/50 transition-all"
-                              title="Award 2nd Prize"
-                            >
-                              2nd
-                            </button>
-                            <button
-                              onClick={() => handleAwardPrize(record, 3, "individual")}
-                              disabled={awardingPrize}
-                              className="px-2 py-1 rounded-md bg-orange-500/[0.08] text-orange-400/60 text-[10px] font-medium border border-orange-500/10 hover:bg-orange-500/[0.15] hover:text-orange-400 transition-all"
-                              title="Award 3rd Prize"
-                            >
-                              3rd
-                            </button>
-                            {record.teamCode !== "SOLO" && (
-                              <button
-                                onClick={() => handleAwardPrize(record, 1, "team")}
-                                disabled={awardingPrize}
-                                className="ml-1 px-2 py-1 rounded-md bg-violet-500/[0.08] text-violet-400/60 text-[10px] font-medium border border-violet-500/10 hover:bg-violet-500/[0.15] hover:text-violet-400 transition-all"
-                                title="Award 1st Prize to Team"
-                              >
-                                Team 1st
-                              </button>
-                            )}
-                            <button
-                              onClick={() => handleDeleteRegistration(record)}
-                              className="ml-auto p-1 rounded-md bg-red-500/[0.08] text-red-400/60 hover:bg-red-500/[0.15] hover:text-red-400 transition-all"
-                              title="Delete Registration"
-                            >
-                              🗑️
-                            </button>
+                            <span className="text-[10px] text-white/30 ml-2">
+                              ({members.length} members)
+                            </span>
                           </div>
                         </td>
                       </tr>
-                    ))}
-                  </Fragment>
-                ))}
+
+                      {/* Team Members */}
+                      {members.map((record) => (
+                        <tr
+                          key={record._id}
+                          className={`border-b border-white/[0.04] hover:bg-white/[0.02] transition-all ${!record.hasAttended ? "opacity-50" : ""}`}
+                        >
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2.5">
+                              {record.userId?.image && (
+                                <img
+                                  src={record.userId.image}
+                                  alt={record.userId.name}
+                                  className="w-7 h-7 rounded-full"
+                                />
+                              )}
+                              <span className="text-sm font-medium text-white/80">
+                                {record.userId?.name || "Unknown"}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-white/30 text-xs">
+                            {record.userId?.email || "-"}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span
+                              className={`px-2 py-0.5 rounded text-xs font-mono ${record.isTeamLeader ? "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20" : "bg-white/[0.04] text-white/40"}`}
+                            >
+                              {record.teamCode}
+                              {record.isTeamLeader && " (L)"}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            {record.hasAttended ? (
+                              <div className="flex flex-col items-center gap-1">
+                                <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-medium border border-emerald-500/20">
+                                  YES
+                                </span>
+                                {record.participationBadge && (
+                                  <img
+                                    src={record.participationBadge}
+                                    alt="P"
+                                    className="w-5 h-5 rounded-full object-cover border border-white/[0.08]"
+                                  />
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-white/20 text-xs">NO</span>
+                            )}
+                          </td>
+
+                          <td className="px-4 py-3">
+                            {record.milestoneBadge ? (
+                              <span className="px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-400 text-[10px] font-medium border border-violet-500/20">
+                                {record.milestoneBadge}
+                              </span>
+                            ) : (
+                              <span className="text-white/20 text-xs">-</span>
+                            )}
+                          </td>
+
+                          <td className="px-4 py-3 text-center">
+                            {record.prizeName || record.prizeBadge ? (
+                              <div className="flex flex-col items-center gap-1">
+                                {record.prizeBadge && (
+                                  <div className="relative group">
+                                    <img
+                                      src={record.prizeBadge}
+                                      alt="Prize"
+                                      className="w-7 h-7 rounded-full border border-amber-500/30 object-cover"
+                                    />
+                                    <button
+                                      onClick={() =>
+                                        handleRemovePrize(
+                                          record,
+                                          record.prizeName?.includes("1st")
+                                            ? 1
+                                            : record.prizeName?.includes("2nd")
+                                              ? 2
+                                              : 3,
+                                        )
+                                      }
+                                      className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-3.5 h-3.5 flex items-center justify-center text-[8px] hover:bg-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
+                                )}
+                                <span className="text-[9px] font-medium text-amber-400/70 uppercase tracking-tight truncate max-w-[60px]">
+                                  {record.prizeName?.split(":")[0] || "Prize"}
+                                </span>
+                              </div>
+                            ) : (
+                              <span className="text-white/20 text-xs">-</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3 text-white/30 text-xs">
+                            {record.phone || "—"}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400/70 text-xs font-medium">
+                              +{record.pointsEarned || 0}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() =>
+                                  handleAwardPrize(record, 1, "individual")
+                                }
+                                disabled={awardingPrize}
+                                className="px-2 py-1 rounded-md bg-amber-500/[0.08] text-amber-400/60 text-[10px] font-medium border border-amber-500/10 hover:bg-amber-500/[0.15] hover:text-amber-400 transition-all"
+                                title="Award 1st Prize"
+                              >
+                                1st
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleAwardPrize(record, 2, "individual")
+                                }
+                                disabled={awardingPrize}
+                                className="px-2 py-1 rounded-md bg-white/[0.04] text-white/30 text-[10px] font-medium border border-white/[0.06] hover:bg-white/[0.08] hover:text-white/50 transition-all"
+                                title="Award 2nd Prize"
+                              >
+                                2nd
+                              </button>
+                              <button
+                                onClick={() =>
+                                  handleAwardPrize(record, 3, "individual")
+                                }
+                                disabled={awardingPrize}
+                                className="px-2 py-1 rounded-md bg-orange-500/[0.08] text-orange-400/60 text-[10px] font-medium border border-orange-500/10 hover:bg-orange-500/[0.15] hover:text-orange-400 transition-all"
+                                title="Award 3rd Prize"
+                              >
+                                3rd
+                              </button>
+                              {record.teamCode !== "SOLO" && (
+                                <button
+                                  onClick={() =>
+                                    handleAwardPrize(record, 1, "team")
+                                  }
+                                  disabled={awardingPrize}
+                                  className="ml-1 px-2 py-1 rounded-md bg-violet-500/[0.08] text-violet-400/60 text-[10px] font-medium border border-violet-500/10 hover:bg-violet-500/[0.15] hover:text-violet-400 transition-all"
+                                  title="Award 1st Prize to Team"
+                                >
+                                  Team 1st
+                                </button>
+                              )}
+                              <button
+                                onClick={() => handleDeleteRegistration(record)}
+                                className="ml-auto p-1 rounded-md bg-red-500/[0.08] text-red-400/60 hover:bg-red-500/[0.15] hover:text-red-400 transition-all"
+                                title="Delete Registration"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </Fragment>
+                  ),
+                )}
               </tbody>
             </table>
           </div>

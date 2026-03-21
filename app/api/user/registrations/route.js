@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import mongoose from "mongoose";
 import dbConnect from "@/lib/db";
 import Registration from "@/models/Registration";
-import Event from "@/models/Event";
-import User from "@/models/User";
 import Attendance from "@/models/Attendance";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
@@ -19,71 +16,67 @@ export async function GET(request) {
     await dbConnect();
     const userId = session.user.id;
 
-    // Simple, fast query: get registrations with populated event
     const registrations = await Registration.find({ userId })
       .populate(
         "eventId",
-        "_id eventName eventDate description poster badgeIcon winnerBadge1 winnerBadge2 winnerBadge3 isRegistrationLive isOver minMembers maxMembers",
+        "_id eventName eventDate description poster isRegistrationLive isOver minMembers maxMembers",
       )
       .select("_id userId eventId name phone teamCode isTeamLeader")
       .lean()
-      .maxTimeMS(5000); // 5 second timeout
+      .maxTimeMS(6000);
 
-    if (!registrations.length) {
+    const validRegistrations = registrations.filter((reg) => reg.eventId);
+
+    if (!validRegistrations.length) {
       const response = NextResponse.json({ data: [] }, { status: 200 });
-      response.headers.set("Cache-Control", "private, max-age=300");
+      response.headers.set("Cache-Control", "private, max-age=60");
       return response;
     }
 
-    // Parallel fetch for team members and attendance data
-    const [teamMembersData, attendanceData] = await Promise.all([
-      // Get all team members for these registrations
+    const eventIds = [
+      ...new Set(validRegistrations.map((r) => r.eventId._id.toString())),
+    ];
+    const teamCodes = [...new Set(validRegistrations.map((r) => r.teamCode))];
+
+    const [teamMembersData, attendances] = await Promise.all([
       Registration.find({
-        eventId: { $in: registrations.map((r) => r.eventId._id) },
-        teamCode: { $in: registrations.map((r) => r.teamCode) },
+        eventId: { $in: eventIds },
+        teamCode: { $in: teamCodes },
       })
         .populate("userId", "name email image")
-        .select("userId eventId teamCode")
+        .select("userId eventId teamCode isTeamLeader")
         .lean()
-        .maxTimeMS(4000),
-
-      // Get attendance records
+        .maxTimeMS(6000),
       Attendance.find({ userId }).select("eventId").lean().maxTimeMS(4000),
     ]);
 
-    // Create lookup maps for fast O(1) access
-    const attendanceMap = new Set(
-      attendanceData.map((a) => a.eventId.toString()),
-    );
     const teamMemberMap = new Map();
-    teamMembersData.forEach((member) => {
-      const key = `${member.eventId}-${member.teamCode}`;
+    for (const member of teamMembersData) {
+      const key = `${member.eventId.toString()}::${member.teamCode}`;
       if (!teamMemberMap.has(key)) {
         teamMemberMap.set(key, []);
       }
       teamMemberMap.get(key).push(member.userId);
-    });
+    }
 
-    // Enrich registrations with team members and attendance
-    const enrichedRegistrations = registrations.map((reg) => {
-      const key = `${reg.eventId._id}-${reg.teamCode}`;
-      const teamMembers = teamMemberMap.get(key) || [];
-      const hasAttended = attendanceMap.has(reg.eventId._id.toString());
+    const attendedEventIds = new Set(
+      attendances.map((a) => a.eventId.toString()),
+    );
 
+    const registrationsWithAttendance = validRegistrations.map((reg) => {
+      const key = `${reg.eventId._id.toString()}::${reg.teamCode}`;
       return {
         ...reg,
-        teamMembers,
-        hasAttended,
+        teamMembers: teamMemberMap.get(key) || [],
+        hasAttended: attendedEventIds.has(reg.eventId._id.toString()),
       };
     });
 
     const response = NextResponse.json(
-      { data: enrichedRegistrations },
+      { data: registrationsWithAttendance },
       { status: 200 },
     );
-
-    // Cache registrations for 5 minutes (user-specific data, medium TTL)
-    response.headers.set("Cache-Control", "private, max-age=300");
+    response.headers.set("Cache-Control", "private, max-age=60");
     return response;
   } catch (error) {
     console.error("Error fetching registrations:", error);

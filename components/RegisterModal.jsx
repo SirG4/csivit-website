@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 
-export default function RegisterModal({ isOpen, onClose, eventName, eventId, onRegistrationSuccess }) {
+export default function RegisterModal({
+  isOpen,
+  onClose,
+  eventName,
+  eventId,
+  onRegistrationSuccess,
+}) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [teamCode, setTeamCode] = useState("");
@@ -11,23 +17,30 @@ export default function RegisterModal({ isOpen, onClose, eventName, eventId, onR
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!name || !phone || (!generateTeamCode && !teamCode)) {
-      setError("Please fill in all required fields.");
-      return;
-    }
+  const submitRegistration = async ({
+    eventId,
+    normalizedName,
+    normalizedPhone,
+    normalizedTeamCode,
+    generateTeamCode,
+  }) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 45000);
 
     try {
-      setLoading(true);
-      setError("");
-
       const response = await fetch("/api/events/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ eventId, name, phone, teamCode, generateTeamCode })
+        signal: controller.signal,
+        body: JSON.stringify({
+          eventId,
+          name: normalizedName,
+          phone: normalizedPhone,
+          teamCode: normalizedTeamCode,
+          generateTeamCode,
+        }),
       });
 
       const data = await response.json();
@@ -36,9 +49,66 @@ export default function RegisterModal({ isOpen, onClose, eventName, eventId, onR
         throw new Error(data.error || "Failed to register");
       }
 
+      return data;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (loading) return;
+
+    const normalizedName = name.trim();
+    const normalizedPhone = phone.trim();
+    const normalizedTeamCode = teamCode.trim().toUpperCase();
+
+    if (
+      !normalizedName ||
+      !normalizedPhone ||
+      (!generateTeamCode && !normalizedTeamCode)
+    ) {
+      setError("Please fill in all required fields.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+
+      try {
+        await submitRegistration({
+          eventId,
+          normalizedName,
+          normalizedPhone,
+          normalizedTeamCode,
+          generateTeamCode,
+        });
+      } catch (firstErr) {
+        const shouldRetry =
+          firstErr?.name === "AbortError" ||
+          firstErr?.message === "Failed to fetch";
+
+        if (!shouldRetry) {
+          throw firstErr;
+        }
+
+        await submitRegistration({
+          eventId,
+          normalizedName,
+          normalizedPhone,
+          normalizedTeamCode,
+          generateTeamCode,
+        });
+      }
+
       onRegistrationSuccess();
     } catch (err) {
-      setError(err.message);
+      if (err.name === "AbortError") {
+        setError("Request timed out after retry. Please try once more.");
+      } else {
+        setError(err.message || "Failed to register");
+      }
     } finally {
       setLoading(false);
     }
@@ -63,19 +133,25 @@ export default function RegisterModal({ isOpen, onClose, eventName, eventId, onR
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h2 className="text-lg font-semibold text-white">
-                {eventName}
-              </h2>
-              <p className="text-white/30 text-xs mt-0.5">
-                Event Registration
-              </p>
+              <h2 className="text-lg font-semibold text-white">{eventName}</h2>
+              <p className="text-white/30 text-xs mt-0.5">Event Registration</p>
             </div>
             <button
               onClick={handleClose}
               className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-white/40 hover:text-white/70 hover:bg-white/[0.08] transition-all duration-200"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -134,8 +210,18 @@ export default function RegisterModal({ isOpen, onClose, eventName, eventId, onR
                     }`}
                   >
                     {generateTeamCode && (
-                      <svg className="w-2.5 h-2.5 text-[#111118]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      <svg
+                        className="w-2.5 h-2.5 text-[#111118]"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={3}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                     )}
                   </button>
@@ -158,7 +244,9 @@ export default function RegisterModal({ isOpen, onClose, eventName, eventId, onR
                     <input
                       type="text"
                       value={teamCode}
-                      onChange={(e) => setTeamCode(e.target.value.toUpperCase())}
+                      onChange={(e) =>
+                        setTeamCode(e.target.value.toUpperCase())
+                      }
                       className="w-full bg-white/[0.04] border border-white/[0.08] text-white rounded-xl px-3 py-2.5 text-sm placeholder:text-white/20 focus:outline-none focus:border-white/20 focus:bg-white/[0.06] transition-all duration-200 uppercase tracking-widest"
                       placeholder="ENTER TEAM CODE"
                     />

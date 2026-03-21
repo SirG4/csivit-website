@@ -45,7 +45,6 @@ export default function Page() {
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [pastEvents, setPastEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
-  const [loadingRegistrations, setLoadingRegistrations] = useState(true);
 
   // Registration related states
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
@@ -70,22 +69,31 @@ export default function Page() {
       router.push("/login");
     } else if (session?.user?.name) {
       setSelectedUser(session.user.name);
-      // Fire all requests in parallel, but keep loading states independent.
-      // This lets events render even if registrations are slower.
+      // Fetch user badges
       fetchUserData();
+      // Fetch events
       fetchEvents();
+      // Fetch registrations
       fetchUserRegistrations();
     }
   }, [status, session, router]);
 
-  const fetchUserData = async () => {
-    const t = performance.now();
+  const fetchWithTimeout = async (url, options = {}, timeoutMs = 8000) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const response = await fetch("/api/user/badges");
+      return await fetch(url, { ...options, signal: controller.signal });
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  };
+
+  const fetchUserData = async () => {
+    try {
+      const response = await fetchWithTimeout("/api/user/badges", {}, 5000);
       if (response.ok) {
         const data = await response.json();
         setUserBadges(data.badges || []);
-        console.log(`⏱ Badges: ${(performance.now() - t).toFixed(0)}ms`);
       }
     } catch (error) {
       console.error("Error fetching badges:", error);
@@ -93,84 +101,70 @@ export default function Page() {
   };
 
   const fetchUserRegistrations = async () => {
-    const t = performance.now();
     try {
-      setLoadingRegistrations(true);
-      const response = await fetch("/api/user/registrations");
+      const response = await fetchWithTimeout(
+        "/api/user/registrations",
+        { cache: "no-store" },
+        7000,
+      );
       if (response.ok) {
         const data = await response.json();
         setUserRegistrations(data.data || []);
-        console.log(`⏱ Registrations: ${(performance.now() - t).toFixed(0)}ms`);
       }
     } catch (error) {
       console.error("Error fetching registrations:", error);
-    } finally {
-      setLoadingRegistrations(false);
     }
   };
 
   const fetchEvents = async () => {
-    const t = performance.now();
     try {
       setLoadingEvents(true);
-      // Fetch all events so both upcoming and past sections are accurate.
-      const response = await fetch("/api/events?light=true&limit=200");
+      const response = await fetchWithTimeout("/api/events", {}, 6000);
       if (response.ok) {
         const data = await response.json();
         const dbEvents = data.data || [];
 
-        // Create a Map for O(1) lookup of static events by id or name
-        const staticEventMap = new Map(
-          STATIC_EVENTS.map((s) => [s._id.toString(), s]),
-        );
-        const staticByName = new Map(
-          STATIC_EVENTS.map((s) => [s.eventName, s]),
-        );
-
-        // Efficiently merge DB events with static event properties
+        // Identify and mark static events, merge them with DB events
         const processedDbEvents = dbEvents.map((dbEvent) => {
-          const staticEvent =
-            staticEventMap.get(dbEvent._id?.toString()) ||
-            staticByName.get(dbEvent.eventName);
-
-          return staticEvent ? { ...dbEvent, ...staticEvent } : dbEvent;
+          const dbId = dbEvent._id?.toString();
+          const staticMatch = STATIC_EVENTS.find(
+            (s) =>
+              s._id.toString() === dbId || s.eventName === dbEvent.eventName,
+          );
+          if (staticMatch) {
+            // Ensure static properties (like isStatic, unstopUrl) are preserved/added
+            return { ...dbEvent, ...staticMatch };
+          }
+          return dbEvent;
         });
 
-        // Add only the static events that aren't in DB
-        const dbEventIds = new Set(dbEvents.map((e) => e._id?.toString()));
-        const dbEventNames = new Set(dbEvents.map((e) => e.eventName));
-
-        const missingStaticEvents =
-          dbEvents.length === 0
-            ? STATIC_EVENTS.filter(
-                (staticEvent) =>
-                  !dbEventIds.has(staticEvent._id.toString()) &&
-                  !dbEventNames.has(staticEvent.eventName),
-              )
-            : [];
+        // Add static events that aren't in the DB yet
+        const missingStaticEvents = STATIC_EVENTS.filter((staticEvent) => {
+          const staticId = staticEvent._id.toString();
+          return !dbEvents.some(
+            (dbEvent) =>
+              dbEvent._id?.toString() === staticId ||
+              dbEvent.eventName === staticEvent.eventName,
+          );
+        });
 
         const mergedEvents = [...processedDbEvents, ...missingStaticEvents];
 
-        // Filter into upcoming and past
+        // Split events into upcoming and past based on current date
         const now = new Date();
-        const upcoming = mergedEvents.filter((e) => !e.isOver);
-        const past = mergedEvents.filter((e) => e.isOver);
+        const upcoming = mergedEvents.filter((event) => !event.isOver);
+        const past = mergedEvents.filter((event) => event.isOver);
 
         setUpcomingEvents(upcoming);
         setPastEvents(past);
-        console.log(`⏱ Events: ${(performance.now() - t).toFixed(0)}ms`);
       } else {
-        const fallbackUpcoming = STATIC_EVENTS.filter((e) => !e.isOver);
-        const fallbackPast = STATIC_EVENTS.filter((e) => e.isOver);
-        setUpcomingEvents(fallbackUpcoming);
-        setPastEvents(fallbackPast);
+        setUpcomingEvents(STATIC_EVENTS.filter((event) => !event.isOver));
+        setPastEvents(STATIC_EVENTS.filter((event) => event.isOver));
       }
     } catch (error) {
       console.error("Error fetching events:", error);
-      const fallbackUpcoming = STATIC_EVENTS.filter((e) => !e.isOver);
-      const fallbackPast = STATIC_EVENTS.filter((e) => e.isOver);
-      setUpcomingEvents(fallbackUpcoming);
-      setPastEvents(fallbackPast);
+      setUpcomingEvents(STATIC_EVENTS.filter((event) => !event.isOver));
+      setPastEvents(STATIC_EVENTS.filter((event) => event.isOver));
     } finally {
       setLoadingEvents(false);
     }
@@ -251,17 +245,13 @@ export default function Page() {
     }
   };
 
-  const handleEditClick = (reg) => {
-    setEditingRegistration(reg);
-    setEditModalOpen(true);
-  };
-
   const handleCancelTeamClick = (reg) => {
     setCancelTeamTarget({
       registrationId: reg._id,
-      eventName: reg.eventId?.eventName || "this event",
-      teamCode: reg.teamCode,
-      memberCount: reg.teamMembers?.length || 1,
+      eventId: reg.eventId?._id?.toString() || reg.eventId?.toString(),
+      eventName: reg.eventId?.eventName || "Unknown Event",
+      teamCode: reg.teamCode || "-",
+      memberCount: reg.teamMembers?.length || 0,
     });
     setCancelTeamModalOpen(true);
   };
@@ -278,6 +268,17 @@ export default function Page() {
       });
 
       if (response.ok) {
+        // Optimistically remove the cancelled team from UI immediately.
+        setUserRegistrations((prev) =>
+          prev.filter((reg) => {
+            const regEventId =
+              reg.eventId?._id?.toString() || reg.eventId?.toString();
+            return !(
+              regEventId === cancelTeamTarget.eventId &&
+              reg.teamCode === cancelTeamTarget.teamCode
+            );
+          }),
+        );
         fetchUserRegistrations();
       } else {
         const data = await response.json();
@@ -288,6 +289,11 @@ export default function Page() {
     } finally {
       setCancelTeamTarget(null);
     }
+  };
+
+  const handleEditClick = (reg) => {
+    setEditingRegistration(reg);
+    setEditModalOpen(true);
   };
 
   const handleEditSuccess = () => {
@@ -595,11 +601,7 @@ export default function Page() {
                 <h3 className="font-medium bg-black/30 p-3">
                   Registered Events & Teams
                 </h3>
-                {loadingRegistrations ? (
-                  <div className="text-center py-8 text-gray-400">
-                    Loading registrations...
-                  </div>
-                ) : userRegistrations.length === 0 ? (
+                {userRegistrations.length === 0 ? (
                   <div className="text-center py-8 text-gray-400">
                     No registered events yet
                   </div>
@@ -645,7 +647,7 @@ export default function Page() {
                             {reg.isTeamLeader && (
                               <button
                                 onClick={() => handleCancelTeamClick(reg)}
-                                className="bg-red-900/40 text-red-200 text-xs border border-red-500/50 px-2 py-1 rounded hover:bg-red-800/60 transition"
+                                className="bg-red-900/50 text-red-300 text-xs border border-red-500/50 px-2 py-1 rounded hover:bg-red-800/70 transition"
                               >
                                 Cancel Team
                               </button>
@@ -807,7 +809,7 @@ export default function Page() {
         onConfirm={executeCancelTeam}
         eventName={cancelTeamTarget?.eventName || "this event"}
         teamCode={cancelTeamTarget?.teamCode || "-"}
-        memberCount={cancelTeamTarget?.memberCount || 1}
+        memberCount={cancelTeamTarget?.memberCount || 0}
       />
     </div>
   );

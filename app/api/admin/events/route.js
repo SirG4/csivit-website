@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import Event from "@/models/Event";
 import { requireAdmin } from "@/lib/adminAuth";
+import { uploadEventPosterFromDataUrl } from "@/lib/azureBlob";
 
 export async function GET(request) {
   try {
@@ -51,14 +52,6 @@ export async function POST(request) {
       isOver,
     } = body;
 
-    console.log("EVENT CREATION PAYLOAD SIZES:");
-    console.log("poster size:", poster ? poster.length : 0);
-    console.log("badgeIcon size:", badgeIcon ? badgeIcon.length : 0);
-    console.log("winnerBadge1 size:", winnerBadge1 ? winnerBadge1.length : 0);
-    console.log("winnerBadge2 size:", winnerBadge2 ? winnerBadge2.length : 0);
-    console.log("winnerBadge3 size:", winnerBadge3 ? winnerBadge3.length : 0);
-
-
     if (!eventName || !eventDate) {
       return NextResponse.json(
         { error: "Missing required fields" },
@@ -66,12 +59,17 @@ export async function POST(request) {
       );
     }
 
+    let posterUrl = poster || "/Events/Icons/event1.png";
+    if (typeof poster === "string" && poster.startsWith("data:image/")) {
+      posterUrl = await uploadEventPosterFromDataUrl(poster);
+    }
+
     const event = new Event({
       eventName,
       eventDate: new Date(eventDate),
       description,
       pointsPerAttendance: pointsPerAttendance || 10,
-      poster: poster || "/Events/Icons/event1.png",
+      poster: posterUrl,
       minMembers: minMembers || 1,
       maxMembers: maxMembers || 1,
       badgeIcon: badgeIcon || "",

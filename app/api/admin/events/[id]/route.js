@@ -5,6 +5,7 @@ import Registration from "@/models/Registration";
 import Attendance from "@/models/Attendance";
 import User from "@/models/User";
 import { requireAdmin } from "@/lib/adminAuth";
+import { uploadEventPosterFromDataUrl } from "@/lib/azureBlob";
 
 export async function PUT(request, { params }) {
   try {
@@ -27,12 +28,22 @@ export async function PUT(request, { params }) {
       event.pointsPerAttendance = body.pointsPerAttendance;
     if (body.isActive !== undefined) event.isOver = !body.isActive; // Fallback for old clients
     if (body.isOver !== undefined) event.isOver = body.isOver;
-    if (body.poster !== undefined) event.poster = body.poster;
+    if (body.poster !== undefined) {
+      if (
+        typeof body.poster === "string" &&
+        body.poster.startsWith("data:image/")
+      ) {
+        event.poster = await uploadEventPosterFromDataUrl(body.poster);
+      } else {
+        event.poster = body.poster;
+      }
+    }
     if (body.badgeIcon !== undefined) event.badgeIcon = body.badgeIcon;
     if (body.winnerBadge1 !== undefined) event.winnerBadge1 = body.winnerBadge1;
     if (body.winnerBadge2 !== undefined) event.winnerBadge2 = body.winnerBadge2;
     if (body.winnerBadge3 !== undefined) event.winnerBadge3 = body.winnerBadge3;
-    if (body.isRegistrationLive !== undefined) event.isRegistrationLive = body.isRegistrationLive;
+    if (body.isRegistrationLive !== undefined)
+      event.isRegistrationLive = body.isRegistrationLive;
     if (body.isHidden !== undefined) event.isHidden = body.isHidden;
 
     // Server-side logic: if event over, close registration
@@ -47,12 +58,12 @@ export async function PUT(request, { params }) {
         success: true,
         data: event,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     return NextResponse.json(
       { error: error.message || "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -73,12 +84,12 @@ export async function DELETE(request, { params }) {
     // Hard delete: Remove event and all associated registrations/attendance/badges
     const eventId = event._id;
     const eventKey = event.eventKey;
-    
+
     await Registration.deleteMany({ eventId });
     await Attendance.deleteMany({ eventId });
     await User.updateMany(
       { "badges.eventKey": eventKey },
-      { $pull: { badges: { eventKey: eventKey } } }
+      { $pull: { badges: { eventKey: eventKey } } },
     );
     await Event.findByIdAndDelete(id);
 
@@ -87,12 +98,12 @@ export async function DELETE(request, { params }) {
         success: true,
         message: "Event and all related records deleted successfully",
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
     return NextResponse.json(
       { error: error.message || "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
