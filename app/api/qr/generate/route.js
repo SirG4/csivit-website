@@ -5,12 +5,13 @@ import User from "@/models/User";
 import Event from "@/models/Event";
 import Registration from "@/models/Registration";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { resolveSessionUserId } from "@/lib/adminAuth";
 
 export async function POST(request) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json(
         { error: "Unauthorized: Must be signed in" },
         { status: 401 }
@@ -38,6 +39,14 @@ export async function POST(request) {
 
     await dbConnect();
 
+    const userId = await resolveSessionUserId(session);
+    if (!userId) {
+      return NextResponse.json(
+        { error: "Unauthorized: Must be signed in" },
+        { status: 401 }
+      );
+    }
+
     // 1. Check if event exists and is active
     const event = await Event.findById(eventId);
 
@@ -54,7 +63,7 @@ export async function POST(request) {
 
     // 2. Check if user is registered for this event
     const registration = await Registration.findOne({
-      userId: session.user.id,
+      userId: userId,
       eventId: eventId,
     });
 
@@ -66,15 +75,6 @@ export async function POST(request) {
     }
 
     // 3. Generate static QR payload with only eventId and userId
-    const userId = session?.user?.id;
-    
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Session error: User ID missing" },
-        { status: 500 }
-      );
-    }
-
     const qrPayload = {
       eventId: event._id.toString(),
       userId: userId,

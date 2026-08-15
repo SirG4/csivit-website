@@ -253,6 +253,7 @@ function EventForm({ onEventCreated }) {
     isRegistrationLive: false,
     isHidden: false,
     isOver: false,
+    isSolo: true,
   });
   const [submitting, setSubmitting] = useState(false);
   const [posterUploading, setPosterUploading] = useState(false);
@@ -403,6 +404,7 @@ function EventForm({ onEventCreated }) {
           isRegistrationLive: false,
           isHidden: false,
           isOver: false,
+          isSolo: true,
         });
         setPosterPreview("");
         setPosterError("");
@@ -577,29 +579,33 @@ function EventForm({ onEventCreated }) {
             )}
           </div>
 
-          <div>
-            <label className={labelClass}>Min Members</label>
-            <input
-              type="number"
-              name="minMembers"
-              value={formData.minMembers}
-              onChange={handleChange}
-              min="1"
-              className={inputClass}
-            />
-          </div>
+          {!formData.isSolo && (
+            <>
+              <div>
+                <label className={labelClass}>Min Members</label>
+                <input
+                  type="number"
+                  name="minMembers"
+                  value={formData.minMembers}
+                  onChange={handleChange}
+                  min="1"
+                  className={inputClass}
+                />
+              </div>
 
-          <div>
-            <label className={labelClass}>Max Members</label>
-            <input
-              type="number"
-              name="maxMembers"
-              value={formData.maxMembers}
-              onChange={handleChange}
-              min="1"
-              className={inputClass}
-            />
-          </div>
+              <div>
+                <label className={labelClass}>Max Members</label>
+                <input
+                  type="number"
+                  name="maxMembers"
+                  value={formData.maxMembers}
+                  onChange={handleChange}
+                  min="1"
+                  className={inputClass}
+                />
+              </div>
+            </>
+          )}
 
           {/* Status toggles */}
           <div className="md:col-span-2 flex items-center gap-6 flex-wrap py-1">
@@ -671,6 +677,31 @@ function EventForm({ onEventCreated }) {
               </div>
               <span className="text-sm text-white/40 group-hover:text-white/60 transition-colors">
                 Hidden from Users
+              </span>
+            </label>
+
+            <label className="flex items-center gap-2.5 cursor-pointer group">
+              <div className="relative">
+                <input
+                  type="checkbox"
+                  name="isSolo"
+                  checked={formData.isSolo}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setFormData((prev) => ({
+                      ...prev,
+                      isSolo: checked,
+                      minMembers: checked ? 1 : prev.minMembers,
+                      maxMembers: checked ? 1 : prev.maxMembers,
+                    }));
+                  }}
+                  className="sr-only peer"
+                />
+                <div className="w-9 h-5 bg-white/[0.06] border border-white/[0.1] rounded-full peer-checked:bg-cyan-500/20 peer-checked:border-cyan-500/40 transition-all"></div>
+                <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white/20 rounded-full peer-checked:translate-x-4 peer-checked:bg-cyan-400 transition-all"></div>
+              </div>
+              <span className="text-sm text-white/40 group-hover:text-white/60 transition-colors">
+                Solo Event
               </span>
             </label>
           </div>
@@ -775,6 +806,18 @@ function EventsList({
                   }
                   color="red"
                 />
+                <StatusToggle
+                  label="Solo Event"
+                  checked={event.isSolo !== undefined ? event.isSolo : event.maxMembers === 1}
+                  onChange={() =>
+                    onToggleStatus(
+                      event._id,
+                      "isSolo",
+                      event.isSolo !== undefined ? event.isSolo : event.maxMembers === 1,
+                    )
+                  }
+                  color="cyan"
+                />
               </div>
 
               <div className="flex gap-2">
@@ -831,6 +874,12 @@ function StatusToggle({ label, checked, onChange, color }) {
       border: "border-red-500/40",
       dot: "bg-red-400",
       text: "text-red-400",
+    },
+    cyan: {
+      bg: "bg-cyan-500/20",
+      border: "border-cyan-500/40",
+      dot: "bg-cyan-400",
+      text: "text-cyan-400",
     },
   };
   const c = colors[color];

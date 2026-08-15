@@ -6,13 +6,13 @@ import Attendance from "@/models/Attendance";
 import Event from "@/models/Event";
 import User from "@/models/User";
 import Registration from "@/models/Registration";
-
+import { resolveSessionUserId } from "@/lib/adminAuth";
 
 export async function POST(request) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -27,6 +27,11 @@ export async function POST(request) {
     }
 
     await dbConnect();
+
+    const userId = await resolveSessionUserId(session);
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     // 1. Check if event exists and is active
     const event = await Event.findById(eventId);
@@ -48,7 +53,7 @@ export async function POST(request) {
 
     // 2. Check if user is registered for this event
     const registration = await Registration.findOne({
-      userId: session.user.id,
+      userId: userId,
       eventId: eventId,
     });
 
@@ -61,7 +66,7 @@ export async function POST(request) {
 
     // 3. Mark attendance
     const existingAttendance = await Attendance.findOne({
-      userId: session.user.id,
+      userId: userId,
       eventId,
     });
 
@@ -76,14 +81,14 @@ export async function POST(request) {
     }
 
     const userAttendanceCount = await Attendance.countDocuments({
-      userId: session.user.id,
+      userId: userId,
     });
 
     const pointsEarned = event.pointsPerAttendance || 10;
     const finalBadgeEarned = event.badgeIcon || null;
 
     const attendance = new Attendance({
-      userId: session.user.id,
+      userId: userId,
       eventId,
       eventKey,
       badgeEarned: finalBadgeEarned,
@@ -93,7 +98,7 @@ export async function POST(request) {
 
     await attendance.save();
 
-    const user = await User.findById(session.user.id);
+    const user = await User.findById(userId);
 
     if (user) {
       if (event.badgeIcon) {

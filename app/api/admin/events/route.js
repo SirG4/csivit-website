@@ -50,6 +50,7 @@ export async function POST(request) {
       isRegistrationLive,
       isHidden,
       isOver,
+      isSolo,
     } = body;
 
     if (!eventName || !eventDate) {
@@ -64,14 +65,18 @@ export async function POST(request) {
       posterUrl = await uploadEventPosterFromDataUrl(poster);
     }
 
+    const finalIsSolo = isSolo !== undefined ? isSolo : true;
+    const finalMinMembers = finalIsSolo ? 1 : (minMembers || 1);
+    const finalMaxMembers = finalIsSolo ? 1 : (maxMembers || 1);
+
     const event = new Event({
       eventName,
       eventDate: new Date(eventDate),
       description,
       pointsPerAttendance: pointsPerAttendance || 10,
       poster: posterUrl,
-      minMembers: minMembers || 1,
-      maxMembers: maxMembers || 1,
+      minMembers: finalMinMembers,
+      maxMembers: finalMaxMembers,
       badgeIcon: badgeIcon || "",
       winnerBadge1: winnerBadge1 || "",
       winnerBadge2: winnerBadge2 || "",
@@ -79,9 +84,15 @@ export async function POST(request) {
       isRegistrationLive: isRegistrationLive || false,
       isHidden: isHidden || false,
       isOver: isOver || false,
+      isSolo: finalIsSolo,
     });
 
     await event.save();
+
+    if (global.eventsApiCache) {
+      global.eventsApiCache.data = [];
+      global.eventsApiCache.timestamp = 0;
+    }
 
     return NextResponse.json(
       {

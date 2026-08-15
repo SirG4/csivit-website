@@ -36,7 +36,7 @@ export async function GET(request) {
     const events = await withTimeout(
       Event.find({ isHidden: false })
         .select(
-          "eventName eventDate description poster minMembers maxMembers isRegistrationLive isOver",
+          "eventName eventDate description poster minMembers maxMembers isRegistrationLive isOver isSolo",
         )
         .sort({ eventDate: 1 })
         .lean()

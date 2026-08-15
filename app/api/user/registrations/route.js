@@ -4,6 +4,7 @@ import dbConnect from "@/lib/db";
 import Registration from "@/models/Registration";
 import Attendance from "@/models/Attendance";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { resolveSessionUserId } from "@/lib/adminAuth";
 
 export async function GET(request) {
   try {
@@ -14,7 +15,11 @@ export async function GET(request) {
     }
 
     await dbConnect();
-    const userId = session.user.id;
+    const userId = await resolveSessionUserId(session);
+
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const registrations = await Registration.find({ userId })
       .populate(

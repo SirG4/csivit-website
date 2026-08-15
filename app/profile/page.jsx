@@ -50,6 +50,7 @@ export default function Page() {
   const [registerModalOpen, setRegisterModalOpen] = useState(false);
   const [registerEventName, setRegisterEventName] = useState("");
   const [registerEventId, setRegisterEventId] = useState("");
+  const [registerEvent, setRegisterEvent] = useState(null);
   const [userRegistrations, setUserRegistrations] = useState([]);
 
   // Kick modal state
@@ -119,7 +120,11 @@ export default function Page() {
   const fetchEvents = async () => {
     try {
       setLoadingEvents(true);
-      const response = await fetchWithTimeout("/api/events", {}, 6000);
+      const response = await fetchWithTimeout(
+        "/api/events",
+        { cache: "no-store" },
+        6000,
+      );
       if (response.ok) {
         const data = await response.json();
         const dbEvents = data.data || [];
@@ -182,9 +187,10 @@ export default function Page() {
     fetchUserData(); // Refresh badges too
   };
 
-  const handleRegisterClick = (eventName, eventId) => {
-    setRegisterEventName(eventName);
-    setRegisterEventId(eventId);
+  const handleRegisterClick = (event) => {
+    setRegisterEvent(event);
+    setRegisterEventName(event.eventName);
+    setRegisterEventId(event._id);
     setRegisterModalOpen(true);
   };
 
@@ -246,12 +252,14 @@ export default function Page() {
   };
 
   const handleCancelTeamClick = (reg) => {
+    const isSolo = reg.eventId?.isSolo !== undefined ? reg.eventId.isSolo : (reg.eventId?.maxMembers === 1);
     setCancelTeamTarget({
       registrationId: reg._id,
       eventId: reg.eventId?._id?.toString() || reg.eventId?.toString(),
       eventName: reg.eventId?.eventName || "Unknown Event",
       teamCode: reg.teamCode || "-",
       memberCount: reg.teamMembers?.length || 0,
+      isSolo,
     });
     setCancelTeamModalOpen(true);
   };
@@ -515,10 +523,7 @@ export default function Page() {
                               return (
                                 <button
                                   onClick={() =>
-                                    handleRegisterClick(
-                                      event.eventName,
-                                      event._id,
-                                    )
+                                    handleRegisterClick(event)
                                   }
                                   className="bg-green-700 text-xs lg:text-sm mt-2 px-3 py-1.5 rounded hover:bg-green-600 transition"
                                 >
@@ -606,116 +611,123 @@ export default function Page() {
                     No registered events yet
                   </div>
                 ) : (
-                  userRegistrations.map((reg) => (
-                    <div
-                      key={reg._id}
-                      className="bg-black/50 m-3 p-4 hover:bg-white/5 transition border-l-4 border-cyan-500 relative"
-                    >
-                      <div className="flex flex-col gap-2">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="text-lg font-bold text-cyan-300">
-                              {reg.eventId?.eventName || "Unknown Event"}
-                            </h4>
-                            <p className="text-sm font-mono mt-1 text-gray-300">
-                              TEAM CODE:{" "}
-                              <span className="text-yellow-400 select-all">
-                                {reg.teamCode}
-                              </span>
-                            </p>
-                          </div>
-                          <div className="flex gap-2 items-center flex-wrap justify-end">
-                            <button
-                              onClick={() => handleEditClick(reg)}
-                              className="bg-cyan-600/20 text-cyan-300 text-xs border border-cyan-500/50 px-2 py-1 rounded hover:bg-cyan-600/40 transition flex items-center gap-1"
-                            >
-                              <svg
-                                className="w-3 h-3"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                strokeWidth={2}
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                                />
-                              </svg>
-                              Edit
-                            </button>
-                            {reg.isTeamLeader && (
-                              <button
-                                onClick={() => handleCancelTeamClick(reg)}
-                                className="bg-red-900/50 text-red-300 text-xs border border-red-500/50 px-2 py-1 rounded hover:bg-red-800/70 transition"
-                              >
-                                Cancel Team
-                              </button>
-                            )}
-                            {reg.isTeamLeader && (
-                              <span className="bg-yellow-500/20 text-yellow-300 text-xs border border-yellow-500/50 px-2 py-1 rounded">
-                                Team Leader
-                              </span>
-                            )}
-                            {reg.teamMembers?.length <
-                              reg.eventId?.minMembers && (
-                              <span className="bg-orange-500/20 text-orange-300 text-xs border border-orange-500/50 px-2 py-1 rounded">
-                                Team Incomplete
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="mt-2 bg-black/30 p-3 rounded">
-                          <h5 className="text-xs text-gray-400 mb-2 uppercase tracking-wider font-semibold">
-                            Team Members ({reg.teamMembers?.length || 0}/
-                            {reg.eventId?.maxMembers || "?"})
-                          </h5>
-                          <div className="space-y-2">
-                            {reg.teamMembers?.map((memberReg) => (
-                              <div
-                                key={memberReg._id}
-                                className="flex justify-between items-center bg-gray-900/50 p-2 rounded"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <Image
-                                    src={
-                                      memberReg.userId?.image ||
-                                      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect fill='%23667eea' width='64' height='64'/%3E%3Ctext x='50%25' y='50%25' font-size='24' fill='white' text-anchor='middle' dy='.3em'%3E%3F%3C/text%3E%3C/svg%3E"
-                                    }
-                                    alt="member avatar"
-                                    width={24}
-                                    height={24}
-                                    className="rounded-full"
-                                    unoptimized
-                                  />
-                                  <span className="text-sm">
-                                    {memberReg.userId?.name}{" "}
-                                    {memberReg.isTeamLeader && "👑"}
+                  userRegistrations.map((reg) => {
+                    const isSolo = reg.eventId?.isSolo !== undefined ? reg.eventId.isSolo : (reg.eventId?.maxMembers === 1);
+                    return (
+                      <div
+                        key={reg._id}
+                        className="bg-black/50 m-3 p-4 hover:bg-white/5 transition border-l-4 border-cyan-500 relative"
+                      >
+                        <div className="flex flex-col gap-2">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="text-lg font-bold text-cyan-300">
+                                {reg.eventId?.eventName || "Unknown Event"}
+                              </h4>
+                              {!isSolo && (
+                                <p className="text-sm font-mono mt-1 text-gray-300">
+                                  TEAM CODE:{" "}
+                                  <span className="text-yellow-400 select-all">
+                                    {reg.teamCode}
                                   </span>
-                                </div>
-                                {reg.isTeamLeader &&
-                                  memberReg.userId?._id !==
-                                    session?.user?.id && (
-                                    <button
-                                      onClick={() =>
-                                        handleKickClick(
-                                          memberReg._id,
-                                          memberReg.userId?.name,
-                                        )
-                                      }
-                                      className="text-xs bg-red-900/50 hover:bg-red-800 text-red-300 px-2 py-1 rounded transition"
-                                    >
-                                      Kick
-                                    </button>
-                                  )}
-                              </div>
-                            ))}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex gap-2 items-center flex-wrap justify-end">
+                              <button
+                                onClick={() => handleEditClick(reg)}
+                                className="bg-cyan-600/20 text-cyan-300 text-xs border border-cyan-500/50 px-2 py-1 rounded hover:bg-cyan-600/40 transition flex items-center gap-1"
+                              >
+                                <svg
+                                  className="w-3 h-3"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  strokeWidth={2}
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                                  />
+                                </svg>
+                                Edit
+                              </button>
+                              {reg.isTeamLeader && (
+                                <button
+                                  onClick={() => handleCancelTeamClick(reg)}
+                                  className="bg-red-900/50 text-red-300 text-xs border border-red-500/50 px-2 py-1 rounded hover:bg-red-800/70 transition"
+                                >
+                                  {isSolo ? "Cancel Registration" : "Cancel Team"}
+                                </button>
+                              )}
+                              {!isSolo && reg.isTeamLeader && (
+                                <span className="bg-yellow-500/20 text-yellow-300 text-xs border border-yellow-500/50 px-2 py-1 rounded">
+                                  Team Leader
+                                </span>
+                              )}
+                              {!isSolo && reg.teamMembers?.length <
+                                reg.eventId?.minMembers && (
+                                <span className="bg-orange-500/20 text-orange-300 text-xs border border-orange-500/50 px-2 py-1 rounded">
+                                  Team Incomplete
+                                </span>
+                              )}
+                            </div>
                           </div>
+
+                          {!isSolo && (
+                            <div className="mt-2 bg-black/30 p-3 rounded">
+                              <h5 className="text-xs text-gray-400 mb-2 uppercase tracking-wider font-semibold">
+                                Team Members ({reg.teamMembers?.length || 0}/
+                                {reg.eventId?.maxMembers || "?"})
+                              </h5>
+                              <div className="space-y-2">
+                                {reg.teamMembers?.map((memberReg) => (
+                                  <div
+                                    key={memberReg._id}
+                                    className="flex justify-between items-center bg-gray-900/50 p-2 rounded"
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      <Image
+                                        src={
+                                          memberReg.userId?.image ||
+                                          "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect fill='%23667eea' width='64' height='64'/%3E%3Ctext x='50%25' y='50%25' font-size='24' fill='white' text-anchor='middle' dy='.3em'%3E%3F%3C/text%3E%3C/svg%3E"
+                                        }
+                                        alt="member avatar"
+                                        width={24}
+                                        height={24}
+                                        className="rounded-full"
+                                        unoptimized
+                                      />
+                                      <span className="text-sm">
+                                        {memberReg.userId?.name}{" "}
+                                        {memberReg.isTeamLeader && "👑"}
+                                      </span>
+                                    </div>
+                                    {reg.isTeamLeader &&
+                                      memberReg.userId?._id !==
+                                        session?.user?.id && (
+                                        <button
+                                          onClick={() =>
+                                            handleKickClick(
+                                              memberReg._id,
+                                              memberReg.userId?.name,
+                                            )
+                                          }
+                                          className="text-xs bg-red-900/50 hover:bg-red-800 text-red-300 px-2 py-1 rounded transition"
+                                        >
+                                          Kick
+                                        </button>
+                                      )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </div>
@@ -771,6 +783,7 @@ export default function Page() {
         onClose={() => setRegisterModalOpen(false)}
         eventName={registerEventName}
         eventId={registerEventId}
+        event={registerEvent}
         onRegistrationSuccess={() => {
           setRegisterModalOpen(false);
           fetchUserRegistrations(); // Refresh registrations after successful register
@@ -810,6 +823,7 @@ export default function Page() {
         eventName={cancelTeamTarget?.eventName || "this event"}
         teamCode={cancelTeamTarget?.teamCode || "-"}
         memberCount={cancelTeamTarget?.memberCount || 0}
+        isSolo={cancelTeamTarget?.isSolo}
       />
     </div>
   );

@@ -66,6 +66,10 @@ const EventSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isSolo: {
+      type: Boolean,
+      default: true,
+    },
     createdAt: {
       type: Date,
       default: Date.now,

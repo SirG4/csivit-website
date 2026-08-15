@@ -6,6 +6,7 @@ import Event from "@/models/Event";
 import Registration from "@/models/Registration";
 import User from "@/models/User";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { resolveSessionUserId } from "@/lib/adminAuth";
 
 const getSafeRegistrationError = (error) => {
   const message = error?.message || "";
@@ -45,18 +46,6 @@ async function withMongoRetry(operation) {
     await dbConnect();
     return operation();
   }
-}
-
-async function resolveSessionUserId(session) {
-  if (session?.user?.id) return session.user.id;
-  if (!session?.user?.email) return null;
-
-  const user = await User.findOne({ email: session.user.email })
-    .select("_id")
-    .lean()
-    .maxTimeMS(4000);
-
-  return user?._id?.toString() || null;
 }
 
 export async function POST(request) {
@@ -102,7 +91,7 @@ export async function POST(request) {
     const result = await withMongoRetry(async () => {
       // Check if event exists
       let event = await Event.findById(eventId)
-        .select("_id isRegistrationLive isOver minMembers maxMembers")
+        .select("_id isRegistrationLive isOver minMembers maxMembers isSolo")
         .lean()
         .maxTimeMS(5000);
 
@@ -116,24 +105,20 @@ export async function POST(request) {
           eventId === "6b2f1a2b3c4d5e6f7a8b9c01"
             ? {
                 _id: new mongoose.Types.ObjectId("6b2f1a2b3c4d5e6f7a8b9c01"),
-                eventName: "CSIVIT Orientation",
-                eventDate: new Date("2026-03-20T10:00:00.000Z"),
+                eventName: "Design Paradox",
+                eventDate: new Date("2026-03-20T16:00:00.000Z"),
                 description:
-                  "Welcome to CSIVIT! Join us for an introductory session.",
-                poster: "/Profile/steam_poster.jpg", // Using default poster
+                  "UI and Product Design challenge where teams craft a landing page concept for a fictional energy drink launched by an unexpected legacy brand.",
+                poster: "/Profile/parapost.png",
                 isRegistrationLive: true,
                 isOver: false,
                 minMembers: 1,
                 maxMembers: 1,
-                eventKey: "orientation-static",
-                badgeIcon:
-                  "https://api.dicebear.com/7.x/identicon/svg?seed=orientation",
-                winnerBadge1:
-                  "https://api.dicebear.com/7.x/identicon/svg?seed=orientation-w1",
-                winnerBadge2:
-                  "https://api.dicebear.com/7.x/identicon/svg?seed=orientation-w2",
-                winnerBadge3:
-                  "https://api.dicebear.com/7.x/identicon/svg?seed=orientation-w3",
+                eventKey: "design-paradox-static",
+                badgeIcon: "/Profile/parap.png",
+                winnerBadge1: "/Profile/para1.png",
+                winnerBadge2: "/Profile/para2.png",
+                winnerBadge3: "/Profile/para3.png",
               }
             : {
                 _id: new mongoose.Types.ObjectId("6b2f1a2b3c4d5e6f7a8b9c02"),
@@ -196,6 +181,11 @@ export async function POST(request) {
 
     let finalTeamCode = normalizedTeamCode;
     let isTeamLeader = false;
+
+    const isSoloEvent = event.isSolo !== undefined ? event.isSolo : (event.maxMembers === 1);
+    if (isSoloEvent) {
+      finalGenerateTeamCode = true;
+    }
 
     if (finalGenerateTeamCode) {
       // Generate random 6-character alphanumeric string

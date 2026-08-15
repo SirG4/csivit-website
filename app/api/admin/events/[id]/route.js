@@ -45,6 +45,17 @@ export async function PUT(request, { params }) {
     if (body.isRegistrationLive !== undefined)
       event.isRegistrationLive = body.isRegistrationLive;
     if (body.isHidden !== undefined) event.isHidden = body.isHidden;
+    if (body.isSolo !== undefined) {
+      event.isSolo = body.isSolo;
+      if (body.isSolo) {
+        event.minMembers = 1;
+        event.maxMembers = 1;
+      }
+    }
+    if (!event.isSolo) {
+      if (body.minMembers !== undefined) event.minMembers = body.minMembers;
+      if (body.maxMembers !== undefined) event.maxMembers = body.maxMembers;
+    }
 
     // Server-side logic: if event over, close registration
     if (event.isOver) {
@@ -52,6 +63,11 @@ export async function PUT(request, { params }) {
     }
 
     await event.save();
+
+    if (global.eventsApiCache) {
+      global.eventsApiCache.data = [];
+      global.eventsApiCache.timestamp = 0;
+    }
 
     return NextResponse.json(
       {
@@ -92,6 +108,11 @@ export async function DELETE(request, { params }) {
       { $pull: { badges: { eventKey: eventKey } } },
     );
     await Event.findByIdAndDelete(id);
+
+    if (global.eventsApiCache) {
+      global.eventsApiCache.data = [];
+      global.eventsApiCache.timestamp = 0;
+    }
 
     return NextResponse.json(
       {

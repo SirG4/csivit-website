@@ -6,7 +6,7 @@ import User from "@/models/User";
 import Attendance from "@/models/Attendance";
 import Event from "@/models/Event";
 import Registration from "@/models/Registration";
-
+import { resolveSessionUserId } from "@/lib/adminAuth";
 
 const QR_EXPIRY_SECONDS = 300; // Increased to be more lenient for static QR
 
@@ -14,7 +14,7 @@ export async function POST(request) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized: Please sign in again" }, { status: 401 });
     }
 
@@ -42,13 +42,18 @@ export async function POST(request) {
       );
     }
 
+    await dbConnect();
+    const scannerUserId = await resolveSessionUserId(session);
+    if (!scannerUserId) {
+      return NextResponse.json({ error: "Unauthorized: Please sign in again" }, { status: 401 });
+    }
+
     // Determination of who to mark attendance for
-    let targetUserId = session.user.id;
+    let targetUserId = scannerUserId;
 
     // If a userId is present in the scan, it's an admin scanning a user
     if (userId) {
-      await dbConnect();
-      const scanner = await User.findById(session.user.id);
+      const scanner = await User.findById(scannerUserId);
       if (scanner?.role !== "admin") {
         return NextResponse.json(
           { error: "Forbidden: Only admins can scan user entry passes" },

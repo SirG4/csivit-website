@@ -7,12 +7,15 @@ export default function RegisterModal({
   onClose,
   eventName,
   eventId,
+  event,
   onRegistrationSuccess,
 }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [teamCode, setTeamCode] = useState("");
   const [generateTeamCode, setGenerateTeamCode] = useState(false);
+
+  const isSolo = event?.isSolo !== undefined ? event.isSolo : (event?.maxMembers === 1);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -61,12 +64,13 @@ export default function RegisterModal({
 
     const normalizedName = name.trim();
     const normalizedPhone = phone.trim();
-    const normalizedTeamCode = teamCode.trim().toUpperCase();
+    const normalizedTeamCode = isSolo ? "" : teamCode.trim().toUpperCase();
+    const finalGenerateTeamCode = isSolo ? true : generateTeamCode;
 
     if (
       !normalizedName ||
       !normalizedPhone ||
-      (!generateTeamCode && !normalizedTeamCode)
+      (!finalGenerateTeamCode && !normalizedTeamCode)
     ) {
       setError("Please fill in all required fields.");
       return;
@@ -82,7 +86,7 @@ export default function RegisterModal({
           normalizedName,
           normalizedPhone,
           normalizedTeamCode,
-          generateTeamCode,
+          generateTeamCode: finalGenerateTeamCode,
         });
       } catch (firstErr) {
         const shouldRetry =
@@ -195,64 +199,66 @@ export default function RegisterModal({
               </div>
 
               {/* Team */}
-              <div className="border-t border-white/[0.06] pt-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setGenerateTeamCode(!generateTeamCode);
-                      if (!generateTeamCode) setTeamCode("");
-                    }}
-                    className={`w-4 h-4 rounded border flex items-center justify-center transition-all duration-200 ${
-                      generateTeamCode
-                        ? "bg-white border-white"
-                        : "bg-transparent border-white/20 hover:border-white/40"
-                    }`}
-                  >
-                    {generateTeamCode && (
-                      <svg
-                        className="w-2.5 h-2.5 text-[#111118]"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={3}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                    )}
-                  </button>
-                  <label
-                    className="text-white/50 text-xs cursor-pointer select-none"
-                    onClick={() => {
-                      setGenerateTeamCode(!generateTeamCode);
-                      if (!generateTeamCode) setTeamCode("");
-                    }}
-                  >
-                    Generate new team code
-                  </label>
-                </div>
-
-                {!generateTeamCode && (
-                  <div>
-                    <label className="block text-white/40 text-xs font-medium mb-1.5 uppercase tracking-wider">
-                      Team Code to Join
+              {!isSolo && (
+                <div className="border-t border-white/[0.06] pt-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setGenerateTeamCode(!generateTeamCode);
+                        if (!generateTeamCode) setTeamCode("");
+                      }}
+                      className={`w-4 h-4 rounded border flex items-center justify-center transition-all duration-200 ${
+                        generateTeamCode
+                          ? "bg-white border-white"
+                          : "bg-transparent border-white/20 hover:border-white/40"
+                      }`}
+                    >
+                      {generateTeamCode && (
+                        <svg
+                          className="w-2.5 h-2.5 text-[#111118]"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={3}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                      )}
+                    </button>
+                    <label
+                      className="text-white/50 text-xs cursor-pointer select-none"
+                      onClick={() => {
+                        setGenerateTeamCode(!generateTeamCode);
+                        if (!generateTeamCode) setTeamCode("");
+                      }}
+                    >
+                      Generate new team code
                     </label>
-                    <input
-                      type="text"
-                      value={teamCode}
-                      onChange={(e) =>
-                        setTeamCode(e.target.value.toUpperCase())
-                      }
-                      className="w-full bg-white/[0.04] border border-white/[0.08] text-white rounded-xl px-3 py-2.5 text-sm placeholder:text-white/20 focus:outline-none focus:border-white/20 focus:bg-white/[0.06] transition-all duration-200 uppercase tracking-widest"
-                      placeholder="ENTER TEAM CODE"
-                    />
                   </div>
-                )}
-              </div>
+
+                  {!generateTeamCode && (
+                    <div>
+                      <label className="block text-white/40 text-xs font-medium mb-1.5 uppercase tracking-wider">
+                        Team Code to Join
+                      </label>
+                      <input
+                        type="text"
+                        value={teamCode}
+                        onChange={(e) =>
+                          setTeamCode(e.target.value.toUpperCase())
+                        }
+                        className="w-full bg-white/[0.04] border border-white/[0.08] text-white rounded-xl px-3 py-2.5 text-sm placeholder:text-white/20 focus:outline-none focus:border-white/20 focus:bg-white/[0.06] transition-all duration-200 uppercase tracking-widest"
+                        placeholder="ENTER TEAM CODE"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Submit */}
               <button

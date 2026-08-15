@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import dbConnect from "@/lib/db";
 import Registration from "@/models/Registration";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { resolveSessionUserId } from "@/lib/adminAuth";
 
 export async function DELETE(request) {
   try {
@@ -20,6 +21,11 @@ export async function DELETE(request) {
 
     await dbConnect();
 
+    const userId = await resolveSessionUserId(session);
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     // Find the target registration
     const targetRegistration = await Registration.findById(targetRegistrationId);
 
@@ -29,7 +35,7 @@ export async function DELETE(request) {
 
     // Check if the current user is the team leader for this team
     const leaderRegistration = await Registration.findOne({
-      userId: session.user.id,
+      userId: userId,
       eventId: targetRegistration.eventId,
       teamCode: targetRegistration.teamCode,
       isTeamLeader: true,
@@ -40,7 +46,7 @@ export async function DELETE(request) {
     }
 
     // Check if leader is trying to kick themselves
-    if (targetRegistration.userId.toString() === session.user.id.toString()) {
+    if (targetRegistration.userId.toString() === userId) {
       return NextResponse.json({ error: "You cannot kick yourself" }, { status: 400 });
     }
 
