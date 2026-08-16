@@ -12,28 +12,6 @@ import EditRegistrationModal from "@/components/EditRegistrationModal";
 import ConfirmKickModal from "@/components/ConfirmKickModal";
 import ConfirmCancelTeamModal from "@/components/ConfirmCancelTeamModal";
 
-const STATIC_EVENTS = [
-  {
-    _id: "6b2f1a2b3c4d5e6f7a8b9c01",
-    eventName: "Design Paradox",
-    eventDate: "2026-03-20T16:00:00.000+00:00",
-    description:
-      "UI and Product Design challenge where teams craft a landing page concept for a fictional energy drink launched by an unexpected legacy brand.",
-    poster: "/Profile/parapost.png", // Using default poster
-    badgeIcon: "/Profile/parap.png", // participation badge
-    winnerBadge1: "/Profile/para1.png",
-    winnerBadge2: "/Profile/para2.png",
-    winnerBadge3: "/Profile/para3.png",
-    isRegistrationLive: true,
-    isOver: false,
-    minMembers: 1,
-    maxMembers: 1,
-    isStatic: true,
-    unstopUrl:
-      "https://unstop.com/p/design-paradox-ui-product-design-challenge-vidyalankar-institute-of-technology-vit-mumbai-1657879",
-  },
-];
-
 export default function Page() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -129,47 +107,20 @@ export default function Page() {
         const data = await response.json();
         const dbEvents = data.data || [];
 
-        // Identify and mark static events, merge them with DB events
-        const processedDbEvents = dbEvents.map((dbEvent) => {
-          const dbId = dbEvent._id?.toString();
-          const staticMatch = STATIC_EVENTS.find(
-            (s) =>
-              s._id.toString() === dbId || s.eventName === dbEvent.eventName,
-          );
-          if (staticMatch) {
-            // Ensure static properties (like isStatic, unstopUrl) are preserved/added
-            return { ...dbEvent, ...staticMatch };
-          }
-          return dbEvent;
-        });
-
-        // Add static events that aren't in the DB yet
-        const missingStaticEvents = STATIC_EVENTS.filter((staticEvent) => {
-          const staticId = staticEvent._id.toString();
-          return !dbEvents.some(
-            (dbEvent) =>
-              dbEvent._id?.toString() === staticId ||
-              dbEvent.eventName === staticEvent.eventName,
-          );
-        });
-
-        const mergedEvents = [...processedDbEvents, ...missingStaticEvents];
-
         // Split events into upcoming and past based on current date
-        const now = new Date();
-        const upcoming = mergedEvents.filter((event) => !event.isOver);
-        const past = mergedEvents.filter((event) => event.isOver);
+        const upcoming = dbEvents.filter((event) => !event.isOver);
+        const past = dbEvents.filter((event) => event.isOver);
 
         setUpcomingEvents(upcoming);
         setPastEvents(past);
       } else {
-        setUpcomingEvents(STATIC_EVENTS.filter((event) => !event.isOver));
-        setPastEvents(STATIC_EVENTS.filter((event) => event.isOver));
+        setUpcomingEvents([]);
+        setPastEvents([]);
       }
     } catch (error) {
       console.error("Error fetching events:", error);
-      setUpcomingEvents(STATIC_EVENTS.filter((event) => !event.isOver));
-      setPastEvents(STATIC_EVENTS.filter((event) => event.isOver));
+      setUpcomingEvents([]);
+      setPastEvents([]);
     } finally {
       setLoadingEvents(false);
     }
@@ -192,35 +143,6 @@ export default function Page() {
     setRegisterEventName(event.eventName);
     setRegisterEventId(event._id);
     setRegisterModalOpen(true);
-  };
-
-  const handleSimplifiedRegister = async (event) => {
-    try {
-      setLoadingEvents(true);
-      const response = await fetch("/api/events/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          eventId: event._id,
-          simplified: true,
-        }),
-      });
-
-      if (response.ok) {
-        // Instant redirect to Unstop
-        if (event.unstopUrl) {
-          window.open(event.unstopUrl, "_blank", "noopener,noreferrer");
-        }
-        fetchUserRegistrations();
-      } else {
-        const data = await response.json();
-        alert(data.error || "Failed to register");
-      }
-    } catch (error) {
-      console.error("Simplified registration error:", error);
-    } finally {
-      setLoadingEvents(false);
-    }
   };
 
   const handleKickClick = (registrationId, memberName) => {
@@ -508,18 +430,6 @@ export default function Page() {
                               );
                             }
                             if (event.isRegistrationLive && !event.isOver) {
-                              if (event.isStatic) {
-                                return (
-                                  <button
-                                    onClick={() =>
-                                      handleSimplifiedRegister(event)
-                                    }
-                                    className="bg-green-700 text-xs lg:text-sm mt-2 px-3 py-1.5 rounded hover:bg-green-600 transition"
-                                  >
-                                    Register
-                                  </button>
-                                );
-                              }
                               return (
                                 <button
                                   onClick={() =>
